@@ -1,0 +1,38 @@
+<h1>Pages</h1>
+
+<div class="content_block">
+    [% IF pages.size > 0 %]
+        [% META appkitfeature_tablesorter = 1 %]
+        <table class="tablesorter">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>URL</th>
+                    <th>Breadcrumb</th>
+                    <th>Priority</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                [% FOREACH page IN pages %]
+                    <tr>
+                        <td>[% page.id %]</td>
+                        <td>[% page.url %]</td>
+                        <td>[% page.breadcrumb %]</td>
+                        <td>[% page.priority %]</td>
+                        <td>
+                            <a href="[% c.uri_for(c.controller.action_for('edit_page'), page.id) %]">Edit</a>
+                            <a href="[% page.url %]">View</a>
+                        </td>
+                    </tr>
+                [% END %]
+            </tbody>
+        </table>
+    [% ELSE %]
+        <p>No pages have been created</p>
+    [% END %]
+</div>
+
+
+
+<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('new_page')) %]">New page</a>

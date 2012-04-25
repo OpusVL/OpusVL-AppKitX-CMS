@@ -1,0 +1,42 @@
+<h1>Assets</h1>
+
+<div class="content_block">
+    [% IF assets.size > 0 %]
+        [% META appkitfeature_tablesorter = 1 %]
+        <table class="tablesorter">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                    <th>Preview</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                [% FOREACH asset IN assets %]
+                    <tr>
+                        <td>[% asset.id %]</td>
+                        <td>[% asset.filename %]</td>
+                        <td>[% asset.description %]</td>
+                        <td>[% asset.mime_type %]</td>
+                        <td>
+                            [% IF asset.mime_type.match('image') %]
+                                thumbnail
+                            [% END %]
+                        </td>
+                        <td>
+                            <a href="[% c.uri_for(c.controller.action_for('edit_asset'), asset.id) %]">Edit</a>
+                            <a href="[% c.uri_for(c.controller('Root').action_for('_asset'), asset.id, asset.filename) %]">View</a>
+                        </td>
+                    </tr>
+                [% END %]
+            </tbody>
+        </table>
+    [% ELSE %]
+        <p>No assets have been uploaded</p>
+    [% END %]
+</div>
+
+<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('new_asset')) %]">New asset</a>

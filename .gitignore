@@ -1,0 +1,13 @@
+cover_db
+META.yml
+Makefile
+blib
+inc
+pm_to_blib
+tags
+*.swp
+MANIFEST
+Makefile.old
+OpusVL-AppKitX-CMS-*
+.DS_Store
+testapp_local.conf

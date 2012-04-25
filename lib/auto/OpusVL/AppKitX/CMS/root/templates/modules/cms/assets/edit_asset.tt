@@ -1,0 +1,3 @@
+<h1>Edit asset</h1>
+
+[% form.render | none %]
