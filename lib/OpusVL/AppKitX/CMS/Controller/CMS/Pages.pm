@@ -10,6 +10,7 @@ __PACKAGE__->config
     appkit_name                 => 'CMS',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
+    appkit_js                     => ['/static/js/cms.js', '/static/js/nicEdit.js', '/static/js/src/addElement/addElement.js'],
     # appkit_method_group         => 'Extension A',
     # appkit_method_group_order   => 2,
     appkit_shared_module        => 'CMS',
@@ -41,7 +42,7 @@ sub auto :Private {
 sub index :Path :Args(0) :NavigationHome :NavigationName('Pages') {
     my ($self, $c) = @_;
     
-    $c->stash->{pages} = [$c->model('CMS::Pages')->all];
+    $c->stash->{pages}      = [$c->model('CMS::Pages')->all];
 }
 
 
@@ -50,6 +51,7 @@ sub index :Path :Args(0) :NavigationHome :NavigationName('Pages') {
 sub new_page :Local :Args(0) :AppKitForm {
     my ($self, $c) = @_;
 
+    $c->stash->{element_rs} = $c->model('CMS::Elements');
     $self->add_final_crumb($c, "New page");
 
     my $form = $c->stash->{form};
