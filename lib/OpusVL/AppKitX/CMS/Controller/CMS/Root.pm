@@ -11,7 +11,7 @@ sub default :Private {
     
     $c->log->debug("********** Running CMS lookup against:" . $c->req->path );
     
-    if (my $page = $c->model('CMS::Pages')->find({url => '/'.$c->req->path})) {
+    if (my $page = $c->model('CMS::Pages')->published->find({url => '/'.$c->req->path})) {
         $c->stash->{me} = $page;
         $c->stash->{asset} = sub {
             if (my $asset = $c->model('CMS::Assets')->find({id => shift})) {
@@ -47,7 +47,7 @@ sub default :Private {
         #$c->response->body($c->view('CMS')->render($c, $c->stash->{template}));
         $c->forward($c->view('CMS::Page'));
     } else {
-        if (my $page = $c->model('CMS::Pages')->find({url => '/404'})) {
+        if (my $page = $c->model('CMS::Pages')->published->find({url => '/404'})) {
             $c->stash->{page} = $page;
             
             if (my $template = $page->template->content) {

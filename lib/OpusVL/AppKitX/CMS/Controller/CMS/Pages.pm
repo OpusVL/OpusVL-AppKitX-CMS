@@ -42,7 +42,7 @@ sub auto :Private {
 sub index :Path :Args(0) :NavigationHome :NavigationName('Pages') {
     my ($self, $c) = @_;
     
-    $c->stash->{pages}      = [$c->model('CMS::Pages')->all];
+    $c->stash->{pages} = [$c->model('CMS::Pages')->published];
 }
 
 
@@ -195,5 +195,30 @@ sub edit_page :Local :Args(1) :AppKitForm {
     
     $c->stash->{page} = $page;
 }
+
+
+#-------------------------------------------------------------------------------
+
+sub delete_page :Local :Args(1) :AppKitForm {
+    my ($self, $c, $page_id) = @_;
+    
+    $self->add_final_crumb($c, "Delete page");
+
+    my $page = $c->model('CMS::Pages')->find({id => $page_id});
+    my $form = $c->stash->{form};
+    
+    if ($form->submitted_and_valid) {
+        $page->remove;
+        
+        $c->flash->{status_msg} = "Page deleted";
+        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->detach;
+    }
+
+    $c->stash->{page} = $page;
+}
+
+
+#-------------------------------------------------------------------------------
 
 1;

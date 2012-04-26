@@ -23,6 +23,7 @@
                         <td>
                             <a href="[% c.uri_for(c.controller.action_for('edit_page'), page.id) %]">Edit</a>
                             <a href="[% page.url %]">View</a>
+                            <a href="[% c.uri_for(c.controller.action_for('delete_page'), page.id) %]">Delete</a>
                         </td>
                     </tr>
                 [% END %]
