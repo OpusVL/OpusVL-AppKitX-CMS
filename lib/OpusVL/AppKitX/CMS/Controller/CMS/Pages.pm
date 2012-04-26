@@ -171,6 +171,14 @@ sub edit_page :Local :Args(1) :AppKitForm {
             $attachment->set_content($file->slurp);
         }
         
+        foreach my $param (keys %{$c->req->params}) {
+            if ($param =~ /delete_tag_(\d+)/) {
+                if (my $tag = $page->search_related('pagetags', {id => $1})) {
+                    $tag->delete;
+                }
+            }
+        }
+        
         if (my $tag_id = $form->param_value('new_tag')) {
             # FIXME: validate that we are allowed to add this tag
             $page->create_related('pagetags', {tag_id => $tag_id});
