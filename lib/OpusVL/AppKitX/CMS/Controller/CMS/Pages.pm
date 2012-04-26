@@ -186,7 +186,9 @@ sub edit_page :Local :Args(1) :AppKitForm {
             $page->create_related('pagetags', {tag_id => $tag_id});
         }
         
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->flash->{status_msg} = "Your changes have been saved";
+        $c->res->redirect($c->req->uri);
+        $c->detach;
     }
     
     $c->stash->{page} = $page;

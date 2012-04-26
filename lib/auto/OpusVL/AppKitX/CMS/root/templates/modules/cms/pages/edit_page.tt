@@ -1,5 +1,8 @@
 <h1>Edit page</h1>
 
+<a href="[% c.uri_for(c.controller.action_for('index')) %]" class="link_button link_button_back">Back to page list</a>
+<br>&nbsp;
+
 [% META appkitfeature_tablesorter = 1 %]
 
 [% form.start | none %]
