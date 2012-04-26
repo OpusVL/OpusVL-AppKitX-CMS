@@ -41,8 +41,8 @@ sub default :Private {
             $c->stash->{no_wrapper} = 1;
         }
         
-        $c->log->debug("Template:");
-        $c->log->debug(${$c->stash->{template}});
+        #$c->log->debug("Template:");
+        #$c->log->debug(${$c->stash->{template}});
         
         #$c->response->body($c->view('CMS')->render($c, $c->stash->{template}));
         $c->forward($c->view('CMS::Page'));
