@@ -1,3 +1,23 @@
 <h1>New page</h1>
-
+[% PROCESS modules/cms/controls.tt %]
 [% form.render | none %]
+
+<div class="hidden" id="element-dialog">
+    <table>
+        <thead>
+        
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            [% WHILE (e = element_rs.next) %]
+            <tr>
+                <td>[% e.id %]</td>
+                <td>[% e.name %]</td>
+            </tr>
+            [% END %]
+        </tbody>
+    </table>
+</div>

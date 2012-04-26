@@ -34,6 +34,12 @@ after 'setup_components' => sub {
 
     CatalystX::InjectComponent->inject(
         into      => $class,
+        component => 'OpusVL::AppKitX::CMS::View::CMS::Ajax',
+        as        => 'View::CMS::Ajax'
+    );
+
+    CatalystX::InjectComponent->inject(
+        into      => $class,
         component => 'OpusVL::AppKitX::CMS::Controller::CMS',
         as        => 'Controller::Modules::CMS'
     );
@@ -66,6 +72,12 @@ after 'setup_components' => sub {
         into      => $class,
         component => 'OpusVL::AppKitX::CMS::Controller::CMS::Tags',
         as        => 'Controller::Modules::CMS::Tags'
+    );
+
+    CatalystX::InjectComponent->inject(
+        into      => $class,
+        component => 'OpusVL::AppKitX::CMS::Controller::CMS::Ajax',
+        as        => 'Controller::Modules::CMS::Ajax',
     );
 };
 

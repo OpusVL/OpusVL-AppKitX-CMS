@@ -1,0 +1,20 @@
+    <label class="box-title">Elements</label>
+    <table>
+        <thead>
+
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>String</th>
+            </tr>
+        </thead>
+        <tbody>
+            [% WHILE (e = elements.next) %]
+            <tr>
+                <td>[% e.id %]</td>
+                <td><a href="javascript:;" class="insert-nic link">[% e.name %]</a></td>
+                <td style="padding-left:20px"><strong>&#91;% element([% e.id %]) %&#93;</strong></td>
+            </tr>
+            [% END %]
+        </tbody>
+    </table>

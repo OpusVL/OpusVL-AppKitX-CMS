@@ -1,3 +1,32 @@
 <h1>New asset</h1>
 
-[% form.render | none %]
+[%# form.render | none %]
+
+<div id="asset-uploader"></div>
+<div id="files_uploaded"></div>
+<script type="text/javascript">
+    $(function() {
+        $("#asset-uploader").pluploadQueue({
+            runtimes: 'html5,flash',
+            url: '[% c.uri_for(c.controller.action_for('upload_assets')) %]',
+            multiple_queues: true,
+            filters: [
+                {title: "Upload Assets", extensions: "*"}
+            ],
+            init: {
+                StateChanged: function(up) {
+                    if(up.state == plupload.STOPPED) {
+                        window.location = "[% c.uri_for(c.controller.action_for('index')) %]"
+                    }
+                }
+            },
+            drop_element: 'asset-uploader'
+        });
+    });
+</script>
+
+<link rel="stylesheet" type="text/css" href="/static/plupload/js/jquery.plupload.queue/css/jquery.plupload.queue.css" />
+<script type="text/javascript" src="/static/plupload/js/plupload.js"></script>
+<script type="text/javascript" src="/static/plupload/js/plupload.html5.js"></script>
+<script type="text/javascript" src="/static/plupload/js/plupload.flash.js"></script>
+<script type="text/javascript" src="/static/plupload/js/jquery.plupload.queue/jquery.plupload.queue.js"></script>

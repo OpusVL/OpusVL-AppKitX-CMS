@@ -10,6 +10,9 @@ __PACKAGE__->config
     appkit_name                 => 'CMS',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
+    appkit_css                  => ['/static/css/facebox.css'],
+    appkit_js                   => ['/static/js/facebox.js'],
+    #appkit_js                   => ['/static/js/facebox.js', '/static/js/cms.js'],
     # appkit_method_group         => 'Extension A',
     # appkit_method_group_order   => 2,
     appkit_shared_module        => 'CMS',
@@ -123,5 +126,19 @@ sub edit_asset :Local :Args(1) :AppKitForm {
 
 
 #-------------------------------------------------------------------------------
+
+sub upload_assets :Local :Args(0) {
+    my ($self, $c) = @_;
+    
+    my $asset_rs = $c->model('CMS::Assets');
+    if (my $file = $c->req->upload('file')) {
+        my $asset = $asset_rs->create({
+            mime_type   => $file->type,
+            filename    => $file->basename,
+        });
+
+        $asset->set_content($file->slurp);       
+    }
+}
 
 1;

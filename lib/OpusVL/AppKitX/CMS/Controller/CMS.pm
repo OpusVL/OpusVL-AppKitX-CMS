@@ -10,6 +10,7 @@ __PACKAGE__->config
     appkit_name                 => 'CMS',
     # appkit_icon                 => 'static/images/flagA.jpg',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
+    appkit_js                     => ['/static/js/nicEdit.js', '/static/js/cms.js'],
     # appkit_method_group         => 'Extension A',
     # appkit_method_group_order   => 2,
     # appkit_shared_module        => 'ExtensionA',

@@ -23,12 +23,12 @@
                         <td>[% asset.mime_type %]</td>
                         <td>
                             [% IF asset.mime_type.match('image') %]
-                                thumbnail
+                                <a href="[% c.uri_for(c.controller('Root').action_for('_asset'), asset.id, asset.filename) %]" rel="facebox" class="link">thumbnail</a>
                             [% END %]
                         </td>
                         <td>
-                            <a href="[% c.uri_for(c.controller.action_for('edit_asset'), asset.id) %]">Edit</a>
-                            <a href="[% c.uri_for(c.controller('Root').action_for('_asset'), asset.id, asset.filename) %]">View</a>
+                            <a href="[% c.uri_for(c.controller.action_for('edit_asset'), asset.id) %]" class="link">Edit</a>
+                            <a href="[% c.uri_for(c.controller('Root').action_for('_asset'), asset.id, asset.filename) %]" class="link" target="__blank">View</a>
                         </td>
                     </tr>
                 [% END %]
