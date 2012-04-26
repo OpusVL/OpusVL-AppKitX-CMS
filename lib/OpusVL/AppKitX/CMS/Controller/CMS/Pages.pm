@@ -167,6 +167,7 @@ sub edit_page :Local :Args(1) :AppKitForm {
                 filename    => $file->basename,
                 mime_type   => $file->type,
                 description => $form->param_value('new_att_desc'),
+                priority    => $form->param_value('new_att_priority') || undef,
             });
             
             $attachment->set_content($file->slurp);

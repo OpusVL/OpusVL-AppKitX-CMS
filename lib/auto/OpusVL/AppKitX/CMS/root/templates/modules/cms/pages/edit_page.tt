@@ -29,6 +29,7 @@
                         <tr>
                             <th>Filename</th>
                             <th>Description</th>
+                            <th>Priority</th>
                             <th>Type</th>
                             <th>Preview</th>
                             <th>Tags</th>
@@ -40,6 +41,7 @@
                             <tr>
                                 <td>[% attachment.filename %]</td>
                                 <td>[% attachment.description %]</td>
+                                <td>[% attachment.priority %]</td>
                                 <td>[% attachment.mime_type %]</td>
                                 <td>[% IF attachment.mime_type.match('image') %]Thumbnail[% END %]</td>
                                 <td></td>
