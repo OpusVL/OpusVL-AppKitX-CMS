@@ -140,6 +140,7 @@ sub edit_page :Local :Args(1) :AppKitForm {
         template    => $page->template_id,
         parent      => $page->parent_id,
         content     => $page->content,
+        priority    => $page->priority,
     });
 
     $form->process;
@@ -168,9 +169,18 @@ sub edit_page :Local :Args(1) :AppKitForm {
                 filename    => $file->basename,
                 mime_type   => $file->type,
                 description => $form->param_value('new_att_desc'),
+                priority    => $form->param_value('new_att_priority') || undef,
             });
             
             $attachment->set_content($file->slurp);
+        }
+        
+        foreach my $param (keys %{$c->req->params}) {
+            if ($param =~ /delete_tag_(\d+)/) {
+                if (my $tag = $page->search_related('pagetags', {id => $1})) {
+                    $tag->delete;
+                }
+            }
         }
         
         if (my $tag_id = $form->param_value('new_tag')) {
@@ -178,7 +188,9 @@ sub edit_page :Local :Args(1) :AppKitForm {
             $page->create_related('pagetags', {tag_id => $tag_id});
         }
         
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->flash->{status_msg} = "Your changes have been saved";
+        $c->res->redirect($c->req->uri);
+        $c->detach;
     }
     
     $c->stash->{page} = $page;

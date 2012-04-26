@@ -46,8 +46,10 @@ elements:
           
           - type: Text
             name: priority
-            label: Priority
+            label: Priority *
             default: 50
+            constraints:
+              - type: Required
           
           - type: Textarea
             name: description
@@ -75,6 +77,14 @@ elements:
           - type: Text
             name: new_att_desc
             label: Description
+          
+          - type: Text
+            name: new_att_priority
+            label: Priority *
+            default: 50
+            constraints:
+              - type: Required
+              - type: Integer
 
       - type: Fieldset
         legend: Existing tags

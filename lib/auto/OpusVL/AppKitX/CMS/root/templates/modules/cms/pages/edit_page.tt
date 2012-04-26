@@ -1,5 +1,8 @@
 <h1>Edit page</h1>
 
+<a href="[% c.uri_for(c.controller.action_for('index')) %]" class="link_button link_button_back">Back to page list</a>
+<br>&nbsp;
+
 [% META appkitfeature_tablesorter = 1 %]
 
 [% form.start | none %]
@@ -29,6 +32,7 @@
                         <tr>
                             <th>Filename</th>
                             <th>Description</th>
+                            <th>Priority</th>
                             <th>Type</th>
                             <th>Preview</th>
                             <th>Tags</th>
@@ -40,6 +44,7 @@
                             <tr>
                                 <td>[% attachment.filename %]</td>
                                 <td>[% attachment.description %]</td>
+                                <td>[% attachment.priority %]</td>
                                 <td>[% attachment.mime_type %]</td>
                                 <td>[% IF attachment.mime_type.match('image') %]Thumbnail[% END %]</td>
                                 <td></td>
