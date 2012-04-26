@@ -46,8 +46,10 @@ elements:
           
           - type: Text
             name: priority
-            label: Priority
+            label: Priority *
             default: 50
+            constraints:
+              - type: Required
           
           - type: Textarea
             name: description

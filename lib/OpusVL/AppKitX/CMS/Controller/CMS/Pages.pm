@@ -138,6 +138,7 @@ sub edit_page :Local :Args(1) :AppKitForm {
         template    => $page->template_id,
         parent      => $page->parent_id,
         content     => $page->content,
+        priority    => $page->priority,
     });
 
     $form->process;
