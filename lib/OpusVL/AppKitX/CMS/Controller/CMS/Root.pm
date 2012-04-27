@@ -14,7 +14,7 @@ sub default :Private {
     if (my $page = $c->model('CMS::Pages')->published->find({url => '/'.$c->req->path})) {
         $c->stash->{me} = $page;
         $c->stash->{asset} = sub {
-            if (my $asset = $c->model('CMS::Assets')->find({id => shift})) {
+            if (my $asset = $c->model('CMS::Assets')->published->find({id => shift})) {
                 return $c->uri_for($c->controller->action_for('_asset'), $asset->id, $asset->filename);
             }
         };
@@ -63,7 +63,7 @@ sub default :Private {
 sub _asset :Local :Args(2) {
     my ($self, $c, $asset_id, $filename) = @_;
     
-    if (my $asset = $c->model('CMS::Assets')->find({id => $asset_id})) {
+    if (my $asset = $c->model('CMS::Assets')->published->find({id => $asset_id})) {
         $c->response->content_type($asset->mime_type);
         $c->response->body($asset->content);
     } else {

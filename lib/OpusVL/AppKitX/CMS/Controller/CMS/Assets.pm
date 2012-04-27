@@ -44,7 +44,7 @@ sub auto :Private {
 sub index :Path :Args(0) :NavigationName('Assets') {
     my ($self, $c) = @_;
     
-    $c->stash->{assets} = [$c->model('CMS::Assets')->all];
+    $c->stash->{assets} = [$c->model('CMS::Assets')->published->all];
 }
 
 
@@ -85,7 +85,7 @@ sub edit_asset :Local :Args(1) :AppKitForm {
     };
     
     my $form  = $c->stash->{form};
-    my $asset = $c->model('CMS::Assets')->find({id => $asset_id});
+    my $asset = $c->model('CMS::Assets')->published->find({id => $asset_id});
     
     if ($asset->mime_type =~ /^text/) {
         # Add in-line edit control to form
@@ -140,5 +140,30 @@ sub upload_assets :Local :Args(0) {
         $asset->set_content($file->slurp);       
     }
 }
+
+
+#-------------------------------------------------------------------------------
+
+sub delete_asset :Local :Args(1) :AppKitForm {
+    my ($self, $c, $asset_id) = @_;
+
+    $self->add_final_crumb($c, "Delete asset");
+    
+    my $form  = $c->stash->{form};
+    my $asset = $c->model('CMS::Assets')->find({id => $asset_id});
+
+    if ($form->submitted_and_valid) {
+        $asset->remove;
+        
+        $c->flash->{status_msg} = "Asset deleted";
+        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->detach;
+    }
+    
+    $c->stash->{asset} = $asset;
+}
+
+
+#-------------------------------------------------------------------------------
 
 1;
