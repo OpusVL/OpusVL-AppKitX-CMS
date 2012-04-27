@@ -50,11 +50,8 @@ sub index :Path :Args(0) :NavigationName('Elements') {
 
 sub new_element :Local :Args(0) :AppKitForm {
     my ($self, $c) = @_;
-
-    push @{ $c->stash->{breadcrumbs} }, {
-        name    => 'New element',
-        url     => $c->req->uri,
-    };
+    
+    $self->add_final_crumb($c, "New element");
     
     my $form = $c->stash->{form};
     if ($form->submitted_and_valid) {
@@ -74,10 +71,7 @@ sub new_element :Local :Args(0) :AppKitForm {
 sub edit_element :Local :Args(1) :AppKitForm {
     my ($self, $c, $element_id) = @_;
 
-    push @{ $c->stash->{breadcrumbs} }, {
-        name    => 'Edit element',
-        url     => $c->req->uri,
-    };
+    $self->add_final_crumb($c, "Edit element");
     
     my $form    = $c->stash->{form};
     my $element = $c->model('CMS::Elements')->published->find({id => $element_id});
