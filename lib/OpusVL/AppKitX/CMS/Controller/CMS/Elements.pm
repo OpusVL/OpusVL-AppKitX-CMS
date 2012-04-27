@@ -102,7 +102,7 @@ sub edit_element :Local :Args(1) :AppKitForm {
 sub delete_element :Local :Args(1) :AppKitForm {
     my ($self, $c, $element_id) = @_;
 
-    $self->add_final_crumb($c, "Edit element");
+    $self->add_final_crumb($c, "Delete element");
     
     my $form    = $c->stash->{form};
     my $element = $c->model('CMS::Elements')->find({id => $element_id});
