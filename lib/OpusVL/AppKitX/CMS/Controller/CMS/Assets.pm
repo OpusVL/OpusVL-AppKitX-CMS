@@ -53,10 +53,7 @@ sub index :Path :Args(0) :NavigationName('Assets') {
 sub new_asset :Local :Args(0) :AppKitForm {
     my ($self, $c) = @_;
 
-    push @{ $c->stash->{breadcrumbs} }, {
-        name    => 'New asset',
-        url     => $c->req->uri,
-    };
+    $self->add_final_crumb($c, "New asset");
     
     my $form = $c->stash->{form};
     if ($form->submitted_and_valid) {
@@ -79,11 +76,8 @@ sub new_asset :Local :Args(0) :AppKitForm {
 sub edit_asset :Local :Args(1) :AppKitForm {
     my ($self, $c, $asset_id) = @_;
 
-    push @{ $c->stash->{breadcrumbs} }, {
-        name    => 'Edit asset',
-        url     => $c->req->uri,
-    };
-    
+    $self->add_final_crumb($c, "Edit asset");
+
     my $form  = $c->stash->{form};
     my $asset = $c->model('CMS::Assets')->published->find({id => $asset_id});
     
