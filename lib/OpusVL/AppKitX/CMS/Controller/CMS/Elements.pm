@@ -42,7 +42,7 @@ sub auto :Private {
 sub index :Path :Args(0) :NavigationName('Elements') {
     my ($self, $c) = @_;
     
-    $c->stash->{elements} = [$c->model('CMS::Elements')->all];
+    $c->stash->{elements} = [$c->model('CMS::Elements')->published->all];
 }
 
 
@@ -80,7 +80,7 @@ sub edit_element :Local :Args(1) :AppKitForm {
     };
     
     my $form    = $c->stash->{form};
-    my $element = $c->model('CMS::Elements')->find({id => $element_id});
+    my $element = $c->model('CMS::Elements')->published->find({id => $element_id});
     
     $form->default_values({
         name    => $element->name,
@@ -100,6 +100,28 @@ sub edit_element :Local :Args(1) :AppKitForm {
         
         $c->res->redirect($c->uri_for($c->controller->action_for('index')));
     }
+}
+
+
+#-------------------------------------------------------------------------------
+
+sub delete_element :Local :Args(1) :AppKitForm {
+    my ($self, $c, $element_id) = @_;
+
+    $self->add_final_crumb($c, "Edit element");
+    
+    my $form    = $c->stash->{form};
+    my $element = $c->model('CMS::Elements')->find({id => $element_id});
+
+    if ($form->submitted_and_valid) {
+        $element->remove;
+        
+        $c->flash->{status_msg} = "Element deleted";
+        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->detach;
+    }
+    
+    $c->stash->{element} = $element;
 }
 
 

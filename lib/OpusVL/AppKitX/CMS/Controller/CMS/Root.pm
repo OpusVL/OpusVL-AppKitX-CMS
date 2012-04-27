@@ -24,7 +24,7 @@ sub default :Private {
             }
         };
         $c->stash->{element} = sub {
-            if (my $element = $c->model('CMS::Elements')->find({id => shift})) {
+            if (my $element = $c->model('CMS::Elements')->published->find({id => shift})) {
                 my $content = $element->content;
                 return $c->view('CMS::Element')->render($c, \$content);
             }
