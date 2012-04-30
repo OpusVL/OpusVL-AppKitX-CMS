@@ -49,6 +49,7 @@
                                 <td>[% IF attachment.mime_type.match('image') %]Thumbnail[% END %]</td>
                                 <td></td>
                                 <td>
+                                    <a href="[% IF c.config.cms_base_url %][% c.config.cms_base_url %]/_attachment/[% attachment.id %]/[% attachment.filename %][% ELSE %][% c.uri_for(c.controller('Root').action_for('_attachment'), attachment.id, attachment.filename) %][% END %]">View</a>
                                     Edit
                                     <a href="[% c.uri_for(c.controller.action_for('delete_attachment'), attachment.id) %]">Delete</a>
                                 </td>
