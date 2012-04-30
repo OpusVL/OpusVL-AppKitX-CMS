@@ -75,7 +75,7 @@ sub _asset :Local :Args(2) {
 sub _attachment :Local :Args(2) {
     my ($self, $c, $attachment_id, $filename) = @_;
     
-    if (my $attachment = $c->model('CMS::Attachments')->find({id => $attachment_id})) {
+    if (my $attachment = $c->model('CMS::Attachments')->published->find({id => $attachment_id})) {
         $c->response->content_type($attachment->mime_type);
         $c->response->body($attachment->content);
     } else {

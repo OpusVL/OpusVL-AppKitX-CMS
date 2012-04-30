@@ -26,7 +26,7 @@
     <div id="tab_attachments">
         <fieldset>
             <legend>Existing attachments</legend>
-            [% IF page.attachments_rs.count %]
+            [% IF page.attachments_rs.published.size %]
                 <table class="tablesorter">
                     <thead>
                         <tr>
@@ -40,7 +40,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        [% FOREACH attachment IN page.attachments %]
+                        [% FOREACH attachment IN page.attachments_rs.published %]
                             <tr>
                                 <td>[% attachment.filename %]</td>
                                 <td>[% attachment.description %]</td>
@@ -48,7 +48,10 @@
                                 <td>[% attachment.mime_type %]</td>
                                 <td>[% IF attachment.mime_type.match('image') %]Thumbnail[% END %]</td>
                                 <td></td>
-                                <td>Edit</td>
+                                <td>
+                                    Edit
+                                    <a href="[% c.uri_for(c.controller.action_for('delete_attachment'), attachment.id) %]">Delete</a>
+                                </td>
                             </tr>
                         [% END %]
                     </tbody>

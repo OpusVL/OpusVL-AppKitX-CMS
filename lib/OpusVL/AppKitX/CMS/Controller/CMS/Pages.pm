@@ -23,11 +23,6 @@ __PACKAGE__->config
 sub auto :Private {
     my ($self, $c) = @_;
 
-    if ($c->req->param('cancel')) {
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
-        $c->detach;
-    }
-    
     $c->stash->{section} = 'Pages';
  
     push @{ $c->stash->{breadcrumbs} }, {
@@ -51,6 +46,11 @@ sub index :Path :Args(0) :NavigationHome :NavigationName('Pages') {
 sub new_page :Local :Args(0) :AppKitForm {
     my ($self, $c) = @_;
 
+    if ($c->req->param('cancel')) {
+        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->detach;
+    }
+    
     $c->stash->{element_rs} = $c->model('CMS::Elements');
     $self->add_final_crumb($c, "New page");
 
@@ -91,6 +91,11 @@ sub new_page :Local :Args(0) :AppKitForm {
 
 sub edit_page :Local :Args(1) :AppKitForm {
     my ($self, $c, $page_id) = @_;
+    
+    if ($c->req->param('cancel')) {
+        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->detach;
+    }
     
     $self->add_final_crumb($c, "Edit page");
 
@@ -202,6 +207,11 @@ sub edit_page :Local :Args(1) :AppKitForm {
 sub delete_page :Local :Args(1) :AppKitForm {
     my ($self, $c, $page_id) = @_;
     
+    if ($c->req->param('cancel')) {
+        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->detach;
+    }
+    
     $self->add_final_crumb($c, "Delete page");
 
     my $page = $c->model('CMS::Pages')->find({id => $page_id});
@@ -216,6 +226,33 @@ sub delete_page :Local :Args(1) :AppKitForm {
     }
 
     $c->stash->{page} = $page;
+}
+
+
+#-------------------------------------------------------------------------------
+
+sub delete_attachment :Local :Args(1) :AppKitForm {
+    my ($self, $c, $attachment_id) = @_;
+    
+    $self->add_final_crumb($c, 'Delete attachment');
+    
+    my $attachment = $c->model('CMS::Attachments')->find({id => $attachment_id});
+    my $form       = $c->stash->{form};
+
+    if ($c->req->param('cancel')) {
+        $c->res->redirect($c->uri_for($c->controller->action_for('edit_page'), $attachment->page_id));
+        $c->detach;
+    }
+    
+    if ($form->submitted_and_valid) {
+        $attachment->remove;
+        
+        $c->flash->{status_msg} = "Attachment deleted";
+        $c->res->redirect($c->uri_for($c->controller->action_for('edit_page'), $attachment->page_id));
+        $c->detach;
+    }
+    
+    $c->stash->{attachment} = $attachment;
 }
 
 
