@@ -33,13 +33,14 @@ sub index :Path :Args(0) {
 sub list_elements :Local :Args(0) {
     my ($self, $c) = @_;
     #$c->stash->{template} = 'list_elements.tt';
-    $c->stash->{elements} = $c->model('CMS::Elements');
+    $c->stash->{elements} = $c->model('CMS::Elements')->published;
 }
 
 sub load_controls :Local :Args(0) {
     my ($self, $c) = @_;
-    $c->stash->{assets} = $c->model('CMS::Assets');
-    $c->stash->{elements} = $c->model('CMS::Elements');
+    $c->stash->{assets}   = $c->model('CMS::Assets')->published;
+    $c->stash->{elements} = $c->model('CMS::Elements')->published;
+    $c->stash->{pages}    = $c->model('CMS::Pages')->published;
 }
 
 return qr|I'll get you next time gadget, next time!|; 
