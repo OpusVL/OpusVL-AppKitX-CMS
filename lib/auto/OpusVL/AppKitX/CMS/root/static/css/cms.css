@@ -59,3 +59,10 @@ label.box-title {
 }
 
 #ajax-slide { margin-top: 15px; }
+
+textarea#wysiwyg {
+    color: #333;
+    font-weight: bold;
+    font-family: "Courier New", Courier, monospace;
+    /*padding:10px;*/
+}

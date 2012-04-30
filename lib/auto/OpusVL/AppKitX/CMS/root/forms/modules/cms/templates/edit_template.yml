@@ -18,11 +18,15 @@ elements:
             constraints:
               - type: Required
             
+          - type: Block
+            attributes:
+                id: "editor-controls"
+    
           - type: Textarea
             name: content
             label: Content *
             attributes:
-                id: nic
+                id: wysiwyg
             constraints:
               - type: Required
 

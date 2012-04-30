@@ -36,4 +36,10 @@ sub list_elements :Local :Args(0) {
     $c->stash->{elements} = $c->model('CMS::Elements');
 }
 
+sub load_controls :Local :Args(0) {
+    my ($self, $c) = @_;
+    $c->stash->{assets} = $c->model('CMS::Assets');
+    $c->stash->{elements} = $c->model('CMS::Elements');
+}
+
 return qr|I'll get you next time gadget, next time!|; 

@@ -1,3 +1,4 @@
+[% META appkitfeature_tablesorter = 1 %]
+[% PROCESS modules/cms/preprocess.tt %]
 <h1>New template</h1>
-[% PROCESS modules/cms/controls.tt %]
 [% form.render | none %]
