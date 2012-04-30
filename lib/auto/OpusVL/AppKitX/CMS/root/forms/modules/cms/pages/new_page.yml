@@ -57,8 +57,6 @@ elements:
           - type: Textarea
             name: content
             label: Content *
-            attributes:
-              id: nic
             constraints:
               - type: Required
 

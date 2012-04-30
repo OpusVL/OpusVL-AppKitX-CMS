@@ -1,0 +1,168 @@
+<span class="btn-group" data-toggle="buttons-radio">
+    <button type="button" class="btn" onclick="wysiwygDestroy()" id="wysiwyg-destroy">Raw</button>
+    <button type="button" class="btn active" onclick="wysiwygCreate()" id="wysiwyg-create">GUI</button>
+</span>
+<button type="button" class="btn" href="javascript:;" id="show-assets">Assets</button>
+<button type="button" class="btn" href="javascript:;" id="show-elements">Elements</button>
+<div style="margin-bottom:5px !important" class="clear"></div>
+
+<div id="assets" style="display:none" title="Available Assets">
+    <h3>Select an Asset</h3>
+    <p>
+    <table class="tablesorter">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Filename</th>
+                <th>Mime Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            [% WHILE (a = assets.next) %]
+                <tr>
+                    <td>[% a.id %]</td>
+                    <td><a href="javascript:;" rel="[% a.id %]" class="insert-asset link">[% a.filename %]</a></td>
+                    <td>[% a.mime_type %]</td>
+                </tr>
+            [% END %]
+        </tbody>
+    </table>
+    </p>
+</div>
+
+<div id="elements" style="display:none" title="Available Elements">
+    <h3>Select an Element</h3>
+    <p>
+    <table class="tablesorter">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            [% WHILE (e = elements.next) %]
+                <tr>
+                    <td>[% e.id %]</td>
+                    <td><a href="javascript:;" rel="[% e.id %]" class="insert-element link">[% e.name %]</a></td>
+                </tr>
+            [% END %]
+        </tbody>
+    </table>
+    </p>
+</div>
+
+<div id="elements" style="display:none" title="Available Elements">
+    <h3>Select an Element</h3>
+    <p>
+    <table class="tablesorter">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            [% WHILE (e = elements.next) %]
+                <tr>
+                    <td>[% e.id %]</td>
+                    <td><a href="javascript:;" rel="[% e.id %]" class="insert-element link">[% e.name %]</a></td>
+                </tr>
+            [% END %]
+        </tbody>
+    </table>
+    </p>
+</div>
+
+<script type="text/javascript">
+    
+    var wobi, editorState;
+    editorState = 'GUI';
+    function wysiwygDestroy() { editorState = 'Raw'; wob.wysiwyg("destroy"); }
+    function wysiwygCreate() { editorState = 'GUI'; wob.wysiwyg(); }
+    
+    $(function() {
+
+        function insertAtCaret(areaId,text) {
+            var txtarea = document.getElementById(areaId);
+            var scrollPos = txtarea.scrollTop;
+            var strPos = 0;
+            var br = ((txtarea.selectionStart || txtarea.selectionStart == '0') ? 
+                "ff" : (document.selection ? "ie" : false ) );
+            if (br == "ie") { 
+                txtarea.focus();
+                var range = document.selection.createRange();
+                range.moveStart ('character', -txtarea.value.length);
+                strPos = range.text.length;
+            }
+            else if (br == "ff") strPos = txtarea.selectionStart;
+
+            var front = (txtarea.value).substring(0,strPos);  
+            var back = (txtarea.value).substring(strPos,txtarea.value.length); 
+            txtarea.value=front+text+back;
+            strPos = strPos + text.length;
+            if (br == "ie") { 
+                txtarea.focus();
+                var range = document.selection.createRange();
+                range.moveStart ('character', -txtarea.value.length);
+                range.moveStart ('character', strPos);
+                range.moveEnd ('character', 0);
+                range.select();
+            }
+            else if (br == "ff") {
+                txtarea.selectionStart = strPos;
+                txtarea.selectionEnd = strPos;
+                txtarea.focus();
+            }
+            txtarea.scrollTop = scrollPos;
+        }
+        
+        $('#assets').dialog({
+            autoOpen : false,
+            modal    : true,
+            width    : 700,
+            buttons  : {
+                Close : function() { $(this).dialog('close'); },
+            },
+        });
+
+        $('#elements').dialog({
+            autoOpen : false,
+            modal    : true,
+            width    : 700,
+            buttons  : {
+                Close : function() { $(this).dialog('close'); },
+            },
+        });
+
+        $('.insert-asset').click(function() {
+            var asset_id = $(this).attr('rel');
+            if (editorState == 'GUI')
+                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% asset(" +  asset_id + ") %&#93");
+            else
+                insertAtCaret('wysiwyg', "[" + "%" + " asset(" +  asset_id + ") %" + "]");
+    
+            $('#assets').dialog('close');
+        });
+
+        $('.insert-element').click(function() {
+            var element_id = $(this).attr('rel');
+            if (editorState == 'GUI')
+                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% element(" +  element_id + ") %&#93");
+            else
+                insertAtCaret('wysiwyg', "[" + "%" + " element(" +  element_id + ") %" + "]");
+    
+            $('#elements').dialog('close');
+        });
+        
+        wob = $('#wysiwyg');
+        wob.wysiwyg();
+        $('button#show-assets').click(function() {
+            $('#assets').dialog('open');
+        });
+        
+        $('button#show-elements').click(function() {
+            $('#elements').dialog('open');
+        });
+    });
+</script>
