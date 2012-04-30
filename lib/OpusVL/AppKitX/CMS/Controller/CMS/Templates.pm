@@ -10,13 +10,10 @@ __PACKAGE__->config
     appkit_name                 => 'CMS',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
-<<<<<<< HEAD
     appkit_css                  => [qw</static/css/bootstrap.css /static/css/jwysiwyg/jquery.wysiwyg.css /static/css/jwysiwyg/jquery.wysiwyg.modal.css>],
     appkit_js                   => [qw< /static/js/bootstrap.js /static/js/wysiwyg/jquery.wysiwyg.js /static/js/wysiwyg/controls/wysiwyg.colorpicker.js /static/js/wysiwyg/controls/wysiwyg.cssWrap.js /static/js/wysiwyg/controls/wysiwyg.image.js /static/js/wysiwyg/controls/wysiwyg.link.js /static/js/wysiwyg/controls/wysiwyg.table.js /static/js/cms.js /static/js/bootstrap-button.js /static/js/bootstrap-transition.js /static/js/bootstrap-modal.js>],
     #appkit_js                   => [qw< /static/js/wysiwyg/jquery.wysiwyg.js /static/js/cms.js >],
-=======
     #appkit_js                     => ['/static/js/nicEdit.js', '/static/js/cms.js'],
->>>>>>> aee2eeb5174ad4a2319d991b0664dee457d7c3e3
     # appkit_method_group         => 'Extension A',
     # appkit_method_group_order   => 2,
     appkit_shared_module        => 'CMS',
