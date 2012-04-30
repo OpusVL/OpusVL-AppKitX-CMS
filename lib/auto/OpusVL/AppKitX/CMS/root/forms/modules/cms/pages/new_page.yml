@@ -54,9 +54,16 @@ elements:
             name: description
             label: Description
 
+          - type: Block
+            attributes:
+                id: "editor-controls"
+
           - type: Textarea
             name: content
-            label: Content *
+            #label: Content *
+            attributes:
+                id: wysiwyg
+                style: "width: 584px;"
             constraints:
               - type: Required
 

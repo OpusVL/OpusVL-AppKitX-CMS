@@ -24,7 +24,7 @@ elements:
     
           - type: Textarea
             name: content
-            label: Content *
+            #label: Content *
             attributes:
                 id: wysiwyg
             constraints:

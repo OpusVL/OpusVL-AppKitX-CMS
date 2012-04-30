@@ -7,7 +7,7 @@ elements:
   - type: Block
     id: controls
     attributes:
-      class: "content_block"
+      class: "content_block controls"
     elements:
       - type: Fieldset
         legend: Page details
@@ -59,10 +59,15 @@ elements:
         legend: Page content
         name: page_content
         elements:
+          - type: Block
+            attributes:
+                id: "editor-controls"
+
           - type: Textarea
             name: content
+            cols: 71
             attributes:
-              style: "width: 592px; height: 400px;"
+                id: wysiwyg
             constraints:
               - type: Required
 
