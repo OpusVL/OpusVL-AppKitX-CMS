@@ -4,6 +4,7 @@
 </span>
 <button type="button" class="btn" href="javascript:;" id="show-assets">Assets</button>
 <button type="button" class="btn" href="javascript:;" id="show-elements">Elements</button>
+<button type="button" class="btn" href="javascript:;" id="show-pages">Pages</button>
 <div style="margin-bottom:5px !important" class="clear"></div>
 
 <div id="assets" style="display:none" title="Available Assets">
@@ -52,21 +53,23 @@
     </p>
 </div>
 
-<div id="elements" style="display:none" title="Available Elements">
-    <h3>Select an Element</h3>
+<div id="pages" style="display:none" title="Available Pages">
+    <h3>Select a Page</h3>
     <p>
     <table class="tablesorter">
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Name</th>
+                <th>URL</th>
             </tr>
         </thead>
         <tbody>
-            [% WHILE (e = elements.next) %]
+            [% WHILE (p = pages.next) %]
                 <tr>
-                    <td>[% e.id %]</td>
-                    <td><a href="javascript:;" rel="[% e.id %]" class="insert-element link">[% e.name %]</a></td>
+                    <td>[% p.id %]</td>
+                    <td><a href="javascript:;" rel="[% p.id %]" class="insert-page link">[% p.breadcrumb %]</a></td>
+                    <td>[% p.url %]</td>
                 </tr>
             [% END %]
         </tbody>
@@ -135,6 +138,15 @@
             },
         });
 
+        $('#pages').dialog({
+            autoOpen : false,
+            modal    : true,
+            width    : 700,
+            buttons  : {
+                Close : function() { $(this).dialog('close'); },
+            },
+        });
+
         $('.insert-asset').click(function() {
             var asset_id = $(this).attr('rel');
             if (editorState == 'GUI')
@@ -154,6 +166,16 @@
     
             $('#elements').dialog('close');
         });
+
+        $('.insert-page').click(function() {
+            var page_id = $(this).attr('rel');
+            if (editorState == 'GUI')
+                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% page(" +  page_id + ").url %&#93");
+            else
+                insertAtCaret('wysiwyg', "[" + "%" + " page(" +  page_id + ").url %" + "]");
+    
+            $('#pages').dialog('close');
+        });
         
         wob = $('#wysiwyg');
         wob.wysiwyg();
@@ -163,6 +185,10 @@
         
         $('button#show-elements').click(function() {
             $('#elements').dialog('open');
+        });
+
+        $('button#show-pages').click(function() {
+            $('#pages').dialog('open');
         });
     });
 </script>
