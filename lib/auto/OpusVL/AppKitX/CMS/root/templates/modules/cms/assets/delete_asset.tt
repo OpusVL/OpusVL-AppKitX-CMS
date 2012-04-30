@@ -1,0 +1,3 @@
+<h1>Delete page "[% asset.filename %]"</h1>
+
+[% form.render | none %]

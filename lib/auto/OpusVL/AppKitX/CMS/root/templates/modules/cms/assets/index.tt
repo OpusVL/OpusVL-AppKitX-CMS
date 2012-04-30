@@ -28,6 +28,7 @@
                         </td>
                         <td>
                             <a href="[% c.uri_for(c.controller.action_for('edit_asset'), asset.id) %]" class="link">Edit</a>
+                            <a href="[% c.uri_for(c.controller.action_for('delete_asset'), asset.id) %]" class="link">Delete</a>
                             <a href="[% c.uri_for(c.controller('Root').action_for('_asset'), asset.id, asset.filename) %]" class="link" target="__blank">View</a>
                         </td>
                     </tr>

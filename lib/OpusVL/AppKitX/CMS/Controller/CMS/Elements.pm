@@ -10,7 +10,7 @@ __PACKAGE__->config
     appkit_name                 => 'CMS',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
-    appkit_js                     => ['/static/js/nicEdit.js', '/static/js/cms.js'],
+    #appkit_js                     => ['/static/js/nicEdit.js', '/static/js/cms.js'],
     # appkit_method_group         => 'Extension A',
     # appkit_method_group_order   => 2,
     appkit_shared_module        => 'CMS',
@@ -42,7 +42,7 @@ sub auto :Private {
 sub index :Path :Args(0) :NavigationName('Elements') {
     my ($self, $c) = @_;
     
-    $c->stash->{elements} = [$c->model('CMS::Elements')->all];
+    $c->stash->{elements} = [$c->model('CMS::Elements')->published->all];
 }
 
 
@@ -50,11 +50,8 @@ sub index :Path :Args(0) :NavigationName('Elements') {
 
 sub new_element :Local :Args(0) :AppKitForm {
     my ($self, $c) = @_;
-
-    push @{ $c->stash->{breadcrumbs} }, {
-        name    => 'New element',
-        url     => $c->req->uri,
-    };
+    
+    $self->add_final_crumb($c, "New element");
     
     my $form = $c->stash->{form};
     if ($form->submitted_and_valid) {
@@ -74,13 +71,10 @@ sub new_element :Local :Args(0) :AppKitForm {
 sub edit_element :Local :Args(1) :AppKitForm {
     my ($self, $c, $element_id) = @_;
 
-    push @{ $c->stash->{breadcrumbs} }, {
-        name    => 'Edit element',
-        url     => $c->req->uri,
-    };
+    $self->add_final_crumb($c, "Edit element");
     
     my $form    = $c->stash->{form};
-    my $element = $c->model('CMS::Elements')->find({id => $element_id});
+    my $element = $c->model('CMS::Elements')->published->find({id => $element_id});
     
     $form->default_values({
         name    => $element->name,
@@ -100,6 +94,28 @@ sub edit_element :Local :Args(1) :AppKitForm {
         
         $c->res->redirect($c->uri_for($c->controller->action_for('index')));
     }
+}
+
+
+#-------------------------------------------------------------------------------
+
+sub delete_element :Local :Args(1) :AppKitForm {
+    my ($self, $c, $element_id) = @_;
+
+    $self->add_final_crumb($c, "Delete element");
+    
+    my $form    = $c->stash->{form};
+    my $element = $c->model('CMS::Elements')->find({id => $element_id});
+
+    if ($form->submitted_and_valid) {
+        $element->remove;
+        
+        $c->flash->{status_msg} = "Element deleted";
+        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->detach;
+    }
+    
+    $c->stash->{element} = $element;
 }
 
 

@@ -1,4 +1,8 @@
 [% META appkitfeature_tablesorter = 1 %]
 [% PROCESS modules/cms/preprocess.tt %]
 <h1>Edit template</h1>
+<<<<<<< HEAD
+=======
+
+>>>>>>> aee2eeb5174ad4a2319d991b0664dee457d7c3e3
 [% form.render | none %]

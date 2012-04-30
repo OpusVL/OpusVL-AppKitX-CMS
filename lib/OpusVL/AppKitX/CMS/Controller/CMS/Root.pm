@@ -11,10 +11,10 @@ sub default :Private {
     
     $c->log->debug("********** Running CMS lookup against:" . $c->req->path );
     
-    if (my $page = $c->model('CMS::Pages')->find({url => '/'.$c->req->path})) {
+    if (my $page = $c->model('CMS::Pages')->published->find({url => '/'.$c->req->path})) {
         $c->stash->{me} = $page;
         $c->stash->{asset} = sub {
-            if (my $asset = $c->model('CMS::Assets')->find({id => shift})) {
+            if (my $asset = $c->model('CMS::Assets')->published->find({id => shift})) {
                 return $c->uri_for($c->controller->action_for('_asset'), $asset->id, $asset->filename);
             }
         };
@@ -24,7 +24,7 @@ sub default :Private {
             }
         };
         $c->stash->{element} = sub {
-            if (my $element = $c->model('CMS::Elements')->find({id => shift})) {
+            if (my $element = $c->model('CMS::Elements')->published->find({id => shift})) {
                 my $content = $element->content;
                 return $c->view('CMS::Element')->render($c, \$content);
             }
@@ -41,13 +41,13 @@ sub default :Private {
             $c->stash->{no_wrapper} = 1;
         }
         
-        $c->log->debug("Template:");
-        $c->log->debug(${$c->stash->{template}});
+        #$c->log->debug("Template:");
+        #$c->log->debug(${$c->stash->{template}});
         
         #$c->response->body($c->view('CMS')->render($c, $c->stash->{template}));
         $c->forward($c->view('CMS::Page'));
     } else {
-        if (my $page = $c->model('CMS::Pages')->find({url => '/404'})) {
+        if (my $page = $c->model('CMS::Pages')->published->find({url => '/404'})) {
             $c->stash->{page} = $page;
             
             if (my $template = $page->template->content) {
@@ -63,7 +63,7 @@ sub default :Private {
 sub _asset :Local :Args(2) {
     my ($self, $c, $asset_id, $filename) = @_;
     
-    if (my $asset = $c->model('CMS::Assets')->find({id => $asset_id})) {
+    if (my $asset = $c->model('CMS::Assets')->published->find({id => $asset_id})) {
         $c->response->content_type($asset->mime_type);
         $c->response->body($asset->content);
     } else {

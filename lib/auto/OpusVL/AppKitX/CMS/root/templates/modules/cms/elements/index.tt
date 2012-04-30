@@ -16,7 +16,10 @@
                     <tr>
                         <td>[% element.id %]</td>
                         <td>[% element.name %]</td>
-                        <td><a href="[% c.uri_for(c.controller.action_for('edit_element'), element.id) %]">Edit</a></td>
+                        <td>
+                            <a href="[% c.uri_for(c.controller.action_for('edit_element'), element.id) %]">Edit</a>
+                            <a href="[% c.uri_for(c.controller.action_for('delete_element'), element.id) %]">Delete</a>
+                        </td>
                     </tr>
                 [% END %]
             </tbody>

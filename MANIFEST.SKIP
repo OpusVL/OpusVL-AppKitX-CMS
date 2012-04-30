@@ -12,4 +12,4 @@ Makefile$
 Makefile.old$
 ^OpusVL-AppKitX-CMS-
 ^.gitignore
-
+testapp_local.conf
