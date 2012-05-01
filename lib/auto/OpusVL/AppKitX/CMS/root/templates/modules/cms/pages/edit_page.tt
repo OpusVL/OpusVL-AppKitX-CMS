@@ -13,6 +13,7 @@
         <li><a href="#tab_content">Content</a>
         <li><a href="#tab_attachments">Attachments</a>
         <li><a href="#tab_tags">Tags</a>
+        <li><a href="#tab_aliases">Aliases</a>
     </ul>
     
     <div id="tab_details">
@@ -91,6 +92,11 @@
         [% END %]
         [% form.get_all_element( 'name' => 'page_tags' ).render | none %]
         [% form.get_all_element( 'name' => 'new_page_tag' ).render | none %]
+    </div>
+
+    <div id="tab_aliases">
+        [% form.get_all_element( 'name' => 'page_aliases' ).render | none %]
+        [% form.get_all_element( 'name' => 'new_page_alias' ).render | none %]
     </div>
 </div>
 

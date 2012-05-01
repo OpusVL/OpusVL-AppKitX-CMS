@@ -104,6 +104,18 @@ elements:
             label: Select tag
             empty_first: true
 
+      - type: Fieldset
+        legend: Existing aliases
+        name: page_aliases
+
+      - type: Fieldset
+        legend: New alias
+        name: new_page_alias
+        elements:
+          - type: Text
+            name: new_alias_url
+            label: URL *
+
   - type: Submit
     name: submit
     value: Save

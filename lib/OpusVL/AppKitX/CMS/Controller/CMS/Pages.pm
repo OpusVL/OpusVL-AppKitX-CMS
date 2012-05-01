@@ -137,6 +137,34 @@ sub edit_page :Local :Args(1) :AppKitForm {
             content => 'No tags have been added to this page',
         });
     }
+
+    my $aliases_fieldset = $form->get_all_element({name=>'page_aliases'});
+    if (my @aliases = $page->search_related('aliases')) {
+        foreach my $alias (@aliases) {
+            $aliases_fieldset->element({
+                type     => 'Multi',
+                label    => 'URL',
+                elements => [
+                    {
+                        type  => 'Text',
+                        name  => 'alias_url_' . $alias->id,
+                        value => $alias->url,
+                    },
+                    {
+                        type  => 'Checkbox',
+                        name  => 'delete_alias_' . $alias->id,
+                        label => 'Delete',
+                    },
+                ]
+            });
+        }
+    } else {
+        $aliases_fieldset->element({
+            type    => 'Block',
+            tag     => 'p',
+            content => 'No aliases have been created for this page',
+        });
+    }
     
     $form->default_values({
         url         => $page->url,
@@ -182,10 +210,26 @@ sub edit_page :Local :Args(1) :AppKitForm {
             $attachment->set_content($file->slurp);
         }
         
-        foreach my $param (keys %{$c->req->params}) {
+        PARAM: foreach my $param (keys %{$c->req->params}) {
             if ($param =~ /delete_tag_(\d+)/) {
-                if (my $tag = $page->search_related('pagetags', {id => $1})) {
+                if (my $tag = $page->find_related('pagetags', {id => $1})) {
                     $tag->delete;
+                }
+            }
+            
+            if ($param =~ /delete_alias_(\d+)/) {
+                if (my $alias = $page->find_related('aliases', {id => $1})) {
+                    $alias->delete;
+                }
+            }
+
+            if ($param =~ /alias_url_(\d+)/) {
+                if (my $alias = $page->find_related('aliases', {id => $1})) {
+                    my $alias_url = $form->param_value($param);
+                    unless ($alias_url =~ m!^/!) {$alias_url = "/$url"}
+                    if ($alias_url ne $alias->url) {
+                        $alias->update({url => $alias_url});
+                    }
                 }
             }
         }
@@ -193,6 +237,11 @@ sub edit_page :Local :Args(1) :AppKitForm {
         if (my $tag_id = $form->param_value('new_tag')) {
             # FIXME: validate that we are allowed to add this tag
             $page->create_related('pagetags', {tag_id => $tag_id});
+        }
+
+        if (my $alias_url = $form->param_value('new_alias_url')) {
+            unless ($alias_url =~ m!^/!) {$alias_url = "/$url"}
+            $page->create_related('aliases', {url => $alias_url});
         }
         
         $c->flash->{status_msg} = "Your changes have been saved";
