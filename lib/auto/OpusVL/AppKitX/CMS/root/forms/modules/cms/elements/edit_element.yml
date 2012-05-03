@@ -17,19 +17,23 @@ elements:
             label: Name *
             constraints:
               - type: Required
-            
+          
           - type: Block
             attributes:
-                id: "editor-controls"
-            
-          - type: Textarea
-            name: content
-            #label: Content *
-            attributes:
-                id: wysiwyg
-                style: "width: 584px;"
-            constraints:
-              - type: Required
+                class: label
+            elements:
+              - type: Block
+                attributes:
+                    id: "editor-controls"
+                
+              - type: Textarea
+                name: content
+                #label: Content *
+                attributes:
+                    id: wysiwyg
+                    style: "width: 584px;"
+                constraints:
+                  - type: Required
 
   - type: Submit
     name: submit
