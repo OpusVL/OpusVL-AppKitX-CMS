@@ -11,3 +11,6 @@ Makefile.old
 OpusVL-AppKitX-CMS-*
 .DS_Store
 testapp_local.conf
+
+MANIFEST.bak
+MYMETA.yml
