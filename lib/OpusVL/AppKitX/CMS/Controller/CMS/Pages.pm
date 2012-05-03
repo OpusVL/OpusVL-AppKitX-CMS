@@ -64,6 +64,10 @@ sub new_page :Local :Args(0) :AppKitForm {
     $form->get_all_element({name=>'parent'})->options(
         [map {[$_->id, $_->breadcrumb . " - " . $_->url]} $c->model('CMS::Pages')->all]
     );
+    
+    $form->default_values({
+        parent => $c->req->param('parent_id'),
+    });
 
     $form->process;
     
