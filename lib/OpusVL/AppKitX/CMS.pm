@@ -22,18 +22,6 @@ after 'setup_components' => sub {
 
     CatalystX::InjectComponent->inject(
         into      => $class,
-        component => 'OpusVL::AppKitX::CMS::View::CMS',
-        as        => 'View::CMS::Page'
-    );
-
-    CatalystX::InjectComponent->inject(
-        into      => $class,
-        component => 'OpusVL::AppKitX::CMS::View::CMS',
-        as        => 'View::CMS::Element'
-    );
-
-    CatalystX::InjectComponent->inject(
-        into      => $class,
         component => 'OpusVL::AppKitX::CMS::View::CMS::Ajax',
         as        => 'View::CMS::Ajax'
     );
