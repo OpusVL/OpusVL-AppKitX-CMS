@@ -7,21 +7,53 @@
 
 [% form.start | none %]
 
+<div class="content_block tab_header">
+    <div class="column">
+        <table class="vertical_list">
+            <tr>
+                <th>Title</th>
+                <td>[% form.get_all_element('title').render | none %]</td>
+            </tr>
+            <tr>
+                <th>URL</th>
+                <td>[% form.get_all_element('url').render | none %]</td>
+            </tr>
+            <tr>
+                <th>Breadcrumb</th>
+                <td>[% form.get_all_element('breadcrumb').render | none %]</td>
+            </tr>
+        </table>
+    </div>
+    <div class="column">
+        <table class="vertical_list">
+            <tr>
+                <td colspan="2"><a href="[% IF c.config.cms_base_url %][% c.config.cms_base_url %][% page.url %][% ELSE %][% c.uri_for(page.url) %][% END %]"">View page</a></td>
+            </tr>
+            [% IF (parent = page.parent) %]
+                <tr><td><a href="[% c.uri_for(c.controller.action_for('edit_page'), parent.id) %]">Go to parent ([% parent.breadcrumb %])</a></td></tr>
+            [% END %]
+            <tr>
+                <td colspan="2"><a href="[% c.uri_for(c.controller.action_for('new_page'), {'parent_id' => page.id}) %]">Create child</a></td>
+            </tr>
+        </table>
+    </div>
+</div>
+
 <div class="tabbed_content_block">
     <ul>
-        <li><a href="#tab_details">Details</a>
         <li><a href="#tab_content">Content</a>
+        <li><a href="#tab_details">Metadata</a>
         <li><a href="#tab_attachments">Attachments</a>
         <li><a href="#tab_tags">Tags</a>
         <li><a href="#tab_aliases">Aliases</a>
     </ul>
     
-    <div id="tab_details">
-        [% form.get_all_element( 'name' => 'page_details' ).render | none %]
-    </div>
-
     <div id="tab_content">
         [% form.get_all_element( 'name' => 'page_content' ).render | none %]
+    </div>
+
+    <div id="tab_details">
+        [% form.get_all_element( 'name' => 'page_details' ).render | none %]
     </div>
 
     <div id="tab_attachments">

@@ -9,16 +9,25 @@ elements:
     attributes:
       class: "content_block controls"
     elements:
+      - type: Text
+        name: title
+        constraints:
+          - type: Required
+      
+      - type: Text
+        name: breadcrumb
+        constraints:
+          - type: Required
+          
+      - type: Text
+        name: url
+        constraints:
+          - type: Required
+          
       - type: Fieldset
         legend: Page details
         name: page_details
         elements:
-          - type: Text
-            name: url
-            label: URL *
-            constraints:
-              - type: Required
-          
           - type: Select
             name: parent
             label: Parent
@@ -27,22 +36,6 @@ elements:
           - type: Select
             name: template
             label: Template
-          
-          - type: Text
-            name: title
-            label: Title *
-            constraints:
-              - type: Required
-          
-          - type: Text
-            name: breadcrumb
-            label: Breadcrumb *
-            constraints:
-              - type: Required
-          
-          - type: Text
-            name: h1
-            label: H1 Heading
           
           - type: Text
             name: priority
@@ -59,17 +52,25 @@ elements:
         legend: Page content
         name: page_content
         elements:
+          - type: Text
+            name: h1
+            label: H1 Heading
+          
           - type: Block
             attributes:
-                id: "editor-controls"
-
-          - type: Textarea
-            name: content
-            cols: 71
-            attributes:
-                id: wysiwyg
-            constraints:
-              - type: Required
+                class: label
+            elements:
+              - type: Block
+                attributes:
+                    id: "editor-controls"
+    
+              - type: Textarea
+                name: content
+                cols: 71
+                attributes:
+                    id: wysiwyg
+                constraints:
+                  - type: Required
 
       - type: Fieldset
         legend: New attachment

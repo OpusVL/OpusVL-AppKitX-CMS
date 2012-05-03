@@ -1,3 +1,5 @@
+/* @override http://localhost:3000/static/css/cms.css */
+
 .hidden { display: none; }
 textarea { width: 100%; }
 
@@ -67,4 +69,23 @@ textarea#wysiwyg {
     width: 584px;
     height: 300px;
     /*padding:10px;*/
+}
+
+div.content_block.tab_header {
+	padding-bottom: 0;
+}
+
+div.column {
+	float: left;
+	margin-right: 30px;
+	margin-top: 5px;
+	margin-bottom: 13px;
+}
+
+div.tab_header input {
+	font-size: 0.9em;
+}
+
+div.tab_header th {
+	padding-top: 5px;
 }
