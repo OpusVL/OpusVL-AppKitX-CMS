@@ -22,7 +22,12 @@
             [% WHILE (a = assets.next) %]
                 <tr>
                     <td>[% a.id %]</td>
-                    <td><a href="javascript:;" rel="[% a.id %]" class="insert-asset link">[% a.filename %]</a></td>
+                    <td>
+                        <a href="javascript:;" rel="[% a.id %]" class="insert-asset link">[% a.filename %]</a>
+                        [% IF a.mime_type.match('^image') %]
+                            - <a href="javascript:;" rel="[% a.id %]" class="insert-asset-thumbnail link">Thumbnail</a>
+                        [% END %]
+                    </td>
                     <td>[% a.mime_type %]</td>
                 </tr>
             [% END %]
@@ -153,6 +158,16 @@
                 $('#wysiwyg').wysiwyg("insertHtml", "&#91;% asset(" +  asset_id + ") %&#93");
             else
                 insertAtCaret('wysiwyg', "[" + "%" + " asset(" +  asset_id + ") %" + "]");
+    
+            $('#assets').dialog('close');
+        });
+
+        $('.insert-asset-thumbnail').click(function() {
+            var asset_id = $(this).attr('rel');
+            if (editorState == 'GUI')
+                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% thumbnail('asset', " +  asset_id + ") %&#93");
+            else
+                insertAtCaret('wysiwyg', "[" + "%" + " thumbnail('asset', " +  asset_id + ") %" + "]");
     
             $('#assets').dialog('close');
         });
