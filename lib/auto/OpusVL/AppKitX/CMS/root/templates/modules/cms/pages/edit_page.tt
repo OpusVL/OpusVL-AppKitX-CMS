@@ -132,6 +132,10 @@
     </div>
 </div>
 
+<script type="text/javascript">
+    $('#editor-controls').load('/modules/cms/ajax/load_controls?page_id=[% page.id %]');
+</script>
+
 [% form.get_all_element( 'name' => 'submit' ).render | none %]
 [% form.get_all_element( 'name' => 'cancel' ).render | none %]
 [% form.end | none %]

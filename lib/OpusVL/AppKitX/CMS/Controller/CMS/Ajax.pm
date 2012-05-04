@@ -41,6 +41,10 @@ sub load_controls :Local :Args(0) {
     $c->stash->{assets}   = $c->model('CMS::Assets')->published;
     $c->stash->{elements} = $c->model('CMS::Elements')->published;
     $c->stash->{pages}    = $c->model('CMS::Pages')->published;
+    
+    if (my $page_id = $c->req->param('page_id')) {
+        $c->stash->{page} = $c->model('CMS::Pages')->published->find({id => $page_id});
+    }
 }
 
 return qr|I'll get you next time gadget, next time!|; 

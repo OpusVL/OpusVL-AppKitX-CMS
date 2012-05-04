@@ -4,6 +4,11 @@
 </span>
 <button type="button" class="btn" href="javascript:;" id="show-assets">Assets</button>
 <button type="button" class="btn" href="javascript:;" id="show-elements">Elements</button>
+
+[% IF page %]
+    <button type="button" class="btn" href="javascript:;" id="show-attachments">Attachments</button>
+[% END %]
+
 <button type="button" class="btn" href="javascript:;" id="show-pages">Pages</button>
 <div style="margin-bottom:5px !important" class="clear"></div>
 
@@ -57,6 +62,37 @@
     </table>
     </p>
 </div>
+
+[% IF page %]
+    <div id="attachments" style="display:none" title="Available Attachments">
+        <h3>Select an Attachment</h3>
+        <p>
+        <table class="tablesorter">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Filename</th>
+                    <th>Mime Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                [% FOREACH a IN page.attachments_rs.published %]
+                    <tr>
+                        <td>[% a.id %]</td>
+                        <td>
+                            <a href="javascript:;" rel="[% a.id %]" class="insert-attachment link">[% a.filename %]</a>
+                            [% IF a.mime_type.match('^image') %]
+                                - <a href="javascript:;" rel="[% a.id %]" class="insert-attachment-thumbnail link">Thumbnail</a>
+                            [% END %]
+                        </td>
+                        <td>[% a.mime_type %]</td>
+                    </tr>
+                [% END %]
+            </tbody>
+        </table>
+        </p>
+    </div>
+[% END %]
 
 <div id="pages" style="display:none" title="Available Pages">
     <h3>Select a Page</h3>
@@ -143,6 +179,15 @@
             },
         });
 
+        $('#attachments').dialog({
+            autoOpen : false,
+            modal    : true,
+            width    : 700,
+            buttons  : {
+                Close : function() { $(this).dialog('close'); },
+            },
+        });
+        
         $('#pages').dialog({
             autoOpen : false,
             modal    : true,
@@ -170,6 +215,26 @@
                 insertAtCaret('wysiwyg', "[" + "%" + " thumbnail('asset', " +  asset_id + ") %" + "]");
     
             $('#assets').dialog('close');
+        });
+
+        $('.insert-attachment').click(function() {
+            var attachment_id = $(this).attr('rel');
+            if (editorState == 'GUI')
+                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% attachment(" +  attachment_id + ") %&#93");
+            else
+                insertAtCaret('wysiwyg', "[" + "%" + " attachment(" +  attachment_id + ") %" + "]");
+    
+            $('#attachments').dialog('close');
+        });
+
+        $('.insert-attachment-thumbnail').click(function() {
+            var attachment_id = $(this).attr('rel');
+            if (editorState == 'GUI')
+                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% thumbnail('attachment', " +  attachment_id + ") %&#93");
+            else
+                insertAtCaret('wysiwyg', "[" + "%" + " thumbnail('attachment', " +  attachment_id + ") %" + "]");
+    
+            $('#attachments').dialog('close');
         });
 
         $('.insert-element').click(function() {
@@ -201,6 +266,12 @@
         $('button#show-elements').click(function() {
             $('#elements').dialog('open');
         });
+
+        [% IF page %]
+            $('button#show-attachments').click(function() {
+                $('#attachments').dialog('open');
+            });
+        [% END %]
 
         $('button#show-pages').click(function() {
             $('#pages').dialog('open');

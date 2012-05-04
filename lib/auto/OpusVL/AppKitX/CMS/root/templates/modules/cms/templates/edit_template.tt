@@ -3,3 +3,7 @@
 <h1>Edit template</h1>
 
 [% form.render | none %]
+
+<script type="text/javascript">
+    $('#editor-controls').load('/modules/cms/ajax/load_controls');
+</script>
