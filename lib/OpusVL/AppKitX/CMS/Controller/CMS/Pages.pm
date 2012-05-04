@@ -313,4 +313,85 @@ sub delete_attachment :Local :Args(1) :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
+sub edit_attachment :Local :Args(1) :AppKitForm {
+    my ($self, $c, $attachment_id) = @_;
+    
+    $self->add_final_crumb($c, 'Delete attachment');
+    
+    my $attachment = $c->model('CMS::Attachments')->find({id => $attachment_id});
+    my $form       = $c->stash->{form};
+
+    $form->default_values({
+        description => $attachment->description,
+        priority    => $attachment->priority,
+    });
+
+    my $tags_fieldset = $form->get_all_element({name=>'att_tags'});
+    if (my @att_tags = $attachment->search_related('tag_links')) {
+        foreach my $tag_link (@att_tags) {
+            my $tag = $tag_link->tag;
+            $tags_fieldset->element({
+                type     => 'Multi',
+                label    => $tag->group->name . ' - ' . $tag->name,
+                elements => [
+                    {
+                        type  => 'Checkbox',
+                        name  => 'delete_tag_' . $tag_link->id,
+                        label => 'Delete',
+                    }
+                ]
+            });
+        }
+    } else {
+        $tags_fieldset->element({
+            type    => 'Block',
+            tag     => 'p',
+            content => 'No tags have been added to this attachment',
+        });
+    }
+    
+    $form->get_all_element({name=>'new_tag'})->options(
+        [map {[$_->id, $_->group->name . " - " . $_->name]} $c->model('CMS::Tags')->all]
+    );
+    
+    $form->process;
+
+    if ($c->req->param('cancel')) {
+        $c->res->redirect($c->uri_for($c->controller->action_for('edit_page'), $attachment->page_id) . '#tab_attachments');
+        $c->detach;
+    }
+    
+    if ($form->submitted_and_valid) {
+        $attachment->update({
+            description => $form->param_value('description'),
+            priority    => $form->param_value('priority'),
+        });
+
+        if (my $file = $c->req->upload('file')) {
+            $attachment->set_content($file->slurp);
+        }
+        
+        PARAM: foreach my $param (keys %{$c->req->params}) {
+            if ($param =~ /delete_tag_(\d+)/) {
+                if (my $tag = $attachment->find_related('tag_links', {id => $1})) {
+                    $tag->delete;
+                }
+            }
+        }
+
+        if (my $tag_id = $form->param_value('new_tag')) {
+            # FIXME: validate that we are allowed to add this tag
+            $attachment->create_related('tag_links', {tag_id => $tag_id});
+        }
+
+        $c->res->redirect($c->uri_for($c->controller->action_for('edit_page'), $attachment->page_id) . '#tab_attachments');
+        $c->detach;        
+    }
+
+    $c->stash->{attachment} = $attachment;
+}
+
+
+#-------------------------------------------------------------------------------
+
 1;

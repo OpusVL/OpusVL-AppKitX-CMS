@@ -1,0 +1,55 @@
+[% PROCESS modules/cms/preprocess.tt %]
+<h1>Edit page</h1>
+[% META appkitfeature_tablesorter = 1 %]
+
+[% form.start | none %]
+
+<div class="content_block tab_header">
+    <div class="column">
+        <table class="vertical_list">
+            <tr>
+                <th>Filename</th>
+                <td>[% attachment.filename %]</td>
+            </tr>
+            <tr>
+                <th>MIME type</th>
+                <td>[% attachment.mime_type %]</td>
+            </tr>
+        </table>
+    </div>
+    <div class="column">
+        <table class="vertical_list">
+            <tr>
+                <td colspan="2"><a href="[% IF c.config.cms_base_url %][% c.config.cms_base_url %]/_attachment/[% attachment.id %]/[% attachment.filename %][% ELSE %][% c.uri_for(c.controller('Root').action_for('_attachment'), attachment.id, attachment.filename) %][% END %]"">View attachment</a></td>
+            </tr>
+            <tr>
+                <td colspan="2"><a href="[% c.uri_for(c.controller.action_for('edit_page'), attachment.page_id) %]">Edit page</a></td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="tabbed_content_block">
+    <ul>
+        <li><a href="#tab_content">Content</a>
+        <li><a href="#tab_metadata">Metadata</a>
+        <li><a href="#tab_tags">Tags</a>
+    </ul>
+    
+    <div id="tab_content">
+        [% form.get_all_element( 'name' => 'content' ).render | none %]
+    </div>
+
+    <div id="tab_metadata">
+        [% form.get_all_element( 'name' => 'metadata' ).render | none %]
+    </div>
+
+    <div id="tab_tags">
+        [% form.get_all_element( 'name' => 'att_tags' ).render | none %]
+        [% form.get_all_element( 'name' => 'new_page_tag' ).render | none %]
+    </div>
+</div>
+
+[% form.get_all_element( 'name' => 'submit' ).render | none %]
+[% form.get_all_element( 'name' => 'cancel' ).render | none %]
+[% form.end | none %]

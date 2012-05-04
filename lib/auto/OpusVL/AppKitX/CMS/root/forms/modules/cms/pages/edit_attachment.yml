@@ -1,0 +1,53 @@
+---
+indicator: submit
+auto_fieldset: 0
+form_error_message: Oops, looks like there was a problem - please check below and try again.
+
+elements:
+  - type: Fieldset
+    legend: Update file
+    name: content
+    elements:
+      - type: File
+        name: file
+        label: Select file
+
+  - type: Fieldset
+    legend: Metadata
+    name: metadata
+    elements:
+      - type: Text
+        name: description
+        label: Description
+      
+      - type: Text
+        name: priority
+        label: Priority *
+        constraints:
+          - type: Required
+          - type: Integer
+        
+  - type: Fieldset
+    legend: Existing tags
+    name: att_tags
+
+  - type: Fieldset
+    legend: New tag
+    name: new_page_tag
+    elements:
+      - type: Select
+        name: new_tag
+        label: Select tag
+        empty_first: true
+
+  - type: Submit
+    name: submit
+    value: Save
+    attributes:
+      class: "submit submit_add"
+
+  - type: Submit
+    name: cancel
+    value: Cancel
+    attributes:
+      class: "submit submit_cancel"
