@@ -66,6 +66,7 @@ textarea#wysiwyg {
     color: #333;
     font-weight: bold;
     font-family: "Courier New", Courier, monospace;
+    font-size: 12px;
     width: 584px;
     height: 300px;
     /*padding:10px;*/
