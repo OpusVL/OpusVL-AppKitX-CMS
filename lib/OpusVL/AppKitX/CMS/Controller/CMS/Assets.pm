@@ -108,6 +108,11 @@ sub edit_asset :Local :Args(1) :AppKitForm {
         
         if (my $file = $c->req->upload('file')) {
             $asset->set_content($file->slurp);
+
+            $asset->update({
+                filename  => $file->basename,
+                mime_type => $file->type,
+            });
         } else {
             if ($form->param_value('content') ne $asset->content) {
                 $asset->set_content($form->param_value('content'));

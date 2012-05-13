@@ -369,6 +369,10 @@ sub edit_attachment :Local :Args(1) :AppKitForm {
 
         if (my $file = $c->req->upload('file')) {
             $attachment->set_content($file->slurp);
+            $attachment->update({
+                filename  => $file->basename,
+                mime_type => $file->type,
+            });
         }
         
         PARAM: foreach my $param (keys %{$c->req->params}) {
