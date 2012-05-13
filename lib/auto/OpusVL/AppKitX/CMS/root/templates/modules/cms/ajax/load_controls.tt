@@ -200,9 +200,9 @@
         $('.insert-asset').click(function() {
             var asset_id = $(this).attr('rel');
             if (editorState == 'GUI')
-                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% asset(" +  asset_id + ") %&#93");
+                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% cms.asset(" +  asset_id + ") %&#93");
             else
-                insertAtCaret('wysiwyg', "[" + "%" + " asset(" +  asset_id + ") %" + "]");
+                insertAtCaret('wysiwyg', "[" + "%" + " cms.asset(" +  asset_id + ") %" + "]");
     
             $('#assets').dialog('close');
         });
@@ -210,9 +210,9 @@
         $('.insert-asset-thumbnail').click(function() {
             var asset_id = $(this).attr('rel');
             if (editorState == 'GUI')
-                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% thumbnail('asset', " +  asset_id + ") %&#93");
+                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% cms.thumbnail('asset', " +  asset_id + ") %&#93");
             else
-                insertAtCaret('wysiwyg', "[" + "%" + " thumbnail('asset', " +  asset_id + ") %" + "]");
+                insertAtCaret('wysiwyg', "[" + "%" + " cms.thumbnail('asset', " +  asset_id + ") %" + "]");
     
             $('#assets').dialog('close');
         });
@@ -220,9 +220,9 @@
         $('.insert-attachment').click(function() {
             var attachment_id = $(this).attr('rel');
             if (editorState == 'GUI')
-                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% attachment(" +  attachment_id + ") %&#93");
+                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% cms.attachment(" +  attachment_id + ") %&#93");
             else
-                insertAtCaret('wysiwyg', "[" + "%" + " attachment(" +  attachment_id + ") %" + "]");
+                insertAtCaret('wysiwyg', "[" + "%" + " cms.attachment(" +  attachment_id + ") %" + "]");
     
             $('#attachments').dialog('close');
         });
@@ -230,9 +230,9 @@
         $('.insert-attachment-thumbnail').click(function() {
             var attachment_id = $(this).attr('rel');
             if (editorState == 'GUI')
-                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% thumbnail('attachment', " +  attachment_id + ") %&#93");
+                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% cms.thumbnail('attachment', " +  attachment_id + ") %&#93");
             else
-                insertAtCaret('wysiwyg', "[" + "%" + " thumbnail('attachment', " +  attachment_id + ") %" + "]");
+                insertAtCaret('wysiwyg', "[" + "%" + " cms.thumbnail('attachment', " +  attachment_id + ") %" + "]");
     
             $('#attachments').dialog('close');
         });
@@ -240,9 +240,9 @@
         $('.insert-element').click(function() {
             var element_id = $(this).attr('rel');
             if (editorState == 'GUI')
-                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% element(" +  element_id + ") %&#93");
+                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% cms.element(" +  element_id + ") %&#93");
             else
-                insertAtCaret('wysiwyg', "[" + "%" + " element(" +  element_id + ") %" + "]");
+                insertAtCaret('wysiwyg', "[" + "%" + " cms.element(" +  element_id + ") %" + "]");
     
             $('#elements').dialog('close');
         });
@@ -250,9 +250,9 @@
         $('.insert-page').click(function() {
             var page_id = $(this).attr('rel');
             if (editorState == 'GUI')
-                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% page(" +  page_id + ").url %&#93");
+                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% cms.page(" +  page_id + ").url %&#93");
             else
-                insertAtCaret('wysiwyg', "[" + "%" + " page(" +  page_id + ").url %" + "]");
+                insertAtCaret('wysiwyg', "[" + "%" + " cms.page(" +  page_id + ").url %" + "]");
     
             $('#pages').dialog('close');
         });
