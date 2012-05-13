@@ -1,6 +1,6 @@
 <span class="btn-group" data-toggle="buttons-radio">
-    <button type="button" class="btn" onclick="wysiwygDestroy()" id="wysiwyg-destroy">Raw</button>
-    <button type="button" class="btn active" onclick="wysiwygCreate()" id="wysiwyg-create">GUI</button>
+    <button type="button" class="btn active" onclick="wysiwygDestroy()" id="wysiwyg-destroy">Raw</button>
+    <button type="button" class="btn" onclick="wysiwygCreate()" id="wysiwyg-create">GUI</button>
 </span>
 <button type="button" class="btn" href="javascript:;" id="show-assets">Assets</button>
 <button type="button" class="btn" href="javascript:;" id="show-elements">Elements</button>
@@ -121,7 +121,7 @@
 <script type="text/javascript">
     
     var wobi, editorState;
-    editorState = 'GUI';
+    editorState = 'Raw';
     function wysiwygDestroy() { editorState = 'Raw'; wob.wysiwyg("destroy"); }
     function wysiwygCreate() { editorState = 'GUI'; wob.wysiwyg(); }
     
@@ -258,7 +258,7 @@
         });
         
         wob = $('#wysiwyg');
-        wob.wysiwyg();
+        //wob.wysiwyg();
         $('button#show-assets').click(function() {
             $('#assets').dialog('open');
         });
