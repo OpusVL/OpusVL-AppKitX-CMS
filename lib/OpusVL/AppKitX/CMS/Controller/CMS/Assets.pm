@@ -96,6 +96,7 @@ sub edit_asset :Local :Args(1) :AppKitForm {
         $fieldset->element({
             type  => 'Textarea',
             name  => 'content',
+            id    => 'wysiwyg',
             label => 'Content',
         });
         
