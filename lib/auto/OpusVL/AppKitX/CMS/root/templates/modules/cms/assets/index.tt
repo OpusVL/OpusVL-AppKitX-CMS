@@ -41,3 +41,4 @@
 </div>
 
 <a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('new_asset')) %]">New asset</a>
+<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('upload_asset')) %]">Upload asset</a>

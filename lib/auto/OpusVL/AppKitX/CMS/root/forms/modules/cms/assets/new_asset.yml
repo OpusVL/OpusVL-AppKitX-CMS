@@ -12,15 +12,31 @@ elements:
       - type: Fieldset
         legend: Asset details
         elements:
-          - type: File
-            name: file
-            label: Asset file *
+          - type: Text
+            name: filename
+            label: Filename *
             constraints:
               - type: Required
+          
+          - type: Select
+            name: mime_type
+            label: MIME type *
+            options:
+              - ['text/css','text/css']
+              - ['text/javascript','text/javascript']
+              - ['text/plain','text/plain']
+              - ['text/html','text/html']
              
           - type: Text
             name: description
             label: Description
+            
+          - type: Textarea
+            name: content
+            id: wysiwyg
+            label: Content *
+            constraints:
+              - type: Required
 
   - type: Submit
     name: submit

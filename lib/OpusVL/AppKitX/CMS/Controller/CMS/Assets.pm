@@ -10,8 +10,8 @@ __PACKAGE__->config
     appkit_name                 => 'CMS',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
-    appkit_css                  => ['/static/css/facebox.css'],
-    appkit_js                   => ['/static/js/facebox.js'],
+    appkit_css                  => ['/static/css/cms.css'],
+    appkit_js                   => ['/static/js/cms.js'],
     #appkit_js                   => ['/static/js/facebox.js', '/static/js/cms.js'],
     # appkit_method_group         => 'Extension A',
     # appkit_method_group_order   => 2,
@@ -50,6 +50,15 @@ sub index :Path :Args(0) :NavigationName('Assets') {
 
 #-------------------------------------------------------------------------------
 
+sub upload_asset :Local :Args(0) {
+    my ($self, $c) = @_;
+
+    $self->add_final_crumb($c, "Upload assets");
+}
+
+
+#-------------------------------------------------------------------------------
+
 sub new_asset :Local :Args(0) :AppKitForm {
     my ($self, $c) = @_;
 
@@ -57,15 +66,15 @@ sub new_asset :Local :Args(0) :AppKitForm {
     
     my $form = $c->stash->{form};
     if ($form->submitted_and_valid) {
-        my $file  = $c->req->upload('file');
         my $asset = $c->model('CMS::Assets')->create({
             description => $form->param_value('description'),
-            mime_type   => $file->type,
-            filename    => $file->basename,
+            mime_type   => $form->param_value('mime_type'),
+            filename    => $form->param_value('filename'),
         });
         
-        $asset->set_content($file->slurp);
+        $asset->set_content($form->param_value('content'));
         
+        $c->flash->{status_msg} = 'New asset created';
         $c->res->redirect($c->uri_for($c->controller->action_for('index')));
     }
 }
