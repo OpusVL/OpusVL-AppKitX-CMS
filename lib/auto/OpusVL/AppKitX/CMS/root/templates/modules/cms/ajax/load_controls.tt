@@ -240,9 +240,9 @@
         $('.insert-element').click(function() {
             var element_id = $(this).attr('rel');
             if (editorState == 'GUI')
-                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% cms.element(" +  element_id + ") %&#93");
+                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% cms.element(" +  element_id + ") | eval %&#93");
             else
-                insertAtCaret('wysiwyg', "[" + "%" + " cms.element(" +  element_id + ") %" + "]");
+                insertAtCaret('wysiwyg', "[" + "%" + " cms.element(" +  element_id + ") | eval %" + "]");
     
             $('#elements').dialog('close');
         });
