@@ -1,0 +1,2 @@
+<h1>Edit values [% value.name %] ([% value.code %])</h1>
+[% form.render | none %]

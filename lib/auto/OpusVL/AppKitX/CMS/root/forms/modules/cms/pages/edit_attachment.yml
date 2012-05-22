@@ -28,17 +28,14 @@ elements:
           - type: Integer
         
   - type: Fieldset
-    legend: Existing tags
-    name: att_tags
-
-  - type: Fieldset
-    legend: New tag
-    name: new_page_tag
+    legend: Attributes
+    name: global_fields
     elements:
-      - type: Select
-        name: new_tag
-        label: Select tag
-        empty_first: true
+
+      - type: Block
+        tag: p
+        name: no_fields
+        content: No fields defined.
 
   - type: Submit
     name: submit

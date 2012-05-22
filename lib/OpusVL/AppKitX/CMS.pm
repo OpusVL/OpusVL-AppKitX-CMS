@@ -64,6 +64,12 @@ after 'setup_components' => sub {
 
     CatalystX::InjectComponent->inject(
         into      => $class,
+        component => 'OpusVL::AppKitX::CMS::Controller::CMS::Attributes',
+        as        => 'Controller::Modules::CMS::Attributes'
+    );
+
+    CatalystX::InjectComponent->inject(
+        into      => $class,
         component => 'OpusVL::AppKitX::CMS::Controller::CMS::Ajax',
         as        => 'Controller::Modules::CMS::Ajax',
     );

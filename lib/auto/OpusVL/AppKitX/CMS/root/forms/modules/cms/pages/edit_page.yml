@@ -49,6 +49,16 @@ elements:
             label: Description
 
       - type: Fieldset
+        legend: Attributes
+        name: global_fields
+        elements:
+
+          - type: Block
+            tag: p
+            name: no_fields
+            content: No fields defined.
+
+      - type: Fieldset
         legend: Page content
         name: page_content
         elements:
@@ -93,18 +103,6 @@ elements:
               - type: Integer
 
       - type: Fieldset
-        legend: Existing tags
-        name: page_tags
-
-      - type: Fieldset
-        legend: New tag
-        name: new_page_tag
-        elements:
-          - type: Select
-            name: new_tag
-            label: Select tag
-            empty_first: true
-
       - type: Fieldset
         legend: Existing aliases
         name: page_aliases

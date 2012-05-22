@@ -33,7 +33,6 @@
     <ul>
         <li><a href="#tab_content">Content</a>
         <li><a href="#tab_metadata">Metadata</a>
-        <li><a href="#tab_tags">Tags</a>
     </ul>
     
     <div id="tab_content">
@@ -42,11 +41,7 @@
 
     <div id="tab_metadata">
         [% form.get_all_element( 'name' => 'metadata' ).render | none %]
-    </div>
-
-    <div id="tab_tags">
-        [% form.get_all_element( 'name' => 'att_tags' ).render | none %]
-        [% form.get_all_element( 'name' => 'new_page_tag' ).render | none %]
+        [% form.get_all_element( 'name' => 'global_fields' ).render | none %]
     </div>
 </div>
 

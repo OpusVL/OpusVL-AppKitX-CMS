@@ -44,7 +44,6 @@
         <li><a href="#tab_content">Content</a>
         <li><a href="#tab_details">Metadata</a>
         <li><a href="#tab_attachments">Attachments</a>
-        <li><a href="#tab_tags">Tags</a>
         <li><a href="#tab_aliases">Aliases</a>
     </ul>
     
@@ -54,6 +53,7 @@
 
     <div id="tab_details">
         [% form.get_all_element( 'name' => 'page_details' ).render | none %]
+        [% form.get_all_element('global_fields').render | none %]
     </div>
 
     <div id="tab_attachments">
@@ -96,34 +96,6 @@
         </fieldset>
         
         [% form.get_all_element( 'name' => 'page_attachments' ).render | none %]
-    </div>
-
-    <div id="tab_tags">
-        [% IF page.cascaded_tags.size %]
-            <fieldset>
-                <legend>Cascaded tags</legend>
-                <table class="tablesorter">
-                    <thead>
-                        <tr>
-                            <th>Group</th>
-                            <th>Tag</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        [% FOREACH pair IN page.cascaded_tags.pairs %]
-                            [% FOREACH tag IN pair.value %]
-                                <tr>
-                                    <td>[% pair.key %]</td>
-                                    <td>[% tag %]</td>
-                                </tr>
-                            [% END %]
-                        [% END %]
-                    </tbody>
-                </table>
-            </fieldset>
-        [% END %]
-        [% form.get_all_element( 'name' => 'page_tags' ).render | none %]
-        [% form.get_all_element( 'name' => 'new_page_tag' ).render | none %]
     </div>
 
     <div id="tab_aliases">

@@ -1,5 +1,6 @@
 package OpusVL::AppKitX::CMS::Controller::CMS::Pages;
 
+use 5.010;
 use Moose;
 use namespace::autoclean;
 BEGIN { extends 'Catalyst::Controller::HTML::FormFu'; };
@@ -39,7 +40,7 @@ sub auto :Private {
 sub index :Path :Args(0) :NavigationHome :NavigationName('Pages') {
     my ($self, $c) = @_;
     
-    $c->stash->{pages} = [$c->model('CMS::Pages')->published];
+    $c->stash->{pages} = [ $c->model('CMS::Pages')->published->search({},{order_by => {'-asc' => 'url'}}) ];
 }
 
 
@@ -114,34 +115,7 @@ sub edit_page :Local :Args(1) :AppKitForm {
     $form->get_all_element({name=>'parent'})->options(
         [map {[$_->id, $_->breadcrumb . " - " . $_->url]} $c->model('CMS::Pages')->all]
     );
-    $form->get_all_element({name=>'new_tag'})->options(
-        [map {[$_->id, $_->group->name . " - " . $_->name]} $c->model('CMS::Tags')->all]
-    );
     
-    my $tags_fieldset = $form->get_all_element({name=>'page_tags'});
-    if (my @page_tags = $page->search_related('pagetags')) {
-        foreach my $tag_link (@page_tags) {
-            my $tag = $tag_link->tag;
-            $tags_fieldset->element({
-                type     => 'Multi',
-                label    => $tag->group->name . ' - ' . $tag->name,
-                elements => [
-                    {
-                        type  => 'Checkbox',
-                        name  => 'delete_tag_' . $tag_link->id,
-                        label => 'Delete',
-                    }
-                ]
-            });
-        }
-    } else {
-        $tags_fieldset->element({
-            type    => 'Block',
-            tag     => 'p',
-            content => 'No tags have been added to this page',
-        });
-    }
-
     my $aliases_fieldset = $form->get_all_element({name=>'page_aliases'});
     if (my @aliases = $page->search_related('aliases')) {
         foreach my $alias (@aliases) {
@@ -170,7 +144,7 @@ sub edit_page :Local :Args(1) :AppKitForm {
         });
     }
     
-    $form->default_values({
+    my $defaults = {
         url         => $page->url,
         description => $page->description,
         title       => $page->title,
@@ -180,8 +154,18 @@ sub edit_page :Local :Args(1) :AppKitForm {
         parent      => $page->parent_id,
         content     => $page->content,
         priority    => $page->priority,
-    });
+    };
+    
+    $self->construct_attribute_form($c, 'CMS::PageAttributeDetails');
 
+    my @fields = $c->model('CMS::PageAttributeDetails')->active->all;
+    for my $field (@fields)
+    {
+        my $value = $page->page_attribute($field);
+        $defaults->{'global_fields_' . $field->code} = $value;
+    }
+    
+    $form->default_values($defaults);
     $form->process;
     
     if ($form->submitted_and_valid) {
@@ -215,12 +199,6 @@ sub edit_page :Local :Args(1) :AppKitForm {
         }
         
         PARAM: foreach my $param (keys %{$c->req->params}) {
-            if ($param =~ /delete_tag_(\d+)/) {
-                if (my $tag = $page->find_related('pagetags', {id => $1})) {
-                    $tag->delete;
-                }
-            }
-            
             if ($param =~ /delete_alias_(\d+)/) {
                 if (my $alias = $page->find_related('aliases', {id => $1})) {
                     $alias->delete;
@@ -238,15 +216,12 @@ sub edit_page :Local :Args(1) :AppKitForm {
             }
         }
         
-        if (my $tag_id = $form->param_value('new_tag')) {
-            # FIXME: validate that we are allowed to add this tag
-            $page->create_related('pagetags', {tag_id => $tag_id});
-        }
-
         if (my $alias_url = $form->param_value('new_alias_url')) {
             unless ($alias_url =~ m!^/!) {$alias_url = "/$url"}
             $page->create_related('aliases', {url => $alias_url});
         }
+
+        $self->update_page_attributes($c, $page);
         
         $c->flash->{status_msg} = "Your changes have been saved";
         $c->res->redirect($c->req->uri);
@@ -321,39 +296,21 @@ sub edit_attachment :Local :Args(1) :AppKitForm {
     my $attachment = $c->model('CMS::Attachments')->find({id => $attachment_id});
     my $form       = $c->stash->{form};
 
-    $form->default_values({
+    my $defaults = {
         description => $attachment->description,
         priority    => $attachment->priority,
-    });
+    };
+    
+    $self->construct_attribute_form($c, 'CMS::AttachmentAttributeDetails');
 
-    my $tags_fieldset = $form->get_all_element({name=>'att_tags'});
-    if (my @att_tags = $attachment->search_related('tag_links')) {
-        foreach my $tag_link (@att_tags) {
-            my $tag = $tag_link->tag;
-            $tags_fieldset->element({
-                type     => 'Multi',
-                label    => $tag->group->name . ' - ' . $tag->name,
-                elements => [
-                    {
-                        type  => 'Checkbox',
-                        name  => 'delete_tag_' . $tag_link->id,
-                        label => 'Delete',
-                    }
-                ]
-            });
-        }
-    } else {
-        $tags_fieldset->element({
-            type    => 'Block',
-            tag     => 'p',
-            content => 'No tags have been added to this attachment',
-        });
+    my @fields = $c->model('CMS::AttachmentAttributeDetails')->active->all;
+    for my $field (@fields)
+    {
+        my $value = $attachment->attribute($field);
+        $defaults->{'global_fields_' . $field->code} = $value;
     }
     
-    $form->get_all_element({name=>'new_tag'})->options(
-        [map {[$_->id, $_->group->name . " - " . $_->name]} $c->model('CMS::Tags')->all]
-    );
-    
+    $form->default_values($defaults);    
     $form->process;
 
     if ($c->req->param('cancel')) {
@@ -375,18 +332,7 @@ sub edit_attachment :Local :Args(1) :AppKitForm {
             });
         }
         
-        PARAM: foreach my $param (keys %{$c->req->params}) {
-            if ($param =~ /delete_tag_(\d+)/) {
-                if (my $tag = $attachment->find_related('tag_links', {id => $1})) {
-                    $tag->delete;
-                }
-            }
-        }
-
-        if (my $tag_id = $form->param_value('new_tag')) {
-            # FIXME: validate that we are allowed to add this tag
-            $attachment->create_related('tag_links', {tag_id => $tag_id});
-        }
+        $self->update_attachment_attributes($c, $attachment);
 
         $c->res->redirect($c->uri_for($c->controller->action_for('edit_page'), $attachment->page_id) . '#tab_attachments');
         $c->detach;        
@@ -398,4 +344,107 @@ sub edit_attachment :Local :Args(1) :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
+sub construct_attribute_form
+{
+    my ($self, $c, $model) = @_;
+
+    my $form = $c->stash->{form};
+    my @fields = $c->model($model)->active->all;
+    if(@fields)
+    {
+        my $global_fields = $form->get_all_element('global_fields');
+        my $no_fields = $form->get_all_element('no_fields');
+        for my $field (@fields)
+        {
+            my $details;
+            $details = {
+                type => 'Text',
+                label => $field->name,
+                name => "global_fields_".$field->code,
+            };
+            given($field->type)
+            {
+                when(/text/) {
+                }
+                when(/html/) {
+                    $details->{type} = 'Textarea';
+                    $details->{attributes} = {
+                        class => 'wysiwyg',
+                    };
+                }
+                when(/number/) {
+                    $details->{constraints} = { type => 'Number' };
+                }
+                when(/boolean/) {
+                    $details->{type} = 'Checkbox';
+                }
+                when(/date/) {
+                    $details->{attributes} = {
+                        autocomplete => 'off',
+                        class => 'date_picker',
+                    };
+                    $details->{size} = 12;
+                    $details->{inflators} = {
+                        type => 'DateTime',
+                        strptime => '%Y-%m-%d 00:00:00',
+                        parser => {
+                            strptime => '%d/%m/%Y',
+                        }
+                    };
+                    $details->{deflator} = {
+                        type => 'Strftime',
+                        strftime => '%d/%m/%Y',
+                    };
+                }
+                when(/integer/) {
+                    $details->{constraints} = { type => 'Integer' };
+                }
+                when(/select/) {
+                    $details->{type} = 'Select';
+                    $details->{empty_first} = 1;
+                    $details->{options} = $field->form_options;
+                }
+            }
+            my $element = $global_fields->element($details);
+        }
+        $global_fields->remove_element($no_fields);
+    }
+}
+
+
+#-------------------------------------------------------------------------------
+
+sub update_page_attributes
+{
+    my ($self, $c, $page) = @_;
+
+    my $form = $c->stash->{form};
+    my @fields = $c->model('CMS::PageAttributeDetails')->active->all;
+    for my $field (@fields)
+    {
+        my $value = $form->param_value('global_fields_' . $field->code);
+        $page->update_attribute($field, $value);
+    }
+
+}
+
+
+#-------------------------------------------------------------------------------
+
+sub update_attachment_attributes
+{
+    my ($self, $c, $page) = @_;
+
+    my $form = $c->stash->{form};
+    my @fields = $c->model('CMS::AttachmentAttributeDetails')->active->all;
+    for my $field (@fields)
+    {
+        my $value = $form->param_value('global_fields_' . $field->code);
+        $page->update_attribute($field, $value);
+    }
+
+}
+
+
+#-------------------------------------------------------------------------------
 1;
