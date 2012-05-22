@@ -1,5 +1,5 @@
 [% PROCESS modules/cms/preprocess.tt %]
-<h1>Edit page</h1>
+<h1>Edit attachment</h1>
 [% META appkitfeature_tablesorter = 1 %]
 
 [% form.start | none %]
