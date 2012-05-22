@@ -23,10 +23,10 @@ __PACKAGE__->config
 sub auto :Private {
     my ($self, $c) = @_;
 
-    $c->stash->{section} = 'Aliases';
+    $c->stash->{section} = 'Redirects';
  
     push @{ $c->stash->{breadcrumbs} }, {
-        name    => 'Aliases',
+        name    => 'Redirects',
         url     => $c->uri_for( $c->controller->action_for('index'))
     };
 }
@@ -34,7 +34,7 @@ sub auto :Private {
 
 #-------------------------------------------------------------------------------
 
-sub index :Path :Args(0) :NavigationName('Aliases') {
+sub index :Path :Args(0) :NavigationName('Redirects') {
     my ($self, $c) = @_;
     
     $c->stash->{aliases} = [$c->model('CMS::Aliases')->all];

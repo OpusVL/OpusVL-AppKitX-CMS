@@ -1,4 +1,4 @@
-<h1>Page aliases</h1>
+<h1>Page redirects</h1>
 
 [% META appkitfeature_tablesorter = 1 %]
 <div class="content_block">
@@ -28,6 +28,6 @@
             </tbody>
         </table>
     [% ELSE %]
-        <p>No aliases have been defined</p>
+        <p>No redirects have been defined</p>
     [% END %]
 </div>

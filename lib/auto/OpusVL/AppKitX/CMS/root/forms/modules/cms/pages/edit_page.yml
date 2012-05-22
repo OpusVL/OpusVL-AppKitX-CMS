@@ -103,12 +103,11 @@ elements:
               - type: Integer
 
       - type: Fieldset
-      - type: Fieldset
-        legend: Existing aliases
+        legend: Existing redirects
         name: page_aliases
 
       - type: Fieldset
-        legend: New alias
+        legend: New redirect
         name: new_page_alias
         elements:
           - type: Text

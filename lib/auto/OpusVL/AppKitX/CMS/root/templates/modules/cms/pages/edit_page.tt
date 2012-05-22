@@ -44,7 +44,7 @@
         <li><a href="#tab_content">Content</a>
         <li><a href="#tab_details">Metadata</a>
         <li><a href="#tab_attachments">Attachments</a>
-        <li><a href="#tab_aliases">Aliases</a>
+        <li><a href="#tab_aliases">Redirects</a>
     </ul>
     
     <div id="tab_content">
