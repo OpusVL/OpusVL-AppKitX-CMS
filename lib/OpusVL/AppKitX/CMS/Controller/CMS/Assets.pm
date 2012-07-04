@@ -13,8 +13,8 @@ __PACKAGE__->config
     appkit_css                  => ['/static/css/cms.css'],
     appkit_js                   => ['/static/js/cms.js'],
     #appkit_js                   => ['/static/js/facebox.js', '/static/js/cms.js'],
-    # appkit_method_group         => 'Extension A',
-    # appkit_method_group_order   => 2,
+    appkit_method_group         => 'Content Management',
+    appkit_method_group_order   => 1,
     appkit_shared_module        => 'CMS',
     #appkit_css                  => ['/static/modules/cms/cms.css'],
 );
