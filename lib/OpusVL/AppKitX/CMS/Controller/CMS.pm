@@ -19,20 +19,37 @@ __PACKAGE__->config
 sub auto :Private {
     my ($self, $c) = @_;
  
-    push @{ $c->stash->{breadcrumbs} }, {
-        name    => 'CMS',
-        url     => $c->uri_for( $c->controller('Modules::CMS::Pages')->action_for('index'))
-    };
+    #push @{ $c->stash->{breadcrumbs} }, {
+    #    name    => 'CMS',
+    #    url     => $c->uri_for( $c->controller('Modules::CMS::Pages')->action_for('index'))
+    #};
 }
 
-# sub home
-#     :Path
-#     :Args(0)
-#     :NavigationHome
-#     :AppKitFeature('Extension A')
-# {
-#     my ($self, $c) = @_;
-# }
+sub home
+    :Path
+    :Args(0)
+    :NavigationHome
+    :AppKitFeature('CMS Home')
+{
+    my ($self, $c) = @_;
+}
+
+sub portlet_recent_pages : PortletName('Most Recent Pages') {
+    my ($self, $c) = @_;
+    my $pages = $c->model('CMS::Page')->search({
+        created => {
+            -between => [
+                DateTime->now(),
+                DateTime->now()->subtract(days => 5),
+            ]
+        }
+    }, {
+        rows        => 5,
+        order_by    => { -desc => [ 'created' ] },
+    });
+
+    $c->stash->{cms_recent_pages} = [ $pages->all ];
+}
 
 =head1 NAME
 

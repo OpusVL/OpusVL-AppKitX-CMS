@@ -79,6 +79,18 @@ after 'setup_components' => sub {
         component => 'OpusVL::AppKitX::CMS::Controller::CMS::Aliases',
         as        => 'Controller::Modules::CMS::Aliases',
     );
+
+    CatalystX::InjectComponent->inject(
+        into      => $class,
+        component => 'OpusVL::AppKitX::CMS::Controller::CMS::Sites',
+        as        => 'Controller::Modules::CMS::Sites',
+    );
+
+    CatalystX::InjectComponent->inject(
+        into      => $class,
+        component => 'OpusVL::AppKitX::CMS::Controller::CMS::Domains',
+        as        => 'Controller::Modules::CMS::Domains',
+    );
 };
 
 1;

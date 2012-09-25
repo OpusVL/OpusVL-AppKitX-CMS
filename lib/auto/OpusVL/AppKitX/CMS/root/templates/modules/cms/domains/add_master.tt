@@ -1,0 +1,3 @@
+<h1>Add Master Domain for [% site.name %]</h1>
+
+[% form.render | none %]

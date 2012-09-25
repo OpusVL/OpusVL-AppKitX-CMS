@@ -1,0 +1,3 @@
+<h1>Managing domain [% domain.domain %]</h1>
+
+[% form.render | none %]
