@@ -28,7 +28,7 @@ elements:
 
   - type: Submit
     name: submit
-    value: Edit site
+    value: Update site
     attributes:
       class: "submit submit_ok"
 

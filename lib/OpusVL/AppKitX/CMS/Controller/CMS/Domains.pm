@@ -2,6 +2,9 @@ package OpusVL::AppKitX::CMS::Controller::CMS::Domains;
 
 use Moose;
 use namespace::autoclean;
+
+use URI;
+
 BEGIN { extends 'Catalyst::Controller::HTML::FormFu'; };
 with 'OpusVL::AppKit::RolesFor::Controller::GUI';
  
@@ -98,9 +101,61 @@ sub edit :Chained('master_domain_root') :Args(0) :NavigationName('Edit Domain') 
     my $site       = $c->stash->{site};
     my $domain     = $c->stash->{domain};
 
+    my $redirect_domain   = $domain->redirect_domains->first ?
+        $domain->redirect_domains->first->domain : undef;
+
+    my $alternate_domains;
+    if ($domain->alternate_domains->count > 0) {
+        for my $adom ($domain->alternate_domains->all) {
+            my $prot = $adom->secure ? "https://" : "http://";
+            $alternate_domains .= $prot . $adom->domain . "\n";
+        }
+    }
+
     $form->default_values({
-        master_domain   => $domain->domain,
+        master_domain     => $domain->domain,
+        redirect_domain   => $redirect_domain,
+        alternate_domains => $alternate_domains,
     });
+
+    if ($form->submitted_and_valid) {
+        $domain->update({ domain => $form->param('master_domain') });
+
+        # update the redirect?
+        if ($c->req->body_params->{redirect_domain}) {
+            $domain->redirect_domains->find_or_create({
+                domain          => $form->param('redirect_domain'),
+                master_domain   => $domain->id,
+                status          => 'active',
+            });
+        }
+
+        # now the alternate domains
+        if ($c->req->body_params->{alternate_domains}) {
+            my @adomains = split("\n", $form->param('alternate_domains'));
+            for my $adom (@adomains) {
+                $adom = URI->new($adom);
+                my ($host, $port) = ($adom->host, $adom->port);
+                my $secure        = $adom->secure;
+
+                $domain->alternate_domains->find_or_create({
+                    domain          => $host,
+                    master_domain   => $domain->id,
+                    port            => $port,
+                    secure          => $secure||0,
+                });
+            }
+        }
+
+        $c->flash->{status_msg} = "Successfully updated domain";
+        $c->res->redirect($c->uri_for($self->action_for('edit'), [ $site->id, $form->param('master_domain') ]));
+        $c->detach;
+    }
+
+    if ($c->req->body_params->{cancel}) {
+        $c->res->redirect($c->uri_for($self->action_for('manage'), [ $site->id ]));
+        $c->detach;
+    }
 }
 
 #-------------------------------------------------------------------------------
