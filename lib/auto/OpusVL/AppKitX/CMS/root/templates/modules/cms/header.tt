@@ -1,0 +1,17 @@
+<h1>[% title %]</h1>
+<span style="float:right">
+	<small><strong>Looking at</strong></small> <select id="select_site" name="select_site">
+	[% FOREACH thesite IN all_sites %]
+		<option value="[% thesite.site.id %]" [% IF site.id == thesite.site.id %]SELECTED[% END %]>[% thesite.site.name %]</option>
+	[% END %]
+	</select>
+</span>
+<div class="clear"></div>
+<script type="text/javascript">
+	$(function() {
+		$('#select_site').change(function() {
+			var site_id = $('#select_site :selected').val();
+			window.location.replace("[% redirect_url %]/sites/edit/" + site_id);
+		});
+	});
+</script>
