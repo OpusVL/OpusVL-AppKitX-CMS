@@ -1,5 +1,5 @@
 [% META appkitfeature_tablesorter = 1 %]
-<h1>Editing [% site.name %]</h1>
+[% INCLUDE modules/cms/header.tt title="Editing $site.name" %]
 
 <a class="link_button link_button_edit" href="[% c.uri_for(c.controller('Domains').action_for('manage'), [ site.id ]) %]">Manage Domains for this Site</a>
 <div class="clear" style="height:15px"></div>

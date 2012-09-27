@@ -1,5 +1,5 @@
 [% META appkitfeature_tablesorter = 1 %]
-<h1>Manage Domains for [% site.name %]</h1>
+[% INCLUDE modules/cms/header.tt title="Manage Domains for $site.name" %]
 
 <a class="link_button link_button_back" href="[% c.uri_for(c.controller('Sites').action_for('edit'), [ site.id ]) %]">Back to site</a>
 <div class="clear" style="height: 15px"></div>

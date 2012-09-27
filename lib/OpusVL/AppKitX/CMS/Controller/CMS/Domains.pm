@@ -131,9 +131,16 @@ sub edit :Chained('master_domain_root') :Args(0) :NavigationName('Edit Domain') 
         }
 
         # now the alternate domains
+        my @adom_errors;
         if ($c->req->body_params->{alternate_domains}) {
             my @adomains = split("\n", $form->param('alternate_domains'));
             for my $adom (@adomains) {
+                # without the protocol on the uri, the URI module 
+                # will spaz out and not be able to get the host and port
+                if ($adom !~ /http(s)?:\/\//) {
+                    push @adom_errors, $adom;
+                    next;
+                }
                 $adom = URI->new($adom);
                 my ($host, $port) = ($adom->host, $adom->port);
                 my $secure        = $adom->secure;
@@ -145,6 +152,11 @@ sub edit :Chained('master_domain_root') :Args(0) :NavigationName('Edit Domain') 
                     secure          => $secure||0,
                 });
             }
+        }
+
+        if (scalar(@adom_errors) > 0) {
+            $c->flash->{error_msg} = "Alternate domains not added because http(s):// is missing: " .
+                join(', ', @adom_errors);
         }
 
         $c->flash->{status_msg} = "Successfully updated domain";

@@ -28,7 +28,7 @@ elements:
 
   - type: Submit
     name: submit
-    value: Create page
+    value: Create site
     attributes:
       class: "submit submit_add"
 

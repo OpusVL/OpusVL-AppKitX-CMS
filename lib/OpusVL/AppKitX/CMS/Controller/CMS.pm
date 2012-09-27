@@ -18,7 +18,15 @@ __PACKAGE__->config
 
 sub auto :Private {
     my ($self, $c) = @_;
- 
+    
+    my $sites = $c->user->sites;
+
+    $DB::single = 1;
+    if ($sites->count > 0) {
+        $c->stash->{all_sites} = [ $sites->all ];
+        $c->stash->{redirect_url} = $c->uri_for($self->action_for('redirect_url'));
+    }
+
     #push @{ $c->stash->{breadcrumbs} }, {
     #    name    => 'CMS',
     #    url     => $c->uri_for( $c->controller('Modules::CMS::Pages')->action_for('index'))
@@ -49,6 +57,12 @@ sub portlet_recent_pages : PortletName('Most Recent Pages') {
     });
 
     $c->stash->{cms_recent_pages} = [ $pages->all ];
+}
+
+sub redirect_url :Local :Args(3) {
+    my ($self, $c, $controller, $action, @args) = @_;
+    $controller = ucfirst($controller);
+    $c->res->redirect($c->uri_for($c->controller($controller)->action_for($action), \@args));
 }
 
 =head1 NAME
