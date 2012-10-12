@@ -1,5 +1,5 @@
 ---
-indicator: submit
+#indicator: submit
 auto_fieldset: 0
 form_error_message: Oops, looks like there was a problem - please check below and try again.
 
@@ -72,6 +72,12 @@ elements:
     value: Create page
     attributes:
       class: "submit submit_add"
+
+  - type: Submit
+    name: preview
+    value: Preview
+    attributes:
+      class: "submit submit_search"
 
   - type: Submit
     name: cancel

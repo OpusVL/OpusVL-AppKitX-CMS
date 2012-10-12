@@ -1,0 +1,44 @@
+[% META appkitfeature_tablesorter = 1 %]
+[% INCLUDE modules/cms/header.tt title="$getpage.title History" %]
+
+<a href="[% c.uri_for(c.controller.action_for('index')) %]" class="link_button link_button_back">Back to Pages</a>
+<div class="clear" style="height:10px"></div>
+
+<div class="content_block">
+	[% IF drafts %]
+	<table class="tablesorter">
+		<thead>
+			<tr>
+				<th>Created</th>
+				<th>Author</th>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody>
+			[% IF getpage.status == 'draft' || drafts.count < 1 %]
+				<tr>
+					<td>[% date_long(getpage.created) %] @ [% getpage.created.time %] <strong>(Current Version)</strong></td>
+					<td>[% getpage.created_by.name %] ([% getpage.created_by.username %])</td>
+					<td>
+						<a target="_blank" href="[% c.uri_for(c.controller.action_for('preview'), getpage.id, 0) %]">Preview</a>
+					</td>
+				</tr>
+			[% END %]
+			[% WHILE (draft = drafts.next) %]
+				[% SET date_created = draft.page_drafts_contents.created %]
+				<tr>
+					<td>[% date_long(date_created) %] @ [% date_created.time %]</td>
+					<td>[% draft.created_by.name %] ([% draft.created_by.username %])</td>
+					<td>
+						<a target="_blank" href="[% c.uri_for(c.controller.action_for('preview'), getpage.id, draft.id) %]">Preview</a> | 
+						<a href="[% c.uri_for(c.controller.action_for('draft_delete'), draft.id) %]">Delete</a> | 
+						<a href="">Restore</a>
+					</td>
+				</tr>
+			[% END %]
+		</tbody>
+	</table>
+	[% ELSE %]
+		<p>There are no drafts available for this page</p>
+	[% END %]
+</div>

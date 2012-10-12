@@ -1,5 +1,5 @@
 [% PROCESS modules/cms/preprocess.tt %]
-<h1>Edit page</h1>
+[% INCLUDE modules/cms/header.tt title="Edit page" %]
 <a href="[% c.uri_for(c.controller.action_for('index')) %]" class="link_button link_button_back">Back to page list</a>
 <br>&nbsp;
 
@@ -106,8 +106,19 @@
 
 <script type="text/javascript">
     $('#editor-controls').load('/modules/cms/ajax/load_controls?page_id=[% page.id %]');
+
+    $(function() {
+        $('#preview').click(function() {
+            $('#preview_content').load('/modules/cms/ajax/preview_page', {
+                page_id : '[% page.id %]',
+                content : $('textarea[name="content"]').text(),
+            });
+            $('#preview_content').show('fast');
+        });
+    });
 </script>
 
 [% form.get_all_element( 'name' => 'submit' ).render | none %]
+[% form.get_all_element( 'name' => 'preview' ).render | none %]
 [% form.get_all_element( 'name' => 'cancel' ).render | none %]
 [% form.end | none %]

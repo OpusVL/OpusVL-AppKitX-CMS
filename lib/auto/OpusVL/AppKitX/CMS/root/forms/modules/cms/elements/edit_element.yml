@@ -35,6 +35,10 @@ elements:
                 constraints:
                   - type: Required
 
+              - type: Checkbox
+                name: global
+                label: Make this element global?
+
   - type: Submit
     name: submit
     value: Save

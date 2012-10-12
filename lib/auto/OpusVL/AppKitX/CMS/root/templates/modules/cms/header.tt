@@ -1,17 +1,49 @@
+<style type="text/css">
+	.hover_nav {
+		background-color: #E6E6E6;
+		border: 1px solid #ccc;
+		-webkit-border-radius: 5px;
+		-moz-border-radius: 5px;
+		border-radius: 2px;
+		/* padding: 8px 17px 20px; */
+		padding: 8px;
+		-webkit-box-shadow: 3px 5px 10px rgba(0,0,0,0.2);
+		-moz-box-shadow: 3px 5px 10px rgba(0,0,0,0.2);
+		box-shadow: 3px 5px 10px rgba(0,0,0,0.2);
+	}
+
+	a:hover   { text-decoration: underline; color: blue; }
+	a:visited { text-decoration: none; color: blue; }
+	a         { text-decoration: none; color: blue; }
+</style>
 <h1>[% title %]</h1>
-<span style="float:right">
+<span class="hover_nav" style="float:right">
 	<small><strong>Looking at</strong></small> <select id="select_site" name="select_site">
+	<option value="0">None</option>
 	[% FOREACH thesite IN all_sites %]
 		<option value="[% thesite.site.id %]" [% IF site.id == thesite.site.id %]SELECTED[% END %]>[% thesite.site.name %]</option>
 	[% END %]
 	</select>
+	&nbsp;|&nbsp;
+	<small><strong>Domain</strong></small> 
+	[% IF selected_domain %]
+		<small>[% selected_domain.domain %]</small>
+	[% ELSE %]
+		<small>[% IF site %]<a href="[% c.uri_for(c.controller('Domains').action_for('manage')) %]">None</a>[% ELSE %]None[% END %]</small>
+	[% END %]
+	<br />
 </span>
-<div class="clear"></div>
+<div style="height:10px" class="clear"></div>
 <script type="text/javascript">
 	$(function() {
 		$('#select_site').change(function() {
 			var site_id = $('#select_site :selected').val();
-			window.location.replace("[% redirect_url %]/sites/edit/" + site_id);
+			if (site_id == 0) {
+				window.location.replace("[% c.uri_for(c.controller('Modules::CMS').action_for('forget_site')) %]");
+			}
+			else {
+				window.location.replace("[% c.uri_for(c.controller('Modules::CMS').action_for('redirect_url')) %]/domains/manage/" + site_id);
+			}			
 		});
 	});
 </script>

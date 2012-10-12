@@ -23,15 +23,14 @@ __PACKAGE__->config
 
 #-------------------------------------------------------------------------------
 
-sub index :Path :Args(0) :NavigationHome :NavigationName('Domains') {
-    my ($self, $c) = @_;
-}
-
-#-------------------------------------------------------------------------------
-
 sub auto :Private {
     my ($self, $c) = @_;
 
+    $c->forward('/modules/cms/site_validate');
+    my $domains = $c->model('CMS::MasterDomain')
+        ->search({ site => $c->stash->{site}->id });
+    
+    $c->stash->{domains} = $domains;
     $c->stash->{section} = 'Domains';
  
     push @{ $c->stash->{breadcrumbs} }, {
@@ -84,12 +83,30 @@ sub master_domain_root :Chained('/') :PathPart('domain') :CaptureArgs(2) {
 
 #-------------------------------------------------------------------------------
 
-sub manage :Chained('domain_root') :Args(0) :NavigationName('Domains') {
-    my ($self, $c) = @_;
+sub manage :Local :Args() :NavigationName('Domains') {
+    my ($self, $c, $site_id) = @_;
     my $domains = $c->stash->{domains};
+
+    $c->session->{site} = $c->stash->{site};
+    if ($site_id) {
+        my $site = $c->model('CMS::Site')->find($site_id);
+        if ($site) {
+            delete $c->session->{selected_domain};
+            $c->session->{site} = $site;
+            $c->res->redirect($c->uri_for($self->action_for('manage')));
+            $c->detach;
+        }
+    }
 
     if ($domains->count > 0) {
         $c->stash->{master_domains} = [ $domains->all ];
+    }
+    else {
+        if ($c->stash->{selected_domain}) {
+            delete $c->session->{selected_domain};
+            $c->res->redirect($c->req->uri);
+            $c->detach;
+        }
     }
 }
 
@@ -165,7 +182,7 @@ sub edit :Chained('master_domain_root') :Args(0) :NavigationName('Edit Domain') 
     }
 
     if ($c->req->body_params->{cancel}) {
-        $c->res->redirect($c->uri_for($self->action_for('manage'), [ $site->id ]));
+        $c->res->redirect($c->uri_for($self->action_for('manage')));
         $c->detach;
     }
 }
@@ -192,17 +209,47 @@ sub add_master :Chained('domain_root') :Args(0) :PathPart('add/master') :Navigat
             });
 
             $c->flash->{status_msg} = "Successfully added master domain for " . $site->name;
-            $c->res->redirect($c->uri_for($self->action_for('manage'), [ $site->id ] ));
+            $c->res->redirect($c->uri_for($self->action_for('manage')));
             $c->detach;
         }
     }
 
     if ($c->req->body_params->{cancel}) {
-        $c->res->redirect($c->uri_for($self->action_for('manage'), [ $site->id ]));
+        $c->res->redirect($c->uri_for($self->action_for('manage')));
         $c->detach;
     }
 }
 
 #-------------------------------------------------------------------------------
 
+sub select_domain :Chained('domain_root') :Args(1) {
+    my ($self, $c, $domain_name) = @_;
+    my $site = $c->stash->{site};
+    my $domain = $c->model('CMS::MasterDomain')
+        ->find({ site => $site->id, domain => $domain_name });
+
+    if ($domain) {
+        if ($domain->site->sites_users->find({ user_id => $c->user->id })) {
+            $c->session->{selected_domain} = $domain;
+            $c->flash->{status_msg} = "Selected " . $domain->domain . " as your current domain";
+            $c->res->redirect($c->uri_for($self->action_for('manage')));
+            $c->detach;
+        }
+        else {
+            $c->flash->{error_msg} = "Unathorised access to that domain";
+            $c->res->redirect($c->uri_for($self->action_for('manage')));
+            $c->detach;
+        }
+    }
+}
+
+#-------------------------------------------------------------------------------
+
+sub unselect_domain :Chained('domain_root') :Args(1) {
+    my ($self, $c, $domain_name) = @_;
+    my $site = $c->stash->{site};
+    delete $c->session->{selected_domain};
+    $c->res->redirect($c->uri_for($self->action_for('manage')));
+    $c->detach;
+}
 1;

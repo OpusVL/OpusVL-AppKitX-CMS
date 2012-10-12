@@ -1,9 +1,13 @@
-<h1>New page</h1>
+[% INCLUDE modules/cms/header.tt title="New page" %]
 [% META appkitfeature_tablesorter = 1 %]
 [% PROCESS modules/cms/preprocess.tt %]
 
+<div style="height:10px" class="clear"></div>
 [% form.render | none %]
 
 <script type="text/javascript">
     $('#editor-controls').load('/modules/cms/ajax/load_controls');
+    $(function() {
+    	$('#preview_content').load('/modules/cms/ajax/preview_page/' + [% page_id %]);
+    });
 </script>

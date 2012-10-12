@@ -1,4 +1,4 @@
-<h1>Elements</h1>
+[% INCLUDE modules/cms/header.tt title="Elements" %]
 
 <div class="content_block">
     [% IF elements.size > 0 %]
@@ -8,6 +8,7 @@
                 <tr>
                     <th>ID</th>
                     <th>Name</th>
+                    <th>Global</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -16,6 +17,7 @@
                     <tr>
                         <td>[% element.id %]</td>
                         <td>[% element.name %]</td>
+                        <td>[% IF element.global %] <font color="green">Yes</font> [% ELSE %] <font color="red">No</font> [% END %]</td>
                         <td>
                             <a href="[% c.uri_for(c.controller.action_for('edit_element'), element.id) %]">Edit</a>
                             <a href="[% c.uri_for(c.controller.action_for('delete_element'), element.id) %]">Delete</a>

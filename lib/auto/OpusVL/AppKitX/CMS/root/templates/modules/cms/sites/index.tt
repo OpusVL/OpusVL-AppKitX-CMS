@@ -1,12 +1,12 @@
-<h1>Sites</h1>
+[% INCLUDE modules/cms/header.tt title="Sites" %]
 
 <div class="content_block">
-	[% IF sites.size > 0 %]
-		<ul>
-			[% FOREACH site IN sites %]
-				<li><strong><a class="link" href="[% c.uri_for(c.controller.action_for('edit'), [ site.id ]) %]">[% site.name %]</a></strong></li>
+	[% IF all_sites.size > 0 %]
+		<ol>
+			[% FOREACH site IN all_sites %]
+				<li><strong><a href="[% c.uri_for(c.controller.action_for('edit'), [ site.site.id ]) %]">[% site.site.name %]</a></strong></li>
 			[% END %]
-		</ul>
+		</ol>
 	[% ELSE %]
 		<p>There are no available sites. <a href="[% c.uri_for(c.controller.action_for('add')) %]">Add one now</a></p>
 	[% END %]

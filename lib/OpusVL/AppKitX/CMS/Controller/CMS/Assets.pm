@@ -25,6 +25,8 @@ __PACKAGE__->config
 sub auto :Private {
     my ($self, $c) = @_;
 
+    $c->forward('/modules/cms/site_validate');
+
     if ($c->req->param('cancel')) {
         $c->res->redirect($c->uri_for($c->controller->action_for('index')));
         $c->detach;
@@ -36,6 +38,8 @@ sub auto :Private {
         name    => 'Assets',
         url     => $c->uri_for( $c->controller->action_for('index'))
     };
+
+    1;
 }
 
 
@@ -44,7 +48,14 @@ sub auto :Private {
 sub index :Path :Args(0) :NavigationName('Assets') {
     my ($self, $c) = @_;
     
-    $c->stash->{assets} = [$c->model('CMS::Assets')->published->all];
+    $c->stash->{assets} = [$c->model('CMS::Asset')
+        ->search({
+            -or => [
+                site   => $c->stash->{site}->id,
+                global => 1,
+            ]
+        })
+        ->published->all];
 }
 
 
@@ -61,15 +72,18 @@ sub upload_asset :Local :Args(0) {
 
 sub new_asset :Local :Args(0) :AppKitForm {
     my ($self, $c) = @_;
+    my $site = $c->stash->{site};
 
     $self->add_final_crumb($c, "New asset");
     
     my $form = $c->stash->{form};
     if ($form->submitted_and_valid) {
-        my $asset = $c->model('CMS::Assets')->create({
+        my $asset = $c->model('CMS::Asset')->create({
             description => $form->param_value('description'),
             mime_type   => $form->param_value('mime_type'),
             filename    => $form->param_value('filename'),
+            site        => $site->id,
+            global      => $form->param_value('global')||0,
         });
         
         $asset->set_content($form->param_value('content'));
@@ -88,7 +102,7 @@ sub edit_asset :Local :Args(1) :AppKitForm {
     $self->add_final_crumb($c, "Edit asset");
 
     my $form  = $c->stash->{form};
-    my $asset = $c->model('CMS::Assets')->published->find({id => $asset_id});
+    my $asset = $c->model('CMS::Asset')->published->find({id => $asset_id});
     
     if ($asset->mime_type =~ /^text/) {
         # Add in-line edit control to form
@@ -107,14 +121,15 @@ sub edit_asset :Local :Args(1) :AppKitForm {
     
     $form->default_values({
         description => $asset->description,
+        global      => $asset->global,
     });
     
     $form->process;
     
     if ($form->submitted_and_valid) {
-        if ($form->param_value('description') ne $asset->description) {
-            $asset->update({description => $form->param_value('description')});
-        }
+        #if ($form->param_value('description') ne $asset->description) {
+            $asset->update({description => $form->param_value('description'), global => $form->param_value('global')||0});
+        #}
         
         if (my $file = $c->req->upload('file')) {
             $asset->set_content($file->slurp);
@@ -139,11 +154,14 @@ sub edit_asset :Local :Args(1) :AppKitForm {
 sub upload_assets :Local :Args(0) {
     my ($self, $c) = @_;
     
-    my $asset_rs = $c->model('CMS::Assets');
+    my $asset_rs = $c->model('CMS::Asset');
+    my $global   = $c->req->body_params->{make_global} ? 1 : 0;
     if (my $file = $c->req->upload('file')) {
         my $asset = $asset_rs->create({
             mime_type   => $file->type,
             filename    => $file->basename,
+            site        => $c->stash->{site}->id,
+            global      => $global,
         });
 
         $asset->set_content($file->slurp);       
@@ -159,7 +177,7 @@ sub delete_asset :Local :Args(1) :AppKitForm {
     $self->add_final_crumb($c, "Delete asset");
     
     my $form  = $c->stash->{form};
-    my $asset = $c->model('CMS::Assets')->find({id => $asset_id});
+    my $asset = $c->model('CMS::Asset')->find({id => $asset_id});
 
     if ($form->submitted_and_valid) {
         $asset->remove;

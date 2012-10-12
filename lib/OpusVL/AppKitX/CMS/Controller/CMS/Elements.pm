@@ -25,6 +25,8 @@ __PACKAGE__->config
 sub auto :Private {
     my ($self, $c) = @_;
 
+    $c->forward('/modules/cms/site_validate');
+
     if ($c->req->param('cancel')) {
         $c->res->redirect($c->uri_for($c->controller->action_for('index')));
         $c->detach;
@@ -44,7 +46,14 @@ sub auto :Private {
 sub index :Path :Args(0) :NavigationName('Elements') {
     my ($self, $c) = @_;
     
-    $c->stash->{elements} = [$c->model('CMS::Elements')->published->all];
+    $c->stash->{elements} = [$c->model('CMS::Element')
+        ->search({
+            -or => [
+                site    => $c->stash->{site}->id,
+                global  => 1,
+            ]
+        })
+        ->published->all];
 }
 
 
@@ -57,8 +66,10 @@ sub new_element :Local :Args(0) :AppKitForm {
     
     my $form = $c->stash->{form};
     if ($form->submitted_and_valid) {
-        my $element = $c->model('CMS::Elements')->create({
-            name => $form->param_value('name'),
+        my $element = $c->model('CMS::Element')->create({
+            name   => $form->param_value('name'),
+            site   => $c->stash->{site}->id,
+            global => $form->param_value('global')||0,
         });
         
         $element->set_content($form->param_value('content'));
@@ -76,19 +87,20 @@ sub edit_element :Local :Args(1) :AppKitForm {
     $self->add_final_crumb($c, "Edit element");
     
     my $form    = $c->stash->{form};
-    my $element = $c->model('CMS::Elements')->published->find({id => $element_id});
+    my $element = $c->model('CMS::Element')->published->find({id => $element_id});
     
     $form->default_values({
         name    => $element->name,
         content => $element->content,
+        global  => $element->global
     });
     
     $form->process;
     
     if ($form->submitted_and_valid) {
-        if ($form->param_value('name') ne $element->name) {
-            $element->update({name => $form->param_value('name')});
-        }
+        #if ($form->param_value('name') ne $element->name) {
+            $element->update({name => $form->param_value('name'),global => $form->param_value('global')||0});
+        #}
 
         if ($form->param_value('content') ne $element->content) {
             $element->set_content($form->param_value('content'));
@@ -107,7 +119,7 @@ sub delete_element :Local :Args(1) :AppKitForm {
     $self->add_final_crumb($c, "Delete element");
     
     my $form    = $c->stash->{form};
-    my $element = $c->model('CMS::Elements')->find({id => $element_id});
+    my $element = $c->model('CMS::Element')->find({id => $element_id});
 
     if ($form->submitted_and_valid) {
         $element->remove;

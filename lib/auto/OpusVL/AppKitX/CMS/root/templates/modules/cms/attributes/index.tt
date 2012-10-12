@@ -16,7 +16,7 @@
         $('.type_selection').each(combo_change);
     });
 </script>
-<h1>Attributes</h1>
+[% INCLUDE modules/cms/header.tt title="Attributes" %]
 
 [% form.start | none %]
 

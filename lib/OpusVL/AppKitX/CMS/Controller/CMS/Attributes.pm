@@ -55,7 +55,7 @@ sub index
     my $form    = $c->stash->{form};
     
     foreach my $object_type (qw/page attachment/) {
-        my $type_rs  = $c->model('CMS::' . ucfirst($object_type) . 'AttributeDetails');
+        my $type_rs  = $c->model('CMS::' . ucfirst($object_type) . 'AttributeDetail');
         my @types    = $type_rs->active->all;
         my $fieldset = $form->get_all_element('current_' . $object_type . '_attributes');
         my $repeater = $form->get_all_element($object_type . '_rep');
@@ -79,7 +79,7 @@ sub index
     if($form->submitted_and_valid)
     {
         foreach my $object_type (qw/page attachment/) {
-            my $type_rs = $c->model('CMS::' . ucfirst($object_type) . 'AttributeDetails');
+            my $type_rs = $c->model('CMS::' . ucfirst($object_type) . 'AttributeDetail');
             my $count   = $type_rs->active->count;
             my $name    = $form->param_value($object_type.'_name');
             my $code    = $form->param_value($object_type.'_code');
@@ -129,7 +129,7 @@ sub index
         my $defaults;
         
         foreach my $object_type (qw/page attachment/) {
-            my $type_rs = $c->model('CMS::' . ucfirst($object_type) . 'AttributeDetails');
+            my $type_rs = $c->model('CMS::' . ucfirst($object_type) . 'AttributeDetail');
             my @types   = $type_rs->active->all;
             my $count   = scalar @types;
             my $i       = 1;

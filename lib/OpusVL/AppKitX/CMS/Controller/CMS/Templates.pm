@@ -26,6 +26,8 @@ __PACKAGE__->config
 sub auto :Private {
     my ($self, $c) = @_;
 
+    $c->forward('/modules/cms/site_validate');
+
     if ($c->req->param('cancel')) {
         $c->res->redirect($c->uri_for($c->controller->action_for('index')));
         $c->detach;
@@ -37,6 +39,8 @@ sub auto :Private {
         name    => 'Templates',
         url     => $c->uri_for( $c->controller->action_for('index'))
     };
+
+    1;
 }
 
 
@@ -44,10 +48,15 @@ sub auto :Private {
 
 sub index :Path :Args(0) :NavigationName('Templates') {
     my ($self, $c) = @_;
-    
-    $c->stash->{templates} = [$c->model('CMS::Templates')->all];
+    my $site = $c->stash->{site};
+    my $templates = $c->model('CMS::Template')->search({
+        -or => [
+            site => $site->id,
+            global => 1,
+        ]
+    });
+    $c->stash->{templates} = [$templates->all];
 }
-
 
 #-------------------------------------------------------------------------------
 
@@ -61,8 +70,10 @@ sub new_template :Local :Args(0) :AppKitForm {
     
     my $form = $c->stash->{form};
     if ($form->submitted_and_valid) {
-        my $template = $c->model('CMS::Templates')->create({
-            name => $form->param_value('name'),
+        my $template = $c->model('CMS::Template')->create({
+            name   => $form->param_value('name'),
+            site   => $c->stash->{site}->id,
+            global => $form->param_value('global')||0,
         });
         
         $template->set_content($form->param_value('content'));
@@ -83,19 +94,23 @@ sub edit_template :Local :Args(1) :AppKitForm {
     };
     
     my $form     = $c->stash->{form};
-    my $template = $c->model('CMS::Templates')->find({id => $template_id});
+    my $template = $c->model('CMS::Template')->find({id => $template_id});
     
     $form->default_values({
         name    => $template->name,
         content => $template->content,
+        global  => $template->global,
     });
     
     $form->process;
     
     if ($form->submitted_and_valid) {
-        if ($form->param_value('name') ne $template->name) {
-            $template->update({name => $form->param_value('name')});
-        }
+        #if ($form->param_value('name') ne $template->name) {
+            $template->update({
+                name => $form->param_value('name'),
+                global => $form->param_value('global')||0
+            });
+        #}
         
         if ($form->param_value('content') ne $template->content) {
             $template->set_content($form->param_value('content'));

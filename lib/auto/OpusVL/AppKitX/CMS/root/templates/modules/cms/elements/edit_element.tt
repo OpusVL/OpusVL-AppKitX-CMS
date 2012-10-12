@@ -1,4 +1,4 @@
-<h1>Edit element</h1>
+[% INCLUDE modules/cms/header.tt title="Edit element" %]
 [% META appkitfeature_tablesorter = 1 %]
 [% PROCESS modules/cms/preprocess.tt %]
 [% form.render | none %]

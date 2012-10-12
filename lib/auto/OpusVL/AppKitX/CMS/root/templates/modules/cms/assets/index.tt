@@ -1,4 +1,4 @@
-<h1>Assets</h1>
+[% INCLUDE modules/cms/header.tt title="Assets" %]
 
 <div class="content_block">
     [% IF assets.size > 0 %]
@@ -10,6 +10,7 @@
                     <th>Name</th>
                     <th>Description</th>
                     <th>Type</th>
+                    <th>Global</th>
                     <th>Preview</th>
                     <th>Action</th>
                 </tr>
@@ -21,15 +22,16 @@
                         <td>[% asset.filename %]</td>
                         <td>[% asset.description %]</td>
                         <td>[% asset.mime_type %]</td>
+                        <td>[% IF asset.global %] <font color="green">Yes</font> [% ELSE %] <font color="red">No</font> [% END %]</td>
                         <td>
                             [% IF asset.mime_type.match('image') %]
-                                <a href="[% c.uri_for(c.controller('Root').action_for('_asset'), asset.id, asset.filename) %]" rel="facebox" class="link">thumbnail</a>
+                                <a href="[% c.uri_for(c.controller('Root').action_for('_asset'), asset.id, asset.filename) %]" rel="facebox">thumbnail</a>
                             [% END %]
                         </td>
                         <td>
-                            <a href="[% c.uri_for(c.controller.action_for('edit_asset'), asset.id) %]" class="link">Edit</a>
-                            <a href="[% c.uri_for(c.controller.action_for('delete_asset'), asset.id) %]" class="link">Delete</a>
-                            <a href="[% c.uri_for(c.controller('Root').action_for('_asset'), asset.id, asset.filename) %]" class="link" target="__blank">View</a>
+                            <a href="[% c.uri_for(c.controller.action_for('edit_asset'), asset.id) %]">Edit</a>
+                            <a href="[% c.uri_for(c.controller.action_for('delete_asset'), asset.id) %]">Delete</a>
+                            <a href="[% c.uri_for(c.controller('Root').action_for('_asset'), asset.id, asset.filename) %]" target="__blank">View</a>
                         </td>
                     </tr>
                 [% END %]

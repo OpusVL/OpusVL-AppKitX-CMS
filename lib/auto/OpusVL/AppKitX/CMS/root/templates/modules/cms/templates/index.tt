@@ -1,4 +1,4 @@
-<h1>Templates</h1>
+[% INCLUDE modules/cms/header.tt title="Templates" %]
 
 <div class="content_block">
     [% IF templates.size > 0 %]
@@ -7,6 +7,7 @@
             <thead>
                 <tr>
                     <th>Name</th>
+                    <th>Global?</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -14,6 +15,7 @@
                 [% FOREACH template IN templates %]
                     <tr>
                         <td>[% template.name %]</td>
+                        <td>[% IF template.global %]<font color="green">Yes</font>[% ELSE %]<font color="red">No</font>[% END %]</td>
                         <td><a href="[% c.uri_for(c.controller.action_for('edit_template'), template.id) %]">Edit</a></td>
                     </tr>
                 [% END %]

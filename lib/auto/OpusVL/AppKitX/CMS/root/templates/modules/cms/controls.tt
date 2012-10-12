@@ -4,11 +4,11 @@
         <tbody>
             <tr>
                 <td><strong>Editor</strong></td>
-                <td><a href="javascript:void(0);" class="link" id="toggle-nic">Toggle</a></td>
+                <td><a href="javascript:void(0);" id="toggle-nic">Toggle</a></td>
             </tr>
             <tr>
                 <td><strong>Element</strong></td>
-                <td><a href="javascript:void(0);" class="link" id="add-element">Toggle</a></td>
+                <td><a href="javascript:void(0);" id="add-element">Toggle</a></td>
             </tr>
         </tbody>
     </table>

@@ -27,11 +27,13 @@ sub auto :Private {
     my ($self, $c) = @_;
 
     $c->stash->{section} = 'Pages';
- 
+    $c->forward('/modules/cms/site_validate');
     push @{ $c->stash->{breadcrumbs} }, {
         name    => 'Pages',
         url     => $c->uri_for( $c->controller->action_for('index'))
     };
+
+    1;
 }
 
 
@@ -39,8 +41,16 @@ sub auto :Private {
 
 sub index :Path :Args(0) :NavigationHome :NavigationName('Pages') {
     my ($self, $c) = @_;
-    
-    $c->stash->{pages} = [ $c->model('CMS::Pages')->published->search({},{order_by => {'-asc' => 'url'}}) ];
+    my $site = $c->stash->{site};
+
+    $c->stash->{pages} = [ $c->model('CMS::Page')
+        ->search({
+            site => $site->id,
+            -or => [
+                status => 'published',
+                status => 'draft',
+            ],
+        }, { order_by => { '-asc' => 'url' }}) ];
 }
 
 
@@ -48,35 +58,49 @@ sub index :Path :Args(0) :NavigationHome :NavigationName('Pages') {
 
 sub new_page :Local :Args(0) :AppKitForm {
     my ($self, $c) = @_;
+    my $site       = $c->stash->{site};
+
+    my $templates = $c->model('CMS::Template')
+        ->search({ site => $site->id });
+    if ($templates->count < 1) {
+        $c->flash->{error_msg} = "You may want to setup a template before you create a page";
+        $c->res->redirect($c->uri_for($c->controller('Modules::CMS::Templates')->action_for('new_template')));
+        $c->detach;
+    }
 
     if ($c->req->param('cancel')) {
         $c->res->redirect($c->uri_for($c->controller->action_for('index')));
         $c->detach;
     }
     
-    $c->stash->{element_rs} = $c->model('CMS::Elements');
+    $c->stash->{element_rs} = $c->model('CMS::Element');
     $self->add_final_crumb($c, "New page");
 
     my $form = $c->stash->{form};
     
     $form->get_all_element({name=>'template'})->options(
-        [map {[$_->id, $_->name]} $c->model('CMS::Templates')->all]
+        [map {[$_->id, $_->name]} $c->model('CMS::Template')->all]
     );
     $form->get_all_element({name=>'parent'})->options(
-        [map {[$_->id, $_->breadcrumb . " - " . $_->url]} $c->model('CMS::Pages')->all]
+        [map {[$_->id, $_->breadcrumb . " - " . $_->url]} $c->model('CMS::Page')->all]
     );
-    
+
+    # This part was throwing out undefined value as a HASH reference errors
+    # before validating the $c->req->body_params
     $form->default_values({
         parent => $c->req->param('parent_id'),
-    });
+    }) if $c->req->body_params->{parent_id};
 
     $form->process;
     
     if ($form->submitted_and_valid) {
         my $url = $form->param_value('url');
         unless ($url =~ m!^/!) {$url = "/$url"}
-        
-        my $page = $c->model('CMS::Pages')->create({
+
+        my $status = $c->req->body_params->{preview} ?
+            'preview' : 'published';
+
+        my $page = $c->model('CMS::Page')->create({
             url         => $url,
             description => $form->param_value('description'),
             title       => $form->param_value('title'),
@@ -85,9 +109,17 @@ sub new_page :Local :Args(0) :AppKitForm {
             breadcrumb  => $form->param_value('breadcrumb'),
             template_id => $form->param_value('template') || undef,
             parent_id   => $form->param_value('parent') || undef,
+            site        => $site->id,
+            status      => $status,
+            created_by  => $c->user->id,
         });
         
         $page->set_content($form->param_value('content'));
+
+        if ($status eq 'preview') {
+            $c->res->redirect($c->uri_for($c->controller->action_for('preview'), $page->id, 0));
+            $c->detach;
+        }
 
         $c->res->redirect($c->uri_for($c->controller->action_for('index')));
     }
@@ -98,6 +130,7 @@ sub new_page :Local :Args(0) :AppKitForm {
 
 sub edit_page :Local :Args(1) :AppKitForm {
     my ($self, $c, $page_id) = @_;
+    my $site = $c->stash->{site};
     
     if ($c->req->param('cancel')) {
         $c->res->redirect($c->uri_for($c->controller->action_for('index')));
@@ -106,14 +139,14 @@ sub edit_page :Local :Args(1) :AppKitForm {
     
     $self->add_final_crumb($c, "Edit page");
 
-    my $page = $c->model('CMS::Pages')->find({id => $page_id});
+    my $page = $c->model('CMS::Page')->find({id => $page_id});
     my $form = $c->stash->{form};
         
     $form->get_all_element({name=>'template'})->options(
-        [map {[$_->id, $_->name]} $c->model('CMS::Templates')->all]
+        [map {[$_->id, $_->name]} $c->model('CMS::Template')->all]
     );
     $form->get_all_element({name=>'parent'})->options(
-        [map {[$_->id, $_->breadcrumb . " - " . $_->url]} $c->model('CMS::Pages')->all]
+        [map {[$_->id, $_->breadcrumb . " - " . $_->url]} $c->model('CMS::Page')->all]
     );
     
     my $aliases_fieldset = $form->get_all_element({name=>'page_aliases'});
@@ -156,9 +189,9 @@ sub edit_page :Local :Args(1) :AppKitForm {
         priority    => $page->priority,
     };
     
-    $self->construct_attribute_form($c, 'CMS::PageAttributeDetails');
+    $self->construct_attribute_form($c, 'CMS::PageAttributeDetail');
 
-    my @fields = $c->model('CMS::PageAttributeDetails')->active->all;
+    my @fields = $c->model('CMS::PageAttributeDetail')->active->all;
     for my $field (@fields)
     {
         my $value = $page->page_attribute($field);
@@ -167,11 +200,35 @@ sub edit_page :Local :Args(1) :AppKitForm {
     
     $form->default_values($defaults);
     $form->process;
-    
+
     if ($form->submitted_and_valid) {
         my $url = $form->param_value('url');
         unless ($url =~ m!^/!) {$url = "/$url"}
-        
+
+        if ($c->req->body_params->{preview}) {
+            my $page_draft;
+            if ($page->content ne $form->param_value('content')) {
+                $page_draft = $c->model('CMS::PageDraft')->create({
+                    created_by => $c->user->id,
+                    page_id    => $page->id,
+                    status     => 'draft',
+                });
+
+                if ($page_draft) {
+                    $page_draft->create_draft($form->param_value('content'));
+                }
+            }
+            else {
+                $c->flash->{status_msg} = "No content was altered, so no draft created";
+                $c->res->redirect($c->req->uri);
+                $c->detach;
+            }
+
+            my $final_id = $page_draft ? $page_draft->id : 0;
+            $c->res->redirect($c->uri_for($self->action_for('preview'), $page->id, $final_id));
+            $c->detach;
+        }
+
         $page->update({
             url         => $url,
             description => $form->param_value('description'),
@@ -181,6 +238,7 @@ sub edit_page :Local :Args(1) :AppKitForm {
             breadcrumb  => $form->param_value('breadcrumb'),
             template_id => $form->param_value('template') || undef,
             parent_id   => $form->param_value('parent') || undef,
+            site        => $site->id,
         });
         
         if ($page->content ne $form->param_value('content')) {
@@ -258,6 +316,22 @@ sub delete_page :Local :Args(1) :AppKitForm {
     $c->stash->{page} = $page;
 }
 
+
+#-------------------------------------------------------------------------------
+
+sub save_preview :Local :Args(1) {
+    my ($self, $c, $page_id) = @_;
+
+    my $page = $c->model('CMS::Page')->find($page_id);
+    if ($page) {
+        if ($page->status eq 'preview') {
+            $page->update({ status => 'published' });
+            $c->flash->{status_msg} = "Successfully saved your page";
+            $c->res->redirect($c->uri_for($self->action_for('edit_page'), $page_id));
+            $c->detach;
+        }
+    }
+}
 
 #-------------------------------------------------------------------------------
 
@@ -341,6 +415,17 @@ sub edit_attachment :Local :Args(1) :AppKitForm {
     $c->stash->{attachment} = $attachment;
 }
 
+#-------------------------------------------------------------------------------
+
+sub revisions :Local :Args(1) {
+    my ($self, $c, $page_id) = @_;
+
+    my $page = $c->model('CMS::Page')->find($page_id);
+    if ($page) {
+        $c->stash->{getpage} = $page;
+        $c->stash->{drafts}  = $page->page_drafts;
+    }
+}
 
 #-------------------------------------------------------------------------------
 
@@ -419,7 +504,7 @@ sub update_page_attributes
     my ($self, $c, $page) = @_;
 
     my $form = $c->stash->{form};
-    my @fields = $c->model('CMS::PageAttributeDetails')->active->all;
+    my @fields = $c->model('CMS::PageAttributeDetail')->active->all;
     for my $field (@fields)
     {
         my $value = $form->param_value('global_fields_' . $field->code);
@@ -445,6 +530,202 @@ sub update_attachment_attributes
 
 }
 
+#-------------------------------------------------------------------------------
+
+sub draft_delete :Local :Path('draft/delete') :Args(1) {
+    my ($self, $c, $draft_id) = @_;
+    my $draft = $c->model('CMS::PageDraft')->find($draft_id);
+    my $page;
+    if ($draft) {
+        $page = $draft->page;
+        $draft->page_drafts_contents->delete;
+        $draft->delete;
+        $c->flash->{status_msg} = "Successfully removed draft";
+    }
+    else {
+        $c->flash->{error_msg} = "Could not find page draft with that id";
+        $c->res->redirect($c->uri_for($self->action_for('index')));
+        $c->detach;
+    }
+
+    $c->res->redirect($c->uri_for($self->action_for('revisions'), $page->id));
+    $c->detach;
+}
 
 #-------------------------------------------------------------------------------
+
+sub preview :Local :Args(2) {
+    my ($self, $c, $page_id, $draft_id) = @_;
+    
+
+    if ($c->req->body_params->{cancel}) {
+        my $page = $c->model('CMS::Page')->find($c->req->body_params->{page_id});
+        my $site = $c->model('CMS::SitesUser')->find({ site_id => $page->site->id, user_id => $c->user->id });
+        if ($site) {
+            $page->delete;
+            $c->flash->{status_msg} = 'Successfully cancelled and removed preview';
+            $c->res->redirect($c->uri_for($c->controller('CMS::Pages')->action_for('index')));
+            $c->detach;
+        }
+        else {
+            $c->flash->{error_msg} = 'Unable to delete page. Do you have access to it?';
+            $c->flash->{status_msg} = 'Successfully published page';
+            $c->res->redirect($c->uri_for($c->controller('CMS::Pages')->action_for('index')));
+            $c->detach;
+        }
+    }
+
+    if ($c->req->body_params->{publish}) {
+        my $page = $c->model('CMS::Page')->find($c->req->body_params->{page_id});
+        my $site = $c->model('CMS::SitesUser')->find({ site_id => $page->site->id, user_id => $c->user->id });
+        if ($site) {
+            $page->update({ status => 'published' });
+            $c->flash->{status_msg} = 'Successfully published page';
+            $c->res->redirect($c->uri_for($c->controller('CMS::Pages')->action_for('index')));
+            $c->detach;
+        }
+        else {
+            $c->flash->{error_msg} = 'Unable to publish page. Do you have access to it?';
+            $c->flash->{status_msg} = 'Successfully published page';
+            $c->res->redirect($c->uri_for($c->controller('CMS::Pages')->action_for('index')));
+            $c->detach;
+        }
+    }
+
+    #my $page = $c->model('CMS::PageDraft')->find($page_id);
+
+    my $page = $c->model('CMS::Page')->find($page_id);
+    my $site = $page->site;
+    my $asset_rs = $site->assets;
+    $c->stash->{me}  = $page;
+    $c->stash->{cms} = {
+        asset => sub {
+            if (my $asset = $asset_rs->available->find({id => shift})) {
+                return $c->uri_for($self->action_for('_asset'), $asset->id, $asset->filename);
+            }
+        },
+        attachment => sub {
+            if (my $attachment = $c->model('CMS::Attachment')->find({id => shift})) {
+                return $c->uri_for($self->action_for('_attachment'), $attachment->id, $attachment->filename);
+            }
+        },
+        element => sub {
+            if (my $element = $c->model('CMS::Element')->published->find({id => shift})) {
+                return $element->content;
+            }
+        },
+        page => sub {
+            return $c->model('CMS::Page')->published->find({id => shift});
+        },
+        pages => sub {
+            return $c->model('CMS::Page')->published->attribute_search(@_);
+        },
+        param => sub {
+            return $c->req->param(shift);
+        },
+        toplevel => sub {
+            return $c->model('CMS::Page')->published->toplevel;
+        },
+        thumbnail => sub {
+            return $c->uri_for($self->action_for('_thumbnail'), @_);
+        },
+    };
+    
+    if (my $template = $page->template->content) {
+        # if the draft_id is 0, then we assume we're using the content from a drafted current page
+        # confusing, yeah..
+        my $draft;
+        my $type;
+        my $id;
+        if ($draft_id == 0) {
+            $draft = $page;
+            $type  = 'page';
+            $id    = $page->id;
+        }
+        else {
+            $draft = $c->model('CMS::PageDraft')->find($draft_id);
+            $type  = 'draft';
+            $id    = $draft_id; 
+        }
+        my $back_url = $c->uri_for($self->action_for('index'));
+        $template .= q{
+            <style type="text/css">
+                .iframe-panel {
+                    position: absolute;
+                    border-style: none;
+                    width: 100%;
+                    top: 0 !important;
+                    height:30px;
+                }
+
+                .cms-preview-content { margin-top: 50px; }
+            </style>
+        };
+        $template .= '<iframe frameborder="0" border="0" cellspacing="0" class="iframe-panel" src="' . $c->uri_for($c->controller('Modules::CMS::Ajax')->action_for('preview_panel'), $type, $id) . '"></iframe>';
+        $template = '<div class="cms-preview-content">[% BLOCK content %]' . $draft->content . '[% END %]' . $template . '</div>';
+        $c->stash->{template}   = \$template;
+        $c->stash->{no_wrapper} = 1;
+    }
+    
+    ##$c->forward($c->view('CMS'));
+    $c->forward('AppKitTT');
+}
+
+sub _asset :Local :Args(2) {
+    my ($self, $c, $asset_id, $filename) = @_;
+    
+    if (my $asset = $c->model('CMS::Asset')->published->find({id => $asset_id})) {
+        $c->response->content_type($asset->mime_type);
+        $c->response->body($asset->content);
+    } else {
+        $c->response->status(404);
+        $c->response->body("Not found");
+    }
+}
+
+sub _attachment :Local :Args(2) {
+    my ($self, $c, $attachment_id, $filename) = @_;
+    
+    if (my $attachment = $c->model('CMS::Attachment')->find({id => $attachment_id})) {
+        $c->response->content_type($attachment->mime_type);
+        $c->response->body($attachment->content);
+    } else {
+        $c->response->status(404);
+        $c->response->body("Not found");
+    }
+}
+
+sub _thumbnail :Local :Args(2) {
+    my ($self, $c, $type, $id) = @_;
+    
+    given ($type) {
+        when ('asset') {
+            if (my $asset = $c->model('CMS::Asset')->published->find({id => $id})) {
+                $c->stash->{image} = $asset->content;
+            }
+        }
+        when ('attachment') {
+            if (my $attachment = $c->model('CMS::Attachment')->find({id => $id})) {
+                $c->stash->{image} = $attachment->content;
+            }
+        }
+    }
+    
+    if ($c->stash->{image}) {
+        $c->stash->{x}       = $c->req->param('x') || undef;
+        $c->stash->{y}       = $c->req->param('y') || undef;
+        $c->stash->{zoom}    = $c->req->param('zoom') || 100;
+        $c->stash->{scaling} = $c->req->param('scaling') || 'fill';
+        
+        unless ($c->stash->{x} || $c->stash->{y}) {
+            $c->stash->{y} = 50;
+        }
+        
+        $c->forward($c->view('CMS::Thumbnail'));
+    } else {
+        $c->response->status(404);
+        $c->response->body("Not found");
+    }
+}
+
 1;

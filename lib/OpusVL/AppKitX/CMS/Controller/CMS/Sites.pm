@@ -23,8 +23,6 @@ __PACKAGE__->config
 
 sub auto :Private {
     my ($self, $c) = @_;
-
-    $c->stash->{section} = 'Redirects';
  
     push @{ $c->stash->{breadcrumbs} }, {
         name    => 'Sites',
@@ -37,8 +35,11 @@ sub auto :Private {
 
 sub index :Path :Args(0) :NavigationHome :NavigationName('Sites') {
     my ($self, $c) = @_;
-    
-    $c->stash->{sites} = [$c->model('CMS::Site')->all];
+    my $sites = $c->stash->{all_sites};
+    #my $sites = $c->user->sites_users;
+    if ($sites) {
+        if (! $c->stash->{site}) { $c->session->{site} = $sites->[0]->site }
+    }
 }
 
 
@@ -111,6 +112,7 @@ sub edit :Chained('site_root') :PathPart('edit') :Args(0) :NavigationName('Edit 
     my $site        = $c->stash->{site};
     my $sites_users = [ $site->sites_users->all ];
 
+    $c->session->{site} = $site;
     $c->stash->{sites_users} = $sites_users;
 
     # populate default values

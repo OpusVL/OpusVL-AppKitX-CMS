@@ -21,6 +21,10 @@ elements:
             name: description
             label: Description
 
+          - type: Checkbox
+            name: global
+            label: Make this asset global?
+
   - type: Submit
     name: submit
     value: Save

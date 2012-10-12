@@ -1,0 +1,36 @@
+<style type="text/css">
+	body {
+		background-color: #000;
+		color: #fff;
+		font-family : Verdana, "Bitstream Vera Sans", "DejaVu Sans", Tahoma, Geneva, Arial, Sans-serif;
+		font-size:12px;
+	}
+
+	.panel a {
+		text-decoration:none !important;
+		font-weight: bold !important;
+		color: #fff;
+	}
+
+	.panel a:hover {
+		text-decoration: overline underline;
+		font-weight:bold !important;
+		color: #82FA58;
+	}
+</style>
+
+<span class="panel">
+	[[% page.title %] preview options] 
+	<a id="preview-save" href="javascript:void(0);">Publish</a> | 
+	<a href="">Cancel</a> | 
+	<a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('index')) %]">Back to pages</a>
+</span>
+
+<script type="text/javascript" src="/static/js/jquery-1.7.1.min.js"></script>
+<script type="text/javascript">
+	$(function() {
+		$('#preview-save').click(function() {
+			window.top.location.replace("[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('save_preview'), page.id) %]");
+		});
+	});
+</script>
