@@ -2,6 +2,7 @@
 [% META appkitfeature_tablesorter = 1 %]
 [% PROCESS modules/cms/preprocess.tt %]
 
+<a href="[% c.uri_for(c.controller.action_for('index')) %]" class="link_button link_button_back">Back to pages</a>
 <div style="height:10px" class="clear"></div>
 [% form.render | none %]
 

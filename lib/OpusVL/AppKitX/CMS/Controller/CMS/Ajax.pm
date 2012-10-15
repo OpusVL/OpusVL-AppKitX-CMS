@@ -48,16 +48,9 @@ sub load_controls :Local :Args(0) {
     }
 }
 
-sub preview_panel :Local :Args(2) {
-    my ($self, $c, $type, $id) = @_;
-    my $page;
-    if ($type eq 'draft') {
-        my $draft = $c->model('CMS::PageDraft')->find($id);
-        $page = $draft->page if $draft;
-    }
-    elsif ($type eq 'page') {
-        $page = $c->model('CMS::Page')->find($id);
-    }
+sub preview_panel :Local :Args(1) {
+    my ($self, $c, $page_id) = @_;
+    my $page = $c->model('CMS::Page')->find($page_id);
 
     $c->stash->{page} = $page;
 }

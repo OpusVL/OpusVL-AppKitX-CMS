@@ -5,7 +5,7 @@
 <div class="clear" style="height:10px"></div>
 
 <div class="content_block">
-	[% IF drafts %]
+	[% IF pages %]
 	<table class="tablesorter">
 		<thead>
 			<tr>
@@ -15,24 +15,17 @@
 			</tr>
 		</thead>
 		<tbody>
-			[% IF getpage.status == 'draft' || drafts.count < 1 %]
+			[% WHILE (currpage = pages.next) %]
+				[%# SET date_created = draft.page_drafts_contents.created %]
 				<tr>
-					<td>[% date_long(getpage.created) %] @ [% getpage.created.time %] <strong>(Current Version)</strong></td>
-					<td>[% getpage.created_by.name %] ([% getpage.created_by.username %])</td>
+					<td>[% date_long(currpage.created) %] @ [% currpage.created.time %][% IF currpage.status == 'published' %] <strong>(Current Version)</strong>[% END %]</td>
+					<td>[% currpage.created_by.name %] ([% currpage.created_by.username %])</td>
 					<td>
-						<a target="_blank" href="[% c.uri_for(c.controller.action_for('preview'), getpage.id, 0) %]">Preview</a>
-					</td>
-				</tr>
-			[% END %]
-			[% WHILE (draft = drafts.next) %]
-				[% SET date_created = draft.page_drafts_contents.created %]
-				<tr>
-					<td>[% date_long(date_created) %] @ [% date_created.time %]</td>
-					<td>[% draft.created_by.name %] ([% draft.created_by.username %])</td>
-					<td>
-						<a target="_blank" href="[% c.uri_for(c.controller.action_for('preview'), getpage.id, draft.id) %]">Preview</a> | 
-						<a href="[% c.uri_for(c.controller.action_for('draft_delete'), draft.id) %]">Delete</a> | 
-						<a href="">Restore</a>
+						<a target="_blank" href="[% c.uri_for(c.controller.action_for('preview'), currpage.id) %]">Preview</a>
+						[% IF currpage.status == 'published' %]
+						[% ELSE %]
+						 | <a href="[% c.uri_for(c.controller.action_for('restore'), currpage.id) %]">Restore</a>
+						[% END %]
 					</td>
 				</tr>
 			[% END %]

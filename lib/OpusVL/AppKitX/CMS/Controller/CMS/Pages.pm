@@ -46,10 +46,7 @@ sub index :Path :Args(0) :NavigationHome :NavigationName('Pages') {
     $c->stash->{pages} = [ $c->model('CMS::Page')
         ->search({
             site => $site->id,
-            -or => [
-                status => 'published',
-                status => 'draft',
-            ],
+            status => 'published',
         }, { order_by => { '-asc' => 'url' }}) ];
 }
 
@@ -117,7 +114,7 @@ sub new_page :Local :Args(0) :AppKitForm {
         $page->set_content($form->param_value('content'));
 
         if ($status eq 'preview') {
-            $c->res->redirect($c->uri_for($c->controller->action_for('preview'), $page->id, 0));
+            $c->res->redirect($c->uri_for($c->controller->action_for('preview'), $page->id) . "?panel=1");
             $c->detach;
         }
 
@@ -206,27 +203,14 @@ sub edit_page :Local :Args(1) :AppKitForm {
         unless ($url =~ m!^/!) {$url = "/$url"}
 
         if ($c->req->body_params->{preview}) {
-            my $page_draft;
             if ($page->content ne $form->param_value('content')) {
-                $page_draft = $c->model('CMS::PageDraft')->create({
-                    created_by => $c->user->id,
-                    page_id    => $page->id,
-                    status     => 'draft',
-                });
-
-                if ($page_draft) {
-                    $page_draft->create_draft($form->param_value('content'));
+                my $copy = $page->copy({ status => 'preview' });
+                if ($copy) {
+                    $copy->set_content($form->param_value('content'));
+                    $c->res->redirect($c->uri_for($self->action_for('preview'), $copy->id) . "?panel=1");
+                    $c->detach;
                 }
             }
-            else {
-                $c->flash->{status_msg} = "No content was altered, so no draft created";
-                $c->res->redirect($c->req->uri);
-                $c->detach;
-            }
-
-            my $final_id = $page_draft ? $page_draft->id : 0;
-            $c->res->redirect($c->uri_for($self->action_for('preview'), $page->id, $final_id));
-            $c->detach;
         }
 
         $page->update({
@@ -324,9 +308,30 @@ sub save_preview :Local :Args(1) {
 
     my $page = $c->model('CMS::Page')->find($page_id);
     if ($page) {
+        # There's a bug where if you save a preview of an edited page
+        # you end up with duplicate published versions.. let's try to patch that 
+        # up briefly here, for now
+        if (my $is_page = $c->model('CMS::Page')->find({ url => $page->url, status => 'published' })) {
+            $is_page->update({ status => 'draft' });
+        }
         if ($page->status eq 'preview') {
             $page->update({ status => 'published' });
             $c->flash->{status_msg} = "Successfully saved your page";
+            $c->res->redirect($c->uri_for($self->action_for('edit_page'), $page_id));
+            $c->detach;
+        }
+    }
+}
+
+#-------------------------------------------------------------------------------
+
+sub cancel_preview :Local :Args(1) {
+    my ($self, $c, $page_id) = @_;
+
+    my $page = $c->model('CMS::Page')->find($page_id);
+    if ($page) {
+        if ($page->status eq 'preview') {
+            $c->flash->{status_msg} = "Cancelled preview";
             $c->res->redirect($c->uri_for($self->action_for('edit_page'), $page_id));
             $c->detach;
         }
@@ -423,7 +428,34 @@ sub revisions :Local :Args(1) {
     my $page = $c->model('CMS::Page')->find($page_id);
     if ($page) {
         $c->stash->{getpage} = $page;
-        $c->stash->{drafts}  = $page->page_drafts;
+        $c->stash->{pages}  = $c->model('CMS::Page')->search({
+            url => $page->url
+        },
+        {
+            order_by => { -desc => 'created' }
+        });
+    }
+}
+
+#-------------------------------------------------------------------------------
+
+sub restore :Local :Args(1) {
+    my ($self, $c, $page_id) = @_;
+
+    my $old_page = $c->model('CMS::Page')->find({ id => $page_id, status => { '!=' => 'published' }});
+    if ($old_page) {
+        my $current_page = $c->model('CMS::Page')->find({ url => $old_page->url, status => 'published' });
+        $current_page->update({ status => 'draft' });
+        $old_page->update({ status => 'published' });
+
+        $c->flash->{status_msg} = "Successfully restored revision from " . $old_page->created->dmy . ' ' . $old_page->created->hms;
+        $c->res->redirect($c->uri_for($self->action_for('revisions'), $old_page->id ));
+        $c->detach;
+    }
+    else {
+        $c->flash->{error_msg} = "Can't restore an already published page";
+        $c->res->redirect($c->uri_for($self->action_for('revisions'), $page_id));
+        $c->detach;
     }
 }
 
@@ -554,8 +586,8 @@ sub draft_delete :Local :Path('draft/delete') :Args(1) {
 
 #-------------------------------------------------------------------------------
 
-sub preview :Local :Args(2) {
-    my ($self, $c, $page_id, $draft_id) = @_;
+sub preview :Local :Args(1) {
+    my ($self, $c, $page_id) = @_;
     
 
     if ($c->req->body_params->{cancel}) {
@@ -591,8 +623,6 @@ sub preview :Local :Args(2) {
             $c->detach;
         }
     }
-
-    #my $page = $c->model('CMS::PageDraft')->find($page_id);
 
     my $page = $c->model('CMS::Page')->find($page_id);
     my $site = $page->site;
@@ -632,37 +662,23 @@ sub preview :Local :Args(2) {
     };
     
     if (my $template = $page->template->content) {
-        # if the draft_id is 0, then we assume we're using the content from a drafted current page
-        # confusing, yeah..
-        my $draft;
-        my $type;
-        my $id;
-        if ($draft_id == 0) {
-            $draft = $page;
-            $type  = 'page';
-            $id    = $page->id;
-        }
-        else {
-            $draft = $c->model('CMS::PageDraft')->find($draft_id);
-            $type  = 'draft';
-            $id    = $draft_id; 
-        }
-        my $back_url = $c->uri_for($self->action_for('index'));
-        $template .= q{
-            <style type="text/css">
-                .iframe-panel {
-                    position: absolute;
-                    border-style: none;
-                    width: 100%;
-                    top: 0 !important;
-                    height:30px;
-                }
+        if ($c->req->query_params->{panel}) {
+            $template .= q{
+                <style type="text/css">
+                    .iframe-panel {
+                        position: absolute;
+                        border-style: none;
+                        width: 100%;
+                        top: 0 !important;
+                        height:30px;
+                    }
 
-                .cms-preview-content { margin-top: 50px; }
-            </style>
-        };
-        $template .= '<iframe frameborder="0" border="0" cellspacing="0" class="iframe-panel" src="' . $c->uri_for($c->controller('Modules::CMS::Ajax')->action_for('preview_panel'), $type, $id) . '"></iframe>';
-        $template = '<div class="cms-preview-content">[% BLOCK content %]' . $draft->content . '[% END %]' . $template . '</div>';
+                    .cms-preview-content { margin-top: 50px; }
+                </style>
+            };
+            $template .= '<iframe frameborder="0" border="0" cellspacing="0" class="iframe-panel" src="' . $c->uri_for($c->controller('Modules::CMS::Ajax')->action_for('preview_panel'), $page->id) . '"></iframe>';
+        }
+        $template = '<div class="cms-preview-content">[% BLOCK content %]' . $page->content . '[% END %]' . $template . '</div>';
         $c->stash->{template}   = \$template;
         $c->stash->{no_wrapper} = 1;
     }

@@ -20,10 +20,9 @@
 </style>
 
 <span class="panel">
-	[[% page.title %] preview options] 
+	[[% page.url %] preview options] 
 	<a id="preview-save" href="javascript:void(0);">Publish</a> | 
-	<a href="">Cancel</a> | 
-	<a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('index')) %]">Back to pages</a>
+	<a id="preview-cancel" href="javascript:void(0);">Cancel</a>
 </span>
 
 <script type="text/javascript" src="/static/js/jquery-1.7.1.min.js"></script>
@@ -31,6 +30,10 @@
 	$(function() {
 		$('#preview-save').click(function() {
 			window.top.location.replace("[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('save_preview'), page.id) %]");
+		});
+
+		$('#preview-cancel').click(function() {
+			window.top.location.replace("[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('cancel_preview'), page.id) %]");
 		});
 	});
 </script>
