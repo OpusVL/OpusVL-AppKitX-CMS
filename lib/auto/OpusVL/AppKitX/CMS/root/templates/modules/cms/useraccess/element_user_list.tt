@@ -1,0 +1,49 @@
+[% META appkitfeature_tablesorter = 1 %]
+[% INCLUDE modules/cms/header.tt title="Element user list for $element.name" %]
+
+<a href="[% c.uri_for(c.controller('Modules::CMS::Element').action_for('edit_element'), element.id) %]" class="link_button link_button_back">Back to element</a>
+<div class="clear" style="height:15px"></div>
+
+<div class="content_block">
+	<form action="" method="post">
+		<fieldset>
+	        <legend>Users allowed to modify [% element.name %]</legend>
+	        [% IF element_users.size > 0 %]
+	            <table class="tablesorter">
+	                <thead>
+	                    <tr>
+	                        <th>Username</th>
+	                        <th>Name</th>
+	                        <th>Actions</th>
+	                    </tr>
+	                </thead>
+	                <tbody>
+	                    [% FOREACH element_user IN element_users %]
+	                        <tr>
+	                            <td>[% element_user.user.username %]</td>
+	                            <td>[% element_user.user.name %]</td>
+	                            <td><a href="[% c.uri_for(c.controller('Modules::CMS::UserAccess').action_for('element_revoke_permission'), element.id, site.id, element_user.user.id) %]">Revoke Permission</a></td>
+	                        </tr>
+	                    [% END %]
+	                </tbody>
+	            </table>
+	        [% ELSE %]
+	            <p>No users are allowed to modify this page</p>
+	        [% END %]
+	    </fieldset>
+
+	    <fieldset>
+	        <legend>Add users</legend>
+	        <div class="select label">
+	            <label>Select users</label>
+	            <select multiple="multiple" name="allow_users">
+	                [% FOREACH site_user IN site_users %]
+	                    <option value="[% site_user.user.id %]">[% site_user.user.username %] ([% site_user.user.name %])</option>
+	                [% END %]
+	            </select>
+	        </div>
+	    </fieldset>
+
+	    <input type="submit" class="submit submit_add" name="submit" value="Add users" />
+	</form>
+</div>

@@ -2,6 +2,7 @@ package OpusVL::AppKitX::CMS::Controller::CMS::Pages;
 
 use 5.010;
 use Moose;
+use Scalar::Util 'looks_like_number';
 use namespace::autoclean;
 BEGIN { extends 'Catalyst::Controller::HTML::FormFu'; };
 with 'OpusVL::AppKit::RolesFor::Controller::GUI';
@@ -55,7 +56,7 @@ sub index :Path :Args(0) :NavigationHome :NavigationName('Pages') {
 
 sub new_page :Local :Args(0) :AppKitForm {
     my ($self, $c) = @_;
-    my $site       = $c->stash->{site};
+    my $site       = $c->model('CMS::Site')->find($c->stash->{site}->id);
 
     my $templates = $c->model('CMS::Template')
         ->search({ site => $site->id });
@@ -76,7 +77,7 @@ sub new_page :Local :Args(0) :AppKitForm {
     my $form = $c->stash->{form};
     
     $form->get_all_element({name=>'template'})->options(
-        [map {[$_->id, $_->name]} $c->model('CMS::Template')->all]
+        [map {[$_->id, $_->name . " (" . $_->site->name . ")"]} $site->templates->all]
     );
     $form->get_all_element({name=>'parent'})->options(
         [map {[$_->id, $_->breadcrumb . " - " . $_->url]} $c->model('CMS::Page')->all]
@@ -125,10 +126,49 @@ sub new_page :Local :Args(0) :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
+sub clone_page :Local :Args(2) {
+    my ($self, $c, $site_id, $page_id) = @_;
+
+    if (my $page = $c->model('CMS::Page')->find({ site => $site_id, id => $page_id })) {
+        if (my $new_page = $page->copy({ status => 'preview', url => $page->url . "_clone" })) {
+            my $page_users = $c->model('CMS::PageUser');
+            $new_page->set_content($page->content);
+            $page_users->find_or_create({
+                page_id => $new_page->id,
+                user_id => $c->user->id,
+            });
+
+            $c->flash(status_msg => "You are now viewing the clone of " . $page->title);
+            $c->res->redirect($c->uri_for($self->action_for('edit_page'), $new_page->id));
+            $c->detach;
+        }
+    }
+}
+
+#-------------------------------------------------------------------------------
+
 sub edit_page :Local :Args(1) :AppKitForm {
     my ($self, $c, $page_id) = @_;
     my $site = $c->stash->{site};
+    $site    = $c->model('CMS::Site')->find($c->stash->{site}->id);
     
+    my $page = $c->model('CMS::Page')->find({id => $page_id});
+    my $restricted_row = $c->model('CMS::Parameter')->find({ parameter => 'Restricted' });
+
+    if ($restricted_row) {
+        if ($c->user->users_parameters->find({ parameter_id => $restricted_row->id })) {
+            my $rpage = $c->model('CMS::PageUser')->find({ page_id => $page_id, user_id => $c->user->id });
+            if ($rpage) {
+               unless ($rpage->page->url eq $page->url) {
+                    $c->detach('/access_denied');
+                }
+            }
+            else {
+                $c->detach('/access_denied');
+            }
+        }
+    }
+
     if ($c->req->param('cancel')) {
         $c->res->redirect($c->uri_for($c->controller->action_for('index')));
         $c->detach;
@@ -136,11 +176,14 @@ sub edit_page :Local :Args(1) :AppKitForm {
     
     $self->add_final_crumb($c, "Edit page");
 
-    my $page = $c->model('CMS::Page')->find({id => $page_id});
+    my $page_users = [ $page->page_users->all ];
+    my $site_users = [ $site->sites_users->all ];
     my $form = $c->stash->{form};
-        
+    
+    $c->stash->{site_users} = $site_users;
+    $c->stash->{page_users} = $page_users;
     $form->get_all_element({name=>'template'})->options(
-        [map {[$_->id, $_->name]} $c->model('CMS::Template')->all]
+        [map {[$_->id, $_->name . " (" . $_->site->name . ")"]} $c->model('CMS::Template')->all]
     );
     $form->get_all_element({name=>'parent'})->options(
         [map {[$_->id, $_->breadcrumb . " - " . $_->url]} $c->model('CMS::Page')->all]
@@ -202,18 +245,40 @@ sub edit_page :Local :Args(1) :AppKitForm {
         my $url = $form->param_value('url');
         unless ($url =~ m!^/!) {$url = "/$url"}
 
+        if ($c->req->body_params->{allow_users}) {
+            my $user_rs = $c->model('CMS::User');
+            my $users = $c->req->body_params->{allow_users};
+            $users    = [ $users ] if ref($users) ne 'ARRAY';
+            for my $user (@$users) {
+                $user = $user_rs->find($user);
+                if ($user) {
+                    $page->page_users->find_or_create({
+                        page_id => $page->id,
+                        user_id => $user->id,
+                    });
+                }
+            }
+        }
+
         if ($c->req->body_params->{preview}) {
             if ($page->content ne $form->param_value('content')) {
-                my $copy = $page->copy({ status => 'preview' });
+                my $copy = $page->copy({ status => 'preview', created => DateTime->now() });
                 if ($copy) {
                     $copy->set_content($form->param_value('content'));
                     $c->res->redirect($c->uri_for($self->action_for('preview'), $copy->id) . "?panel=1");
                     $c->detach;
                 }
             }
+            else {
+                $c->res->redirect($c->uri_for($self->action_for('preview'), $page->id) . "?panel=1");
+                $c->detach;
+            }
         }
 
-        $page->update({
+        my $new_page = $page->copy({ status => 'published', created => DateTime->now() });
+        $new_page->set_content($form->param_value('content'));
+
+        $new_page->update({
             url         => $url,
             description => $form->param_value('description'),
             title       => $form->param_value('title'),
@@ -225,12 +290,8 @@ sub edit_page :Local :Args(1) :AppKitForm {
             site        => $site->id,
         });
         
-        if ($page->content ne $form->param_value('content')) {
-            $page->set_content($form->param_value('content'));
-        }
-        
         if (my $file  = $c->req->upload('new_att_file')) {
-            my $attachment = $page->create_related('attachments', {
+            my $attachment = $new_page->create_related('attachments', {
                 filename    => $file->basename,
                 mime_type   => $file->type,
                 description => $form->param_value('new_att_desc'),
@@ -242,7 +303,7 @@ sub edit_page :Local :Args(1) :AppKitForm {
         
         PARAM: foreach my $param (keys %{$c->req->params}) {
             if ($param =~ /delete_alias_(\d+)/) {
-                if (my $alias = $page->find_related('aliases', {id => $1})) {
+                if (my $alias = $new_page->find_related('aliases', {id => $1})) {
                     $alias->delete;
                 }
             }
@@ -252,7 +313,7 @@ sub edit_page :Local :Args(1) :AppKitForm {
                     my $alias_url = $form->param_value($param);
                     unless ($alias_url =~ m!^/!) {$alias_url = "/$url"}
                     if ($alias_url ne $alias->url) {
-                        $alias->update({url => $alias_url});
+                        $new_page->create_related('aliases', {url => $alias_url});
                     }
                 }
             }
@@ -260,13 +321,15 @@ sub edit_page :Local :Args(1) :AppKitForm {
         
         if (my $alias_url = $form->param_value('new_alias_url')) {
             unless ($alias_url =~ m!^/!) {$alias_url = "/$url"}
-            $page->create_related('aliases', {url => $alias_url});
+            $new_page->create_related('aliases', {url => $alias_url});
         }
 
-        $self->update_page_attributes($c, $page);
+        $self->update_page_attributes($c, $new_page);
         
+        $page->update({ status => 'draft' });
+
         $c->flash->{status_msg} = "Your changes have been saved";
-        $c->res->redirect($c->req->uri);
+        $c->res->redirect($c->uri_for($self->action_for('edit_page'), $new_page->id));
         $c->detach;
     }
     
@@ -432,6 +495,8 @@ sub revisions :Local :Args(1) {
             url => $page->url
         },
         {
+            rows     => 15,
+            page     => $c->req->query_params->{page} || 1,
             order_by => { -desc => 'created' }
         });
     }
@@ -630,8 +695,24 @@ sub preview :Local :Args(1) {
     $c->stash->{me}  = $page;
     $c->stash->{cms} = {
         asset => sub {
-            if (my $asset = $asset_rs->available->find({id => shift})) {
-                return $c->uri_for($self->action_for('_asset'), $asset->id, $asset->filename);
+            my $id = shift;
+            if (looks_like_number $id) {
+                if (my $asset = $site->assets->available->find({id => $id})) {
+                    return $c->uri_for($self->action_for('_asset'), $asset->id, $asset->filename);
+                }
+            }
+            else {
+                # not a number? then we may be looking for a logo!
+                if ($id eq 'logo') {
+                    if (my $logo = $site->assets->published->find({ description => 'Logo' })) {
+                        return $c->uri_for($self->action_for('_asset'), $logo->id, $logo->filename);
+                    }
+                    else {
+                        if ($logo = $c->model('CMS::Asset')->find({ global => 1, description => 'Logo' })) {
+                            return $c->uri_for($self->action_for('_asset'), $logo->id, $logo->filename);
+                        }
+                    }
+                }
             }
         },
         attachment => sub {
@@ -640,7 +721,13 @@ sub preview :Local :Args(1) {
             }
         },
         element => sub {
-            if (my $element = $c->model('CMS::Element')->published->find({id => shift})) {
+            my ($id, $attrs) = @_;
+            if ($attrs) {
+                foreach my $attr (%$attrs) {
+                    $c->stash->{me}->{$attr} = $attrs->{$attr};
+                }
+            }
+            if (my $element = $site->elements->available->find({id => $id})) {
                 return $element->content;
             }
         },

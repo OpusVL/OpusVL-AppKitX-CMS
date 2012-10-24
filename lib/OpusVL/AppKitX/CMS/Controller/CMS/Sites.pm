@@ -156,4 +156,70 @@ sub edit :Chained('site_root') :PathPart('edit') :Args(0) :NavigationName('Edit 
 
 #-------------------------------------------------------------------------------
 
+sub manage_attributes :Local :Path('attributes/manage') :Args(0) :AppKitForm {
+    my ($self, $c) = @_;
+    my $site = $c->stash->{site};
+    my $form = $c->stash->{form};
+    $site    = $c->model('CMS::Site')->find($site->id);
+    my $attrs = $site->site_attributes;
+    if ($attrs->count > 0) {
+        $c->stash->{site_attributes} = [ $attrs->all ];
+    }
+
+    if ($c->req->body_params->{save_attributes}) {
+        foreach my $param (keys %{$c->req->body_params}) {
+            if ($param =~ /^attribute_id_(\d+)$/) {
+                my $id = $1;
+                if (my $get_attr = $attrs->find($id)) {
+                    $get_attr->update({ value => $c->req->body_params->{$param} });
+                }
+            }
+        }
+
+        $c->flash(status_msg => "Updated attributes");
+        $c->res->redirect($c->req->uri);
+        $c->detach;
+    }
+
+    if ($form->submitted_and_valid) {
+        my ($attr_name, $attr_value) = (
+            $form->param_value('attr_name'),
+            $form->param_value('attr_value'),
+        );
+
+        my $attr_code   = lc $attr_name;           # make the attribute name lowercase
+        $attr_code      =~ s/\s/_/g;               # replace whitespace with underscores
+        $attr_code      =~ s/[^\w\d\s]//g;         # remove any punctuation
+
+        my $new_attr = $site->create_related('site_attributes', {
+            name  => $attr_name,
+            code  => $attr_code,
+            value => $attr_value,
+        });
+
+        if ($new_attr) {
+            $c->flash(status_msg => "Successfully created new attribute $attr_name");
+            $c->res->redirect($c->req->uri);
+            $c->detach;
+        }
+    }
+}
+
+#-------------------------------------------------------------------------------
+
+sub delete_attribute :Local :Path('attribute/delete') :Args(1) {
+    my ($self, $c, $attr_id) = @_;
+    my $site = $c->model('CMS::Site')->find($c->stash->{site}->id);
+
+    if (my $attr = $site->site_attributes->find($attr_id)) {
+        my $attr_name = $attr->code;
+        $attr->delete;
+        $c->flash(status_msg => "Successfully removed attribute $attr_name");
+        $c->res->redirect($c->uri_for($self->action_for('manage_attributes')));
+        $c->detach;
+    }
+}
+
+#-------------------------------------------------------------------------------
+
 1;

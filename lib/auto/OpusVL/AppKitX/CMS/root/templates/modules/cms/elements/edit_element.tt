@@ -1,7 +1,48 @@
 [% INCLUDE modules/cms/header.tt title="Edit element" %]
 [% META appkitfeature_tablesorter = 1 %]
 [% PROCESS modules/cms/preprocess.tt %]
+
+[% IF c.can_access(c.controller('UserAccess').action_for('element_allow_list')) %]
+	<a href="[% c.uri_for(c.controller('UserAccess').action_for('element_user_list'), site.id, element.id) %]" class="link_button link_button_delete">Element Permissions</a>
+	<div class="clear" style="height:10px"></div>
+[% END %]
+
 [% form.render | none %]
+
+<div class="clear" style="height:15px"></div>
+<div id="element-attributes" class="content_block">
+	<fieldset>
+		<legend>Element Attributes</legend>
+		[% IF attributes.size < 1 %]
+			<p>You have no attributes set up for this element</p>
+		[% ELSE %]
+			<table class="tablesorter">
+				<thead>
+					<tr>
+						<th>Code</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+			[% FOREACH attr IN attributes %]
+				<tr>
+					<td>[% attr.code %]</td>
+					<td>Edit | Delete</td>
+				</tr>
+			[% END %]
+				</tbody>
+			</table>
+		[% END %]
+		<form action="" method="post">
+			<div class="text label">
+				<label>New attribute name</label>
+				<input type="text" name="attr_name" value="">
+			</div>
+	</fieldset>
+</div>
+
+<input type="submit" class="submit submit_add" value="Add Attribute">
+</form>
 
 <script type="text/javascript">
     $('#editor-controls').load('/modules/cms/ajax/load_controls');

@@ -35,3 +35,7 @@
 		<p>There are no drafts available for this page</p>
 	[% END %]
 </div>
+
+[% IF pages %]
+[% INCLUDE pager.tt pager = pages.pager %]
+[% END %]

@@ -1,0 +1,33 @@
+[% META appkitfeature_tablesorter = 1 %]
+[% INCLUDE modules/cms/header.tt title="Page Allow List for $user.username" %]
+
+<a href="[% c.uri_for(c.controller('Modules::CMS::Sites').action_for('edit'), [ site.id ]) %]" class="link_button link_button_back">Back to site</a>
+<div class="clear" style="height:15px"></div>
+
+<form action="" method="post">
+	<div class="content_block">
+		<fieldset>
+			<legend>Pages</legend>
+			<table class="tablesorter">
+				<thead>
+					<tr>
+						<th>URL</th>
+						<th>Title</th>
+						<th>Allow</th>
+					</tr>
+				</thead>
+				<tbody>
+					[% FOREACH page IN pages %]
+						<tr>
+							<td>[% page.url %]</td>
+							<td>[% page.title %]</td>
+							<td><input type="checkbox" name="allow_page" value="[% page.id %]" [% IF page.allows_user(user.id) %]checked="checked"[% END %] /></td>
+						</tr>
+					[% END %]
+				</tbody>
+			</table>
+		</fieldset>
+	</div>
+
+	<input type="submit" class="submit submit_ok" name="submit" value="Update Permissions">
+</form>

@@ -5,6 +5,7 @@ use Moose;
 use namespace::autoclean;
 BEGIN { extends 'Catalyst::Controller' }
 with 'OpusVL::AppKit::RolesFor::Controller::GUI';
+with 'OpusVL::AppKitX::CMS::Controller::CMS::Base';
 
 __PACKAGE__->config
 (
@@ -34,13 +35,14 @@ sub index :Path :Args(0) {
 sub list_elements :Local :Args(0) {
     my ($self, $c) = @_;
     #$c->stash->{template} = 'list_elements.tt';
-    $c->stash->{elements} = $c->model('CMS::Element')->published;
+    $c->stash->{elements} = $c->model('CMS::Element')->available;
 }
 
 sub load_controls :Local :Args(0) {
     my ($self, $c) = @_;
-    $c->stash->{assets}   = $c->model('CMS::Asset')->published;
-    $c->stash->{elements} = $c->model('CMS::Element')->published;
+    my $site              = $c->model('CMS::Site')->find($c->stash->{site}->id);
+    $c->stash->{assets}   = [ $site->assets->available->all ];
+    $c->stash->{elements} = $site->elements->available;
     $c->stash->{pages}    = $c->model('CMS::Page')->published;
     
     if (my $page_id = $c->req->param('page_id')) {

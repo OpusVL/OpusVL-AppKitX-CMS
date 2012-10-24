@@ -56,7 +56,6 @@ sub index :Path :Args(0) :NavigationName('Elements') {
         ->published->all];
 }
 
-
 #-------------------------------------------------------------------------------
 
 sub new_element :Local :Args(0) :AppKitForm {
@@ -84,10 +83,22 @@ sub new_element :Local :Args(0) :AppKitForm {
 sub edit_element :Local :Args(1) :AppKitForm {
     my ($self, $c, $element_id) = @_;
 
+    my $restricted_row = $c->model('CMS::Parameter')->find({ parameter => 'Restricted' });
+
+    if ($restricted_row) {
+        if ($c->user->users_parameters->find({ parameter_id => $restricted_row->id })) {
+            unless ($c->model('CMS::ElementUser')->find({ element_id => $element_id, user_id => $c->user->id })) {
+                $c->detach('/access_denied');
+            }
+        }
+    }
+
     $self->add_final_crumb($c, "Edit element");
     
     my $form    = $c->stash->{form};
     my $element = $c->model('CMS::Element')->published->find({id => $element_id});
+    $c->stash(element => $element);
+    $c->stash( attributes => [ $element->element_attributes->all ] );
     
     $form->default_values({
         name    => $element->name,
@@ -107,6 +118,19 @@ sub edit_element :Local :Args(1) :AppKitForm {
         }
         
         $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+    }
+
+    # if a new attribute was specified
+    if (my $attr = $c->req->body_params->{attr_name}) {
+        $attr = lc $attr;           # make the attribute name lowercase
+        $attr =~ s/\s/_/g;          # replace whitespace with underscores
+        $attr =~ s/[^\w\d\s]//g;  # remove any punctuation
+        $element->create_related('element_attributes', { code => $attr })
+            if not $element->element_attributes->find({ code => $attr });
+
+        $c->flash( status_msg => "Created attribute $attr" );
+        $c->res->redirect($c->req->uri . "#element-attributes");
+        $c->detach;
     }
 }
 

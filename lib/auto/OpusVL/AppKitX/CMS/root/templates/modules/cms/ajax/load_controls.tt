@@ -24,7 +24,7 @@
             </tr>
         </thead>
         <tbody>
-            [% WHILE (a = assets.next) %]
+            [% FOREACH a IN assets %]
                 <tr>
                     <td>[% a.id %]</td>
                     <td>
@@ -55,7 +55,23 @@
             [% WHILE (e = elements.next) %]
                 <tr>
                     <td>[% e.id %]</td>
-                    <td><a href="javascript:;" rel="[% e.id %]" class="insert-element link">[% e.name %]</a></td>
+                    <td>
+                        <a href="javascript:;" rel="[% e.id %]" class="insert-element link">[% e.name %]</a>
+                        [% IF e.tt_get_attributes.size > 0 %]
+                             (<a rel=".attribute-options-[% e.id %]" class="collapse-element-attributes link" href="javascript:void(0);">Show attributes</a>)
+                            <div class="attribute-options-[% e.id %]" style="display:none">
+                                <br />
+                                <form>
+                                [% FOREACH el_attr IN e.tt_get_attributes %]
+                                        <div class="text label">
+                                            <label>[% el_attr.code %]</label>
+                                            <input type="text" class="element-attribute-[% e.id %]" rel="[% el_attr.code %]" value="">
+                                        </div>
+                                [% END %]
+                                </form>
+                            </div>
+                        [% END %]
+                    </td>
                 </tr>
             [% END %]
         </tbody>
@@ -126,6 +142,10 @@
     function wysiwygCreate() { editorState = 'GUI'; wob.wysiwyg(); }
     
     $(function() {
+        $('.collapse-element-attributes').click(function() {
+            var _attr = $(this).attr('rel');
+            $(_attr).slideToggle('fast');
+        });
 
         function insertAtCaret(areaId,text) {
             var txtarea = document.getElementById(areaId);
@@ -241,8 +261,29 @@
             var element_id = $(this).attr('rel');
             if (editorState == 'GUI')
                 $('#wysiwyg').wysiwyg("insertHtml", "&#91;% cms.element(" +  element_id + ") | eval %&#93");
-            else
-                insertAtCaret('wysiwyg', "[" + "%" + " cms.element(" +  element_id + ") | eval %" + "]");
+            else {
+                // if element has attribute class
+                // loop through and use the rel of the input field as the key
+                // the value will be the value
+                // generate a hash from this, ie: { height => 50, width => 120 }
+                if ($(".element-attribute-" + element_id)[0]) {
+                    var buildHash = "{ ";
+                    $('.element-attribute-' + element_id).each(function() {
+                        console.log($(this));
+                        var key = $(this).attr('rel');
+                        var value = $(this).val();
+                        if (key && value) {
+                            buildHash += "'" + key + "' => '" + value + "', ";
+                        }
+                    });
+
+                    buildHash += " }";
+                    insertAtCaret('wysiwyg', "[" + "%" + " cms.element(" +  element_id + ", " + buildHash + ") | eval %" + "]");
+                }
+                else {
+                    insertAtCaret('wysiwyg', "[" + "%" + " cms.element(" +  element_id + ") | eval %" + "]");
+                }
+            }
     
             $('#elements').dialog('close');
         });

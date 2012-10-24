@@ -1,6 +1,7 @@
 [% PROCESS modules/cms/preprocess.tt %]
 [% INCLUDE modules/cms/header.tt title="Edit page" %]
 <a href="[% c.uri_for(c.controller.action_for('index')) %]" class="link_button link_button_back">Back to page list</a>
+<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('clone_page'), site.id, page.id) %]">Clone this page</a>
 <br>&nbsp;
 
 [% META appkitfeature_tablesorter = 1 %]
@@ -45,6 +46,9 @@
         <li><a href="#tab_details">Metadata</a>
         <li><a href="#tab_attachments">Attachments</a>
         <li><a href="#tab_aliases">Redirects</a>
+        [% IF c.can_access(c.controller('Modules::CMS::UserAccess').action_for('page_allow_list')) %]
+            <li><a href="#tab_users">Users</a></li>
+        [% END %]
     </ul>
     
     <div id="tab_content">
@@ -102,6 +106,49 @@
         [% form.get_all_element( 'name' => 'page_aliases' ).render | none %]
         [% form.get_all_element( 'name' => 'new_page_alias' ).render | none %]
     </div>
+
+[% IF c.can_access(c.controller('Modules::CMS::UserAccess').action_for('page_allow_list')) %]
+    <div id="tab_users">
+        <fieldset>
+            <legend>Users allowed to modify [% page.title %]</legend>
+            [% IF page_users.size > 0 %]
+                <table class="tablesorter">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        [% FOREACH page_user IN page_users %]
+                            <tr>
+                                <td>[% page_user.user.username %]</td>
+                                <td>[% page_user.user.name %]</td>
+                                <td><a href="[% c.uri_for(c.controller('Modules::CMS::UserAccess').action_for('page_revoke_permission'), page.id, page_user.user.id) %]">Revoke Permission</a></td>
+                            </tr>
+                        [% END %]
+                    </tbody>
+                </table>
+            [% ELSE %]
+                <p>No users are allowed to modify this page</p>
+            [% END %]
+        </fieldset>
+
+        <fieldset>
+            <legend>Add users</legend>
+            <div class="select label">
+                <label>Select users</label>
+                <select multiple="multiple" name="allow_users">
+                    [% FOREACH site_user IN site_users %]
+                        <option value="[% site_user.user.id %]">[% site_user.user.username %] ([% site_user.user.name %])</option>
+                    [% END %]
+                </select>
+            </div>
+        </fieldset>
+    </div>
+[% END %]
+
 </div>
 
 <script type="text/javascript">

@@ -33,7 +33,7 @@
 		});
 
 		$('#preview-cancel').click(function() {
-			window.top.location.replace("[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('cancel_preview'), page.id) %]");
+			window.top.location.replace("[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('edit_page'), page.id) %]");
 		});
 	});
 </script>
