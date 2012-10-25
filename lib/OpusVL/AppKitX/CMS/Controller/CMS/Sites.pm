@@ -163,7 +163,7 @@ sub manage_attributes :Local :Path('attributes/manage') :Args(0) :AppKitForm {
     $site    = $c->model('CMS::Site')->find($site->id);
     my $attrs = $site->site_attributes;
     if ($attrs->count > 0) {
-        $c->stash->{site_attributes} = [ $attrs->all ];
+        $c->stash->{site_attributes} = [ $attrs->search(undef, { order_by => { -asc => 'name' } })->all ];
     }
 
     if ($c->req->body_params->{save_attributes}) {

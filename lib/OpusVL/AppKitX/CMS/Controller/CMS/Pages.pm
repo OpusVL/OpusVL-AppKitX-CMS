@@ -80,14 +80,20 @@ sub new_page :Local :Args(0) :AppKitForm {
         [map {[$_->id, $_->name . " (" . $_->site->name . ")"]} $site->templates->all]
     );
     $form->get_all_element({name=>'parent'})->options(
-        [map {[$_->id, $_->breadcrumb . " - " . $_->url]} $c->model('CMS::Page')->all]
+        [map {[$_->id, $_->breadcrumb . " - " . $_->url]} $c->model('CMS::Page')->search({ site => $site->id })->published->all]
     );
 
     # This part was throwing out undefined value as a HASH reference errors
     # before validating the $c->req->body_params
-    $form->default_values({
-        parent => $c->req->param('parent_id'),
-    }) if $c->req->body_params->{parent_id};
+    if ($c->req->query_params->{parent_id}) {
+        my $parent_id = $c->req->param('parent_id');
+        if (my $parent = $c->model('CMS::Page')->find($parent_id)) {
+            $form->default_values({
+                parent => $parent_id,
+                url    => $parent->url . "/",
+            });
+        }
+    }
 
     $form->process;
     

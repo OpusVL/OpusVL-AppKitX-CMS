@@ -101,6 +101,16 @@ sub edit_asset :Local :Args(1) :AppKitForm {
 
     $self->add_final_crumb($c, "Edit asset");
 
+    my $restricted_row = $c->model('CMS::Parameter')->find({ parameter => 'Restricted' });
+
+    if ($restricted_row) {
+        if ($c->user->users_parameters->find({ parameter_id => $restricted_row->id })) {
+            unless ($c->model('CMS::AssetUser')->find({ asset_id => $asset_id, user_id => $c->user->id })) {
+                $c->detach('/access_denied');
+            }
+        }
+    }
+
     my $form  = $c->stash->{form};
     my $asset = $c->model('CMS::Asset')->published->find({id => $asset_id});
     
@@ -151,11 +161,11 @@ sub edit_asset :Local :Args(1) :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
-sub upload_assets :Local :Args(0) {
-    my ($self, $c) = @_;
+sub upload_assets :Local :Args(1) {
+    my ($self, $c, $global) = @_;
     
+    $global = $global eq 'on' ? 1 : 0;
     my $asset_rs = $c->model('CMS::Asset');
-    my $global   = $c->req->body_params->{make_global} ? 1 : 0;
     if (my $file = $c->req->upload('file')) {
         my $asset = $asset_rs->create({
             mime_type   => $file->type,
