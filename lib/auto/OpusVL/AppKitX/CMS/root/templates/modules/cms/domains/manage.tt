@@ -6,7 +6,7 @@
 <div class="content_block">
 	<fieldset>
 		<legend>Master Domains</legend>
-		[% IF domains.count > 0 %]
+		[% IF master_domains %]
 			<div class="text label">
 				<table class="tablesorter">
 					<thead>
@@ -24,11 +24,7 @@
 							<td>[% domain.alternates.count %]</td>
 							<td>[% IF domain.redirect.domain %] [% domain.redirect.domain %] [% ELSE %] None [% END %]</td>
 							<td>
-								[% IF selected_domain.domain == domain.domain %]
-									<a href="[% c.uri_for(c.controller.action_for('unselect_domain'), [ site.id ]) %]/[% domain.domain %]">Unselect</a>
-								[% ELSE %]
-									<a href="[% c.uri_for(c.controller.action_for('select_domain'), [ site.id ]) %]/[% domain.domain %]">Select</a>
-								[% END %]
+								<a href="[% c.uri_for(c.controller.action_for('delete_domain'), [ site.id, domain.domain ]) %]">Delete</a>
 							</td>
 						</tr>
 						[% END %]

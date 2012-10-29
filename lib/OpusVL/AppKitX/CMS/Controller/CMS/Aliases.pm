@@ -34,7 +34,7 @@ sub auto :Private {
 
 #-------------------------------------------------------------------------------
 
-sub index :Path :Args(0) :NavigationName('Redirects') {
+sub index :Path :Args(0) {
     my ($self, $c) = @_;
     
     $c->stash->{aliases} = [$c->model('CMS::Aliases')->all];

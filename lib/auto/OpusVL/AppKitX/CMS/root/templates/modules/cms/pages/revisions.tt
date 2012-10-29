@@ -1,7 +1,7 @@
 [% META appkitfeature_tablesorter = 1 %]
 [% INCLUDE modules/cms/header.tt title="$getpage.title History" %]
 
-<a href="[% c.uri_for(c.controller.action_for('index')) %]" class="link_button link_button_back">Back to Pages</a>
+<a href="[% c.uri_for(c.controller.action_for('index'), [ site.id ]) %]" class="link_button link_button_back">Back to Pages</a>
 <div class="clear" style="height:10px"></div>
 
 <div class="content_block">
@@ -21,10 +21,10 @@
 					<td>[% date_long(currpage.created) %] @ [% currpage.created.time %][% IF currpage.status == 'published' %] <strong>(Current Version)</strong>[% END %]</td>
 					<td>[% currpage.created_by.name %] ([% currpage.created_by.username %])</td>
 					<td>
-						<a target="_blank" href="[% c.uri_for(c.controller.action_for('preview'), currpage.id) %]">Preview</a>
+						<a target="_blank" href="[% c.uri_for(c.controller.action_for('preview'), [ site.id, currpage.id ]) %]">Preview</a>
 						[% IF currpage.status == 'published' %]
 						[% ELSE %]
-						 | <a href="[% c.uri_for(c.controller.action_for('restore'), currpage.id) %]">Restore</a>
+						 | <a href="[% c.uri_for(c.controller.action_for('restore'), [ site.id, currpage.id ]) %]">Restore</a>
 						[% END %]
 					</td>
 				</tr>

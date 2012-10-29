@@ -26,41 +26,63 @@ __PACKAGE__->config
 sub auto :Private {
     my ($self, $c) = @_;
 
-    $c->forward('/modules/cms/site_validate');
-
-    if ($c->req->param('cancel')) {
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
-        $c->detach;
-    }
+    #$c->forward('/modules/cms/site_validate');
     
-    $c->stash->{section} = 'Templates';
+    #$c->stash->{section} = 'Templates';
  
     push @{ $c->stash->{breadcrumbs} }, {
         name    => 'Templates',
         url     => $c->uri_for( $c->controller->action_for('index'))
     };
-
-    1;
 }
-
 
 #-------------------------------------------------------------------------------
 
-sub index :Path :Args(0) :NavigationName('Templates') {
+sub base :Chained('/') :PathPart('') :CaptureArgs(0) {
+    my ($self, $c, $site_id) = @_;  
+}
+
+sub templates :Chained('base') :PathPart('template') :CaptureArgs(2) {
+    my ($self, $c, $site_id, $template_id)  = @_;
+    $c->forward('/modules/cms/sites/base', [ $site_id ]);
+
+    my $site = $c->stash->{site};
+    my $template    = $c->model('CMS::Template')->find({ site => $site->id, id => $template_id });
+
+    unless ($template) {
+        $c->flash(error_msg => "No such template");
+        $c->res->redirect($c->uri_for($self->action_for('index'), $site->id));
+        $c->detach;
+    }
+    
+    $c->stash(
+        _template => $template,
+        site     => $site,
+    );
+}
+
+#-------------------------------------------------------------------------------
+
+sub index :Chained('/modules/cms/sites/base') :PathPart('list') :Args(0) {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
-    my $templates = $c->model('CMS::Template')->search({
-        -or => [
-            site => $site->id,
-            global => 1,
-        ]
-    });
-    $c->stash->{templates} = [$templates->all];
+    if ($site) {
+        my $templates = $c->model('CMS::Template')->search({
+            -or => [
+                site => $site->id,
+                global => 1,
+            ]
+        });
+        $c->stash(
+            templates => [$templates->all],
+            site      => $site,
+        );
+    }
 }
 
 #-------------------------------------------------------------------------------
 
-sub new_template :Local :Args(0) :AppKitForm {
+sub new_template :Chained('/modules/cms/sites/base') :Args(0) :PathPart('template/new') :AppKitForm {
     my ($self, $c) = @_;
 
     push @{ $c->stash->{breadcrumbs} }, {
@@ -78,23 +100,29 @@ sub new_template :Local :Args(0) :AppKitForm {
         
         $template->set_content($form->param_value('content'));
         
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $c->stash->{site}->id ]));
+    }
+
+    if ($c->req->param('cancel')) {
+       $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $c->stash->{site}->id ]));
+       $c->detach;
     }
 }
 
 
 #-------------------------------------------------------------------------------
 
-sub edit_template :Local :Args(1) :AppKitForm {
-    my ($self, $c, $template_id) = @_;
+sub edit_template :Chained('templates') :PathPart('edit') :Args(0) :AppKitForm {
+    my ($self, $c) = @_;
 
     push @{ $c->stash->{breadcrumbs} }, {
         name    => 'Edit template',
         url     => $c->req->uri,
     };
-    
+
     my $form     = $c->stash->{form};
-    my $template = $c->model('CMS::Template')->find({id => $template_id});
+    my $template = $c->stash->{_template};
+    my $site     = $c->stash->{site};
     
     $form->default_values({
         name    => $template->name,
@@ -116,7 +144,13 @@ sub edit_template :Local :Args(1) :AppKitForm {
             $template->set_content($form->param_value('content'));
         }
         
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->res->redirect($c->uri_for($self->action_for('index'), [ $site->id ]));
+        $c->detach;
+    }
+
+    if ($c->req->param('cancel')) {
+       $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $c->stash->{site}->id ]));
+       $c->detach;
     }
 }
 

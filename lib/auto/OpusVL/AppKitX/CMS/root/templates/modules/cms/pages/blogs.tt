@@ -1,0 +1,35 @@
+[% META appkitfeature_tablesorter = 1 %]
+[% INCLUDE modules/cms/header.tt title="Manage Blogs" %]
+
+<div class="content_block">
+	<fieldset>
+		<legend>[% site.name %] Blogs</legend>
+		[% IF blogs.size > 0 %]
+		<table class="tablesorter">
+			<thead>
+				<tr>
+					<td>URL</td>
+					<td>Name</td>
+					<td>Action</td>
+				</tr>
+			</thead>
+			<tbody>
+				[% FOREACH blog IN blogs %]
+				<tr>
+					<td>[% blog.url %]</td>
+					<td>[% blog.title %]</td>
+					<td>
+						<a href="[% c.uri_for(c.controller.action_for('edit_page'), [ site.id, blog.id ]) %]">Edit</a> | 
+						<a href="[% c.uri_for(c.controller.action_for('new_page'), [ site.id ]) %]?parent_id=[% blog.id %]">Add post</a>
+					</td>
+				</tr>
+				[% END %]
+			</tbody>
+		</table>
+		[% ELSE %]
+			<p>No blogs have been created for this site.</p>
+		[% END %]
+	</fieldset>
+</div>
+
+<a class="link_button link_button_add" href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('new_page'), [ site.id ]) %]?type=blog">Add blog</a>

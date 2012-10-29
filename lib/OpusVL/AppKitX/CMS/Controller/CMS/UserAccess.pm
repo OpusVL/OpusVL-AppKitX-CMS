@@ -11,6 +11,8 @@ __PACKAGE__->config(
     appkit_method_group         => 'Content Management',
     appkit_method_group_order   => 1,
     appkit_shared_module        => 'CMS',
+    appkit_css 					=> [ '/static/css/bootstrap.css' ],
+    appkit_js					=> [ '/static/js/bootstrap.js' ],
  );
 
 #----------------------------------------------------------------------------------

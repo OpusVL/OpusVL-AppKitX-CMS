@@ -52,7 +52,7 @@
             </tr>
         </thead>
         <tbody>
-            [% WHILE (e = elements.next) %]
+            [% FOREACH e IN elements %]
                 <tr>
                     <td>[% e.id %]</td>
                     <td>
@@ -122,7 +122,7 @@
             </tr>
         </thead>
         <tbody>
-            [% WHILE (p = pages.next) %]
+            [% FOREACH p IN pages %]
                 <tr>
                     <td>[% p.id %]</td>
                     <td><a href="javascript:;" rel="[% p.id %]" class="insert-page link">[% p.breadcrumb %]</a></td>

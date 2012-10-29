@@ -1,4 +1,4 @@
-[% INCLUDE modules/cms/header.tt title="Sites" %]
+<h1>Sites</h1>
 
 <div class="content_block">
 	[% IF all_sites.size > 0 %]
@@ -11,4 +11,4 @@
 		<p>There are no available sites. <a href="[% c.uri_for(c.controller.action_for('add')) %]">Add one now</a></p>
 	[% END %]
 </div>
-<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('add')) %]">Add Site</a>
+<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('add')) %]">New Site</a>

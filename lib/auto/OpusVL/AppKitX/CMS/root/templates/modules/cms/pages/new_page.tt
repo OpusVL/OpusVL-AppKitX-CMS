@@ -1,14 +1,27 @@
-[% INCLUDE modules/cms/header.tt title="New page" %]
+[% IF c.req.param('type') == 'blog' %]
+	[% SET type = 'Blog' %]
+[% ELSE %]
+	[% SET type = 'Page' %]
+[% END %]
+
+[% IF is_a_post %][% SET type = 'Post' %][% END %]
+
+[% INCLUDE modules/cms/header.tt title="New $type" %]
 [% META appkitfeature_tablesorter = 1 %]
 [% PROCESS modules/cms/preprocess.tt %]
 
-<a href="[% c.uri_for(c.controller.action_for('index')) %]" class="link_button link_button_back">Back to pages</a>
+[% IF type == 'Blog' OR type == 'Post' %]
+	<a href="[% c.uri_for(c.controller.action_for('blogs'), [ site.id ]) %]" class="link_button link_button_back">Back to blogs</a>
+[% ELSE %]
+	<a href="[% c.uri_for(c.controller.action_for('index'), [ site.id ]) %]" class="link_button link_button_back">Back to pages</a>
+[% END %]
+
 <div style="height:10px" class="clear"></div>
 [% form.render | none %]
 
 <script type="text/javascript">
-    $('#editor-controls').load('/modules/cms/ajax/load_controls');
+    $('#editor-controls').load('/modules/cms/ajax/load_controls/[% site.id %]');
     $(function() {
-    	$('#preview_content').load('/modules/cms/ajax/preview_page/' + [% page_id %]);
+    	//$('#preview_content').load('/modules/cms/ajax/preview_page/[% site.id %]/[% page.id %]);
     });
 </script>

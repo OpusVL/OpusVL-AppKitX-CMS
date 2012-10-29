@@ -10,109 +10,64 @@ with 'OpusVL::AppKit::RolesFor::Controller::GUI';
  
 __PACKAGE__->config
 (
-    appkit_name                 => 'CMS',
+    #appkit_name                 => 'CMS',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
-    appkit_css                  => [ '/static/css/cms.css' ],
-    #appkit_js                     => ['/static/js/cms.js', '/static/js/nicEdit.js', '/static/js/src/addElement/addElement.js'],
+    appkit_css                  => [ '/static/css/bootstrap.css' ],
+    appkit_js                     => ['/static/js/cms.js', '/static/js/bootstrap.js', '/static/js/nicEdit.js', '/static/js/src/addElement/addElement.js'],
     appkit_method_group         => 'Content Management',
     appkit_method_group_order   => 1,
     appkit_shared_module        => 'CMS',
-    #appkit_css                  => ['/static/modules/cms/cms.css'],
 );
 
 #-------------------------------------------------------------------------------
 
-sub auto :Private {
+sub base :Chained('/') :PathPart('domains') :CaptureArgs(0) {
     my ($self, $c) = @_;
-
-    $c->forward('/modules/cms/site_validate');
-    my $domains = $c->model('CMS::MasterDomain')
-        ->search({ site => $c->stash->{site}->id });
-    
-    $c->stash->{domains} = $domains;
-    $c->stash->{section} = 'Domains';
- 
-    push @{ $c->stash->{breadcrumbs} }, {
-        name    => 'Domains',
-        url     => $c->uri_for( $c->controller->action_for('index'))
-    };
 }
 
-
-#-------------------------------------------------------------------------------
-
-sub domain_root :Chained('/') :PathPart('domain') :CaptureArgs(1) {
-    my ($self, $c, $site_id) = @_;
-    my $domains = $c->model('CMS::MasterDomain')
-        ->search({ site => $site_id });
-
-    my $site   = $c->model('CMS::Site')
-        ->find($site_id);
-
-    unless ($site) {
-        $c->flash->{error_msg} = "No such site";
-        $c->res->redirect($c->uri_for($c->controller('Sites')->action_for('index')));
-        $c->detach;
-    }
-
-    $c->stash->{domains} = $domains;
-    $c->stash->{site}   = $site;
-}
-
-#-------------------------------------------------------------------------------
-
-sub master_domain_root :Chained('/') :PathPart('domain') :CaptureArgs(2) {
+sub domains :Chained('base') :PathPart('domain') :CaptureArgs(2) {
     my ($self, $c, $site_id, $domain) = @_;
-    my $site   = $c->model('CMS::Site')
-        ->find($site_id);
+    $c->forward('Modules::CMS::Sites', 'base', [ $site_id ]);
 
+    my $site = $c->stash->{site};
     $domain = $c->model('CMS::MasterDomain')
-        ->find({ domain => $domain, site => $site_id });
+        ->find({ domain => $domain, site => $site->id });
 
 
     unless ($domain) {
         $c->flash->{error_msg} = "No such domain";
-        $c->res->redirect($c->uri_for($c->controller('Domains')->action_for('manage'), [ $site_id ]));
+        $c->res->redirect($c->uri_for($c->controller('Modules::CMS::Domains')->action_for('manage'), [ $site_id ]));
         $c->detach;
     }
 
-    $c->stash->{domain} = $domain;
-    $c->stash->{site}   = $site;
+    $c->stash(
+        domain => $domain,
+        site   => $site,
+    );
 }
 
 #-------------------------------------------------------------------------------
 
-sub manage :Local :Args() :NavigationName('Domains') {
-    my ($self, $c, $site_id) = @_;
-    my $domains = $c->stash->{domains};
+sub index :Chained('base') :Args(0) {
+    my ($self, $c) = @_;
+}
 
-    $c->session->{site} = $c->stash->{site};
-    if ($site_id) {
-        my $site = $c->model('CMS::Site')->find($site_id);
-        if ($site) {
-            delete $c->session->{selected_domain};
-            $c->session->{site} = $site;
-            $c->res->redirect($c->uri_for($self->action_for('manage')));
-            $c->detach;
-        }
-    }
+#-------------------------------------------------------------------------------
+
+sub manage :Chained('/modules/cms/sites/base') :PathPart('domains/manage') :Args(0) {
+    my ($self, $c) = @_;
+    my $site       = $c->stash->{site};
+    my $domains    = $site->master_domains;
 
     if ($domains->count > 0) {
         $c->stash->{master_domains} = [ $domains->all ];
     }
-    else {
-        if ($c->stash->{selected_domain}) {
-            delete $c->session->{selected_domain};
-            $c->res->redirect($c->req->uri);
-            $c->detach;
-        }
-    }
 }
 
 #-------------------------------------------------------------------------------
 
-sub edit :Chained('master_domain_root') :Args(0) :NavigationName('Edit Domain') :AppKitForm {
+sub edit :Chained('domains') :Args(0) :PathPart('edit') :AppKitForm {
     my ($self, $c) = @_;
     my $form       = $c->stash->{form};
     my $site       = $c->stash->{site};
@@ -191,14 +146,14 @@ sub edit :Chained('master_domain_root') :Args(0) :NavigationName('Edit Domain') 
     }
 
     if ($c->req->body_params->{cancel}) {
-        $c->res->redirect($c->uri_for($self->action_for('manage')));
+        $c->res->redirect($c->uri_for($self->action_for('manage'), [ $site->id ]));
         $c->detach;
     }
 }
 
 #-------------------------------------------------------------------------------
 
-sub add_master :Chained('domain_root') :Args(0) :PathPart('add/master') :NavigationName('Add Master') :AppKitForm {
+sub add_master :Chained('/modules/cms/sites/base') :Args(0) :PathPart('add/master') :AppKitForm {
     my ($self, $c)  = @_;
     my $form        = $c->stash->{form};
     my $site        = $c->stash->{site};
@@ -218,47 +173,28 @@ sub add_master :Chained('domain_root') :Args(0) :PathPart('add/master') :Navigat
             });
 
             $c->flash->{status_msg} = "Successfully added master domain for " . $site->name;
-            $c->res->redirect($c->uri_for($self->action_for('manage')));
+            $c->res->redirect($c->uri_for($self->action_for('manage'), [ $site->id ]));
             $c->detach;
         }
     }
 
     if ($c->req->body_params->{cancel}) {
-        $c->res->redirect($c->uri_for($self->action_for('manage')));
+        $c->res->redirect($c->uri_for($self->action_for('manage'), [ $site->id ]));
         $c->detach;
     }
 }
 
 #-------------------------------------------------------------------------------
 
-sub select_domain :Chained('domain_root') :Args(1) {
-    my ($self, $c, $domain_name) = @_;
-    my $site = $c->stash->{site};
-    my $domain = $c->model('CMS::MasterDomain')
-        ->find({ site => $site->id, domain => $domain_name });
+sub delete_domain :Chained('domains') :PathPart('delete') :Args(0) {
+    my ($self, $c) = @_;
+    my $domain = $c->stash->{domain};
+    my $site   = $c->stash->{site};
 
-    if ($domain) {
-        if ($domain->site->sites_users->find({ user_id => $c->user->id })) {
-            $c->session->{selected_domain} = $domain;
-            $c->flash->{status_msg} = "Selected " . $domain->domain . " as your current domain";
-            $c->res->redirect($c->uri_for($self->action_for('manage')));
-            $c->detach;
-        }
-        else {
-            $c->flash->{error_msg} = "Unathorised access to that domain";
-            $c->res->redirect($c->uri_for($self->action_for('manage')));
-            $c->detach;
-        }
-    }
-}
-
-#-------------------------------------------------------------------------------
-
-sub unselect_domain :Chained('domain_root') :Args(1) {
-    my ($self, $c, $domain_name) = @_;
-    my $site = $c->stash->{site};
-    delete $c->session->{selected_domain};
-    $c->res->redirect($c->uri_for($self->action_for('manage')));
+    $c->flash(status_msg => "Removed " . $domain->domain);
+    $domain->delete;
+    $c->res->redirect($c->uri_for($self->action_for('manage'), [ $site->id ]));
     $c->detach;
 }
+
 1;

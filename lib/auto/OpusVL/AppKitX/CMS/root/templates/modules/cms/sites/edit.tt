@@ -1,11 +1,6 @@
 [% META appkitfeature_tablesorter = 1 %]
 [% INCLUDE modules/cms/header.tt title="Editing $site.name" %]
 
-<a class="link_button link_button_edit" href="[% c.uri_for(c.controller('Domains').action_for('manage')) %]">Manage Domains for this Site</a>
-<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('manage_attributes')) %]">Manage Attributes</a>
-[% IF c.can_access(c.controller('UserAccess').action_for('page_allow_list')) %]<a class="link_button link_button_delete" href="[% c.uri_for(c.controller('UserAccess').action_for('manage_users'), site.id) %]">Manage Users</a>[% END %]
-<div class="clear" style="height:15px"></div>
-
 [% form.render | none %]
 
 <div style="height:15px" class="clear"></div>

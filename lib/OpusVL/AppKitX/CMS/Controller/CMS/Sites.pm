@@ -10,8 +10,8 @@ __PACKAGE__->config
     appkit_name                 => 'CMS',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
-    appkit_css                  => [ '/static/css/cms.css' ],
-    #appkit_js                     => ['/static/js/cms.js', '/static/js/nicEdit.js', '/static/js/src/addElement/addElement.js'],
+    appkit_css                  => [ '/static/css/bootstrap.css' ],
+    appkit_js                     => ['/static/js/cms.js', '/static/js/bootstrap.js', '/static/js/nicEdit.js', '/static/js/src/addElement/addElement.js'],
     appkit_method_group         => 'Content Management',
     appkit_method_group_order   => 1,
     appkit_shared_module        => 'CMS',
@@ -33,7 +33,7 @@ sub auto :Private {
 
 #-------------------------------------------------------------------------------
 
-sub index :Path :Args(0) :NavigationHome :NavigationName('Sites') {
+sub index :Path :Args(0) :NavigationName('Sites') {
     my ($self, $c) = @_;
     my $sites = $c->stash->{all_sites};
     #my $sites = $c->user->sites_users;
@@ -45,7 +45,7 @@ sub index :Path :Args(0) :NavigationHome :NavigationName('Sites') {
 
 #-------------------------------------------------------------------------------
 
-sub add :Local :Args(0) :NavigationName('Add Site') :AppKitForm {
+sub add :Local :Args(0) :AppKitForm {
     my ($self, $c) = @_;
     my $form       = $c->stash->{form};
     my $users      = [ $c->model('CMS::User')->all ];
@@ -94,7 +94,7 @@ sub add :Local :Args(0) :NavigationName('Add Site') :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
-sub site_root :Chained('') :PathPart('site') :CaptureArgs(1) {
+sub base :Chained('/') :PathPart('site') :CaptureArgs(1) {
     my ($self, $c, $site_id) = @_;
     $c->stash->{site} = $c->model('CMS::Site')->find($site_id);
     unless ($c->stash->{site}) {
@@ -106,7 +106,7 @@ sub site_root :Chained('') :PathPart('site') :CaptureArgs(1) {
 
 #-------------------------------------------------------------------------------
 
-sub edit :Chained('site_root') :PathPart('edit') :Args(0) :NavigationName('Edit Site') :AppKitForm {
+sub edit :Chained('base') :PathPart('edit') :Args(0) :AppKitForm {
     my ($self, $c)  = @_;
     my $form        = $c->stash->{form};
     my $site        = $c->stash->{site};
@@ -156,7 +156,7 @@ sub edit :Chained('site_root') :PathPart('edit') :Args(0) :NavigationName('Edit 
 
 #-------------------------------------------------------------------------------
 
-sub manage_attributes :Local :Path('attributes/manage') :Args(0) :AppKitForm {
+sub manage_attributes :Chained('base') :PathPart('attributes/manage') :Args(0) :AppKitForm {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
     my $form = $c->stash->{form};
@@ -207,19 +207,17 @@ sub manage_attributes :Local :Path('attributes/manage') :Args(0) :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
-sub delete_attribute :Local :Path('attribute/delete') :Args(1) {
+sub delete_attribute :Chained('base') :PathPart('attribute/delete') :Args(1) {
     my ($self, $c, $attr_id) = @_;
-    my $site = $c->model('CMS::Site')->find($c->stash->{site}->id);
+    my $site = $c->stash->{site};
 
     if (my $attr = $site->site_attributes->find($attr_id)) {
         my $attr_name = $attr->code;
         $attr->delete;
         $c->flash(status_msg => "Successfully removed attribute $attr_name");
-        $c->res->redirect($c->uri_for($self->action_for('manage_attributes')));
+        $c->res->redirect($c->uri_for($self->action_for('manage_attributes'), [ $site->id ]));
         $c->detach;
     }
 }
-
-#-------------------------------------------------------------------------------
 
 1;

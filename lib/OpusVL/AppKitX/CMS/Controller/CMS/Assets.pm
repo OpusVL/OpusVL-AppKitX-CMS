@@ -10,8 +10,8 @@ __PACKAGE__->config
     appkit_name                 => 'CMS',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
-    appkit_css                  => ['/static/css/cms.css'],
-    appkit_js                   => ['/static/js/cms.js'],
+    appkit_css                  => ['/static/css/bootstrap.css'],
+    appkit_js                   => ['/static/js/cms.js', '/static/js/bootstrap.js'],
     #appkit_js                   => ['/static/js/facebox.js', '/static/js/cms.js'],
     appkit_method_group         => 'Content Management',
     appkit_method_group_order   => 1,
@@ -25,33 +25,45 @@ __PACKAGE__->config
 sub auto :Private {
     my ($self, $c) = @_;
 
-    $c->forward('/modules/cms/site_validate');
-
-    if ($c->req->param('cancel')) {
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
-        $c->detach;
-    }
-    
-    $c->stash->{section} = 'Assets';
- 
+    #$c->forward('/modules/cms/site_validate');
     push @{ $c->stash->{breadcrumbs} }, {
         name    => 'Assets',
         url     => $c->uri_for( $c->controller->action_for('index'))
     };
-
-    1;
 }
-
 
 #-------------------------------------------------------------------------------
 
-sub index :Path :Args(0) :NavigationName('Assets') {
+sub base :Chained('/') :PathPart('assets') :CaptureArgs(0) {
     my ($self, $c) = @_;
+}
+
+sub assets :Chained('base') :PathPart('asset') :CaptureArgs(2) {
+    my ($self, $c, $site_id, $asset_id) = @_;
+    $c->forward('/modules/cms/sites/base', [ $site_id ]);
+
+    my $asset = $c->model('CMS::Asset')->find({ site => $site_id, id => $asset_id });
+
+    unless ($asset) {
+        $c->flash(error_msg => "No such asset");
+        $c->res->redirect($c->uri_for($self->action_for('index'), [ $site_id ]));
+        $c->detach;
+    }
     
+    $c->stash( asset => $asset );
+
+}
+
+#-------------------------------------------------------------------------------
+
+sub index :Chained('/modules/cms/sites/base') :PathPart('assets/list') :Args(0) {
+    my ($self, $c) = @_;
+    my $site = $c->stash->{site};
+
     $c->stash->{assets} = [$c->model('CMS::Asset')
         ->search({
             -or => [
-                site   => $c->stash->{site}->id,
+                site   => $site->id,
                 global => 1,
             ]
         })
@@ -61,7 +73,7 @@ sub index :Path :Args(0) :NavigationName('Assets') {
 
 #-------------------------------------------------------------------------------
 
-sub upload_asset :Local :Args(0) {
+sub upload_asset :Chained('/modules/cms/sites/base') :PathPart('assets/upload') :Args(0) {
     my ($self, $c) = @_;
 
     $self->add_final_crumb($c, "Upload assets");
@@ -70,7 +82,7 @@ sub upload_asset :Local :Args(0) {
 
 #-------------------------------------------------------------------------------
 
-sub new_asset :Local :Args(0) :AppKitForm {
+sub new_asset :Chained('/modules/cms/sites/base') :PathPart('assets/new') :Args(0) :AppKitForm {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
 
@@ -89,15 +101,22 @@ sub new_asset :Local :Args(0) :AppKitForm {
         $asset->set_content($form->param_value('content'));
         
         $c->flash->{status_msg} = 'New asset created';
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $site->id ]));
+    }
+
+    if ($c->req->param('cancel')) {
+        $c->res->redirect($c->uri_for($self->action_for('index'), [ $site->id ]));
+        $c->detach;
     }
 }
 
 
 #-------------------------------------------------------------------------------
 
-sub edit_asset :Local :Args(1) :AppKitForm {
-    my ($self, $c, $asset_id) = @_;
+sub edit_asset :Chained('assets') :PathPart('edit') :Args(0) :AppKitForm {
+    my ($self, $c) = @_;
+    my $site  = $c->stash->{site};
+    my $asset = $c->stash->{asset};
 
     $self->add_final_crumb($c, "Edit asset");
 
@@ -105,14 +124,13 @@ sub edit_asset :Local :Args(1) :AppKitForm {
 
     if ($restricted_row) {
         if ($c->user->users_parameters->find({ parameter_id => $restricted_row->id })) {
-            unless ($c->model('CMS::AssetUser')->find({ asset_id => $asset_id, user_id => $c->user->id })) {
+            unless ($c->model('CMS::AssetUser')->find({ asset_id => $asset->id, user_id => $c->user->id })) {
                 $c->detach('/access_denied');
             }
         }
     }
 
     my $form  = $c->stash->{form};
-    my $asset = $c->model('CMS::Asset')->published->find({id => $asset_id});
     
     if ($asset->mime_type =~ /^text/) {
         # Add in-line edit control to form
@@ -154,15 +172,21 @@ sub edit_asset :Local :Args(1) :AppKitForm {
             }
         }
         
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $site->id ]));
+    }
+
+    if ($c->req->param('cancel')) {
+        $c->res->redirect($c->uri_for($self->action_for('index'), [ $site->id ]));
+        $c->detach;
     }
 }
 
 
 #-------------------------------------------------------------------------------
 
-sub upload_assets :Local :Args(1) {
+sub upload_assets :Chained('/modules/cms/sites/base') :Args(1) {
     my ($self, $c, $global) = @_;
+    my $site = $c->stash->{site};
     
     $global = $global eq 'on' ? 1 : 0;
     my $asset_rs = $c->model('CMS::Asset');
@@ -170,7 +194,7 @@ sub upload_assets :Local :Args(1) {
         my $asset = $asset_rs->create({
             mime_type   => $file->type,
             filename    => $file->basename,
-            site        => $c->stash->{site}->id,
+            site        => $site->id,
             global      => $global,
         });
 
@@ -181,23 +205,21 @@ sub upload_assets :Local :Args(1) {
 
 #-------------------------------------------------------------------------------
 
-sub delete_asset :Local :Args(1) :AppKitForm {
-    my ($self, $c, $asset_id) = @_;
+sub delete_asset :Chained('assets') :PathPart('delete') :Args(0) :AppKitForm {
+    my ($self, $c) = @_;
+    my $site  = $c->stash->{site};
+    my $asset = $c->stash->{asset};
+    my $form  = $c->stash->{form};
 
     $self->add_final_crumb($c, "Delete asset");
-    
-    my $form  = $c->stash->{form};
-    my $asset = $c->model('CMS::Asset')->find({id => $asset_id});
 
     if ($form->submitted_and_valid) {
         $asset->remove;
         
         $c->flash->{status_msg} = "Asset deleted";
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $site->id ]));
         $c->detach;
     }
-    
-    $c->stash->{asset} = $asset;
 }
 
 

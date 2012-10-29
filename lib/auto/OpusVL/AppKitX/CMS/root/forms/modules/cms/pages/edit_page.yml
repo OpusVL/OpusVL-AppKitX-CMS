@@ -49,6 +49,17 @@ elements:
             label: Description
 
       - type: Fieldset
+        legend: Update notes
+        name: note_changes
+        attributes:
+          id: note_changes
+          style: "display:none;"
+        elements:
+          - type: Textarea
+            name: description
+            label: Description
+
+      - type: Fieldset
         legend: Attributes
         name: global_fields
         elements:

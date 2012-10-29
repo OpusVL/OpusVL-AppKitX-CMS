@@ -28,7 +28,7 @@ sub auto :Private {
     my ($self, $c) = @_;
 
     $c->stash->{section} = 'Pages';
-    $c->forward('/modules/cms/site_validate');
+    #$c->forward('/modules/cms/site_validate');
     push @{ $c->stash->{breadcrumbs} }, {
         name    => 'Pages',
         url     => $c->uri_for( $c->controller->action_for('index'))
@@ -40,7 +40,28 @@ sub auto :Private {
 
 #-------------------------------------------------------------------------------
 
-sub index :Path :Args(0) :NavigationHome :NavigationName('Pages') {
+sub base :Chained('/') :PathPart('pages') :CaptureArgs(0) {
+    my ($self, $c) = @_;
+}
+
+sub pages :Chained('base') :PathPart('page') :CaptureArgs(2) {
+    my ($self, $c, $site_id, $page_id) = @_;
+    $c->forward('/modules/cms/sites/base', [ $site_id ]);
+
+    my $page = $c->model('CMS::Page')->find({ site => $site_id, id => $page_id });
+
+    unless ($page) {
+        $c->flash(error_msg => "No such page");
+        $c->res->redirect($c->uri_for($self->action_for('index'), [ $site_id ]));
+        $c->detach;
+    }
+    
+    $c->stash( page => $page );
+}
+
+#-------------------------------------------------------------------------------
+
+sub index :Chained('/modules/cms/sites/base') :PathPart('pages/list') :Args(0) {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
 
@@ -48,15 +69,23 @@ sub index :Path :Args(0) :NavigationHome :NavigationName('Pages') {
         ->search({
             site => $site->id,
             status => 'published',
+            blog   => 0,
         }, { order_by => { '-asc' => 'url' }}) ];
 }
 
+#-------------------------------------------------------------------------------
+
+sub blogs :Chained('/modules/cms/sites/base') :PathPart('blogs') :Args(0) {
+    my ($self, $c) = @_;
+    my $site = $c->stash->{site};
+    $c->stash(blogs => [ $c->model('CMS::Page')->search({ site => $site->id, blog => 1 })->all ]);
+}
 
 #-------------------------------------------------------------------------------
 
-sub new_page :Local :Args(0) :AppKitForm {
+sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) :AppKitForm {
     my ($self, $c) = @_;
-    my $site       = $c->model('CMS::Site')->find($c->stash->{site}->id);
+    my $site       = $c->stash->{site};
 
     my $templates = $c->model('CMS::Template')
         ->search({ site => $site->id });
@@ -67,7 +96,7 @@ sub new_page :Local :Args(0) :AppKitForm {
     }
 
     if ($c->req->param('cancel')) {
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $site->id ]));
         $c->detach;
     }
     
@@ -92,7 +121,30 @@ sub new_page :Local :Args(0) :AppKitForm {
                 parent => $parent_id,
                 url    => $parent->url . "/",
             });
+
+            $c->stash->{is_a_post} = 1 if $parent->blog;
         }
+    }
+
+    if ($c->req->query_params->{type} eq 'blog') {
+        $form->default_values({
+            content => q{
+                [% USE scalar %]
+                [% page = cms.param('page') %]
+                [% UNLESS page %][% page = 1 %][% END %]
+                [% articles = me.scalar.children({},{'sort' = 'newest', 'rows' = 5, 'page' = page}) %]
+
+                [% FOREACH article IN articles.all %]
+                    <div class="">
+                        <h3>[% article.title %]</h3>
+                        <strong>[% article.description %]</strong>
+                        <p>[% article.content.substr(0, 300) %]...</p>
+
+                        <a href="[% article.url %]">Read more</a>
+                    </div>
+                [% END %]
+            },
+        });
     }
 
     $form->process;
@@ -116,78 +168,75 @@ sub new_page :Local :Args(0) :AppKitForm {
             site        => $site->id,
             status      => $status,
             created_by  => $c->user->id,
+            blog        => $c->req->param('type') eq 'blog' ? 1 : 0,
         });
         
         $page->set_content($form->param_value('content'));
 
         if ($status eq 'preview') {
-            $c->res->redirect($c->uri_for($c->controller->action_for('preview'), $page->id) . "?panel=1");
+            $c->res->redirect($c->uri_for($c->controller->action_for('preview'), [$site->id, $page->id]) . "?panel=1");
             $c->detach;
         }
 
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        my $redirect_page = $c->req->query_params->{type} eq 'blog' ? 'blogs' : 'index';
+        $c->res->redirect($c->uri_for($c->controller->action_for($redirect_page), [ $site->id ]));
     }
 }
 
 
 #-------------------------------------------------------------------------------
 
-sub clone_page :Local :Args(2) {
-    my ($self, $c, $site_id, $page_id) = @_;
-
-    if (my $page = $c->model('CMS::Page')->find({ site => $site_id, id => $page_id })) {
-        if (my $new_page = $page->copy({ status => 'preview', url => $page->url . "_clone" })) {
-            my $page_users = $c->model('CMS::PageUser');
-            $new_page->set_content($page->content);
-            $page_users->find_or_create({
-                page_id => $new_page->id,
-                user_id => $c->user->id,
-            });
-
-            $c->flash(status_msg => "You are now viewing the clone of " . $page->title);
-            $c->res->redirect($c->uri_for($self->action_for('edit_page'), $new_page->id));
-            $c->detach;
-        }
-    }
-}
-
-#-------------------------------------------------------------------------------
-
-sub edit_page :Local :Args(1) :AppKitForm {
-    my ($self, $c, $page_id) = @_;
+sub clone_page :Chained('pages') :PathPart('clone') :Args(0) {
+    my ($self, $c) = @_;
+    my $page = $c->stash->{page};
     my $site = $c->stash->{site};
-    $site    = $c->model('CMS::Site')->find($c->stash->{site}->id);
-    
-    my $page = $c->model('CMS::Page')->find({id => $page_id});
+
+    if (my $new_page = $page->copy({ status => 'preview', url => $page->url . "_clone" })) {
+        my $page_users = $c->model('CMS::PageUser');
+        $new_page->set_content($page->content);
+        $page_users->find_or_create({
+            page_id => $new_page->id,
+            user_id => $c->user->id,
+        });
+
+        $c->flash(status_msg => "You are now viewing the clone of " . $page->title);
+        $c->res->redirect($c->uri_for($self->action_for('edit_page'), [ $site->id, $new_page->id ]));
+        $c->detach;
+    }
+}
+
+#-------------------------------------------------------------------------------
+
+sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm {
+    my ($self, $c) = @_;
+    my $page = $c->stash->{page};
+    my $site = $c->stash->{site};
+
     my $restricted_row = $c->model('CMS::Parameter')->find({ parameter => 'Restricted' });
 
     if ($restricted_row) {
         if ($c->user->users_parameters->find({ parameter_id => $restricted_row->id })) {
-            my $rpage = $c->model('CMS::PageUser')->find({ page_id => $page_id, user_id => $c->user->id });
-            if ($rpage) {
-               unless ($rpage->page->url eq $page->url) {
-                    $c->detach('/access_denied');
-                }
-            }
-            else {
+            my $url = $page->url;
+            my $results = $c->model('CMS::PageUser')->search_related('pages', { url => $url });
+            if ($results->count < 1) {
                 $c->detach('/access_denied');
             }
         }
     }
 
     if ($c->req->param('cancel')) {
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $site->id ]));
         $c->detach;
     }
     
     $self->add_final_crumb($c, "Edit page");
 
-    my $page_users = [ $page->page_users->all ];
+    #FIXME: my $page_users = [ $site->page_users->page_us ];
     my $site_users = [ $site->sites_users->all ];
     my $form = $c->stash->{form};
     
     $c->stash->{site_users} = $site_users;
-    $c->stash->{page_users} = $page_users;
+    #FIXME: $c->stash->{page_users} = $page_users;
     $form->get_all_element({name=>'template'})->options(
         [map {[$_->id, $_->name . " (" . $_->site->name . ")"]} $c->model('CMS::Template')->all]
     );
@@ -233,6 +282,7 @@ sub edit_page :Local :Args(1) :AppKitForm {
         parent      => $page->parent_id,
         content     => $page->content,
         priority    => $page->priority,
+        note_changes => $page->note_changes,
     };
     
     $self->construct_attribute_form($c, 'CMS::PageAttributeDetail');
@@ -251,32 +301,17 @@ sub edit_page :Local :Args(1) :AppKitForm {
         my $url = $form->param_value('url');
         unless ($url =~ m!^/!) {$url = "/$url"}
 
-        if ($c->req->body_params->{allow_users}) {
-            my $user_rs = $c->model('CMS::User');
-            my $users = $c->req->body_params->{allow_users};
-            $users    = [ $users ] if ref($users) ne 'ARRAY';
-            for my $user (@$users) {
-                $user = $user_rs->find($user);
-                if ($user) {
-                    $page->page_users->find_or_create({
-                        page_id => $page->id,
-                        user_id => $user->id,
-                    });
-                }
-            }
-        }
-
         if ($c->req->body_params->{preview}) {
             if ($page->content ne $form->param_value('content')) {
                 my $copy = $page->copy({ status => 'preview', created => DateTime->now() });
                 if ($copy) {
                     $copy->set_content($form->param_value('content'));
-                    $c->res->redirect($c->uri_for($self->action_for('preview'), $copy->id) . "?panel=1");
+                    $c->res->redirect($c->uri_for($self->action_for('preview'), [ $site->id, $copy->id ]) . "?panel=1");
                     $c->detach;
                 }
             }
             else {
-                $c->res->redirect($c->uri_for($self->action_for('preview'), $page->id) . "?panel=1");
+                $c->res->redirect($c->uri_for($self->action_for('preview'), [ $site->id, $page->id ]) . "?panel=1");
                 $c->detach;
             }
         }
@@ -294,6 +329,7 @@ sub edit_page :Local :Args(1) :AppKitForm {
             template_id => $form->param_value('template') || undef,
             parent_id   => $form->param_value('parent') || undef,
             site        => $site->id,
+            note_changes => $form->param_value('note_changes'),
         });
         
         if (my $file  = $c->req->upload('new_att_file')) {
@@ -334,8 +370,23 @@ sub edit_page :Local :Args(1) :AppKitForm {
         
         $page->update({ status => 'draft' });
 
+        if ($c->req->body_params->{allow_users}) {
+            my $user_rs = $c->model('CMS::User');
+            my $users = $c->req->body_params->{allow_users};
+            $users    = [ $users ] if ref($users) ne 'ARRAY';
+            for my $user (@$users) {
+                $user = $user_rs->find($user);
+                if ($user) {
+                    $new_page->page_users->find_or_create({
+                        page_id => $new_page->id,
+                        user_id => $user->id,
+                    });
+                }
+            }
+        }
+
         $c->flash->{status_msg} = "Your changes have been saved";
-        $c->res->redirect($c->uri_for($self->action_for('edit_page'), $new_page->id));
+        $c->res->redirect($c->uri_for($self->action_for('edit_page'), [ $site->id, $new_page->id ]));
         $c->detach;
     }
     
@@ -345,65 +396,63 @@ sub edit_page :Local :Args(1) :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
-sub delete_page :Local :Args(1) :AppKitForm {
-    my ($self, $c, $page_id) = @_;
+sub delete_page :Chained('pages') :PathPart('delete') :Args(0) :AppKitForm {
+    my ($self, $c) = @_;
+
+    my $page = $c->stash->{page};
+    my $site = $c->stash->{site};
+    my $form = $c->stash->{form};
     
     if ($c->req->param('cancel')) {
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $site->id ]));
         $c->detach;
     }
     
     $self->add_final_crumb($c, "Delete page");
-
-    my $page = $c->model('CMS::Pages')->find({id => $page_id});
-    my $form = $c->stash->{form};
     
     if ($form->submitted_and_valid) {
         $page->remove;
         
         $c->flash->{status_msg} = "Page deleted";
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $site->id ]));
         $c->detach;
     }
-
-    $c->stash->{page} = $page;
 }
 
 
 #-------------------------------------------------------------------------------
 
-sub save_preview :Local :Args(1) {
-    my ($self, $c, $page_id) = @_;
+sub save_preview :Chained('pages') :Args(0) {
+    my ($self, $c) = @_;
+    my $site = $c->stash->{site};
+    my $page = $c->stash->{page};
 
-    my $page = $c->model('CMS::Page')->find($page_id);
-    if ($page) {
-        # There's a bug where if you save a preview of an edited page
-        # you end up with duplicate published versions.. let's try to patch that 
-        # up briefly here, for now
-        if (my $is_page = $c->model('CMS::Page')->find({ url => $page->url, status => 'published' })) {
-            $is_page->update({ status => 'draft' });
-        }
-        if ($page->status eq 'preview') {
-            $page->update({ status => 'published' });
-            $c->flash->{status_msg} = "Successfully saved your page";
-            $c->res->redirect($c->uri_for($self->action_for('edit_page'), $page_id));
-            $c->detach;
-        }
+    # There's a bug where if you save a preview of an edited page
+    # you end up with duplicate published versions.. let's try to patch that 
+    # up briefly here, for now
+    if (my $is_page = $c->model('CMS::Page')->find({ url => $page->url, status => 'published' })) {
+        $is_page->update({ status => 'draft' });
+    }
+    if ($page->status eq 'preview') {
+        $page->update({ status => 'published' });
+        $c->flash->{status_msg} = "Successfully saved your page";
+        $c->res->redirect($c->uri_for($self->action_for('edit_page'), [ $site->id, $page->id ]));
+        $c->detach;
     }
 }
 
 #-------------------------------------------------------------------------------
 
-sub cancel_preview :Local :Args(1) {
+sub cancel_preview :Chained('pages') :Args(0) {
     my ($self, $c, $page_id) = @_;
 
-    my $page = $c->model('CMS::Page')->find($page_id);
-    if ($page) {
-        if ($page->status eq 'preview') {
-            $c->flash->{status_msg} = "Cancelled preview";
-            $c->res->redirect($c->uri_for($self->action_for('edit_page'), $page_id));
-            $c->detach;
-        }
+    my $site = $c->stash->{site};
+    my $page = $c->stash->{page};
+
+    if ($page->status eq 'preview') {
+        $c->flash->{status_msg} = "Cancelled preview";
+        $c->res->redirect($c->uri_for($self->action_for('edit_page'), [ $site->id, $page->id ]));
+        $c->detach;
     }
 }
 
@@ -491,41 +540,43 @@ sub edit_attachment :Local :Args(1) :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
-sub revisions :Local :Args(1) {
-    my ($self, $c, $page_id) = @_;
+sub revisions :Chained('pages') :Args(0) {
+    my ($self, $c) = @_;
+    my $site = $c->stash->{site};
+    my $page = $c->stash->{page};
 
-    my $page = $c->model('CMS::Page')->find($page_id);
-    if ($page) {
-        $c->stash->{getpage} = $page;
-        $c->stash->{pages}  = $c->model('CMS::Page')->search({
-            url => $page->url
-        },
-        {
-            rows     => 15,
-            page     => $c->req->query_params->{page} || 1,
-            order_by => { -desc => 'created' }
-        });
-    }
+    $c->stash->{getpage} = $page; #FIXME: why is this here?
+    $c->stash->{pages}  = $c->model('CMS::Page')->search({
+        url => $page->url
+    },
+    {
+        rows     => 15,
+        page     => $c->req->query_params->{page} || 1,
+        order_by => { -desc => 'created' }
+    });
+    
 }
 
 #-------------------------------------------------------------------------------
 
-sub restore :Local :Args(1) {
-    my ($self, $c, $page_id) = @_;
+sub restore :Chained('pages') :Args(0) {
+    my ($self, $c) = @_;
+    my $site = $c->stash->{site};
+    my $page = $c->stash->{page};
 
-    my $old_page = $c->model('CMS::Page')->find({ id => $page_id, status => { '!=' => 'published' }});
+    my $old_page = $c->model('CMS::Page')->find({ id => $page->id, status => { '!=' => 'published' }});
     if ($old_page) {
         my $current_page = $c->model('CMS::Page')->find({ url => $old_page->url, status => 'published' });
         $current_page->update({ status => 'draft' });
         $old_page->update({ status => 'published' });
 
         $c->flash->{status_msg} = "Successfully restored revision from " . $old_page->created->dmy . ' ' . $old_page->created->hms;
-        $c->res->redirect($c->uri_for($self->action_for('revisions'), $old_page->id ));
+        $c->res->redirect($c->uri_for($self->action_for('revisions'), [ $site->id, $old_page->id ]));
         $c->detach;
     }
     else {
         $c->flash->{error_msg} = "Can't restore an already published page";
-        $c->res->redirect($c->uri_for($self->action_for('revisions'), $page_id));
+        $c->res->redirect($c->uri_for($self->action_for('revisions'), [ $site->id, $page->id ]));
         $c->detach;
     }
 }
@@ -657,9 +708,10 @@ sub draft_delete :Local :Path('draft/delete') :Args(1) {
 
 #-------------------------------------------------------------------------------
 
-sub preview :Local :Args(1) {
-    my ($self, $c, $page_id) = @_;
-    
+sub preview :Chained('pages') :Args(0) {
+    my ($self, $c) = @_;
+    my $site = $c->stash->{site};
+    my $page = $c->stash->{page};
 
     if ($c->req->body_params->{cancel}) {
         my $page = $c->model('CMS::Page')->find($c->req->body_params->{page_id});
@@ -667,13 +719,13 @@ sub preview :Local :Args(1) {
         if ($site) {
             $page->delete;
             $c->flash->{status_msg} = 'Successfully cancelled and removed preview';
-            $c->res->redirect($c->uri_for($c->controller('CMS::Pages')->action_for('index')));
+            $c->res->redirect($c->uri_for($c->controller('CMS::Pages')->action_for('index'), [ $site->id ]));
             $c->detach;
         }
         else {
             $c->flash->{error_msg} = 'Unable to delete page. Do you have access to it?';
             $c->flash->{status_msg} = 'Successfully published page';
-            $c->res->redirect($c->uri_for($c->controller('CMS::Pages')->action_for('index')));
+            $c->res->redirect($c->uri_for($c->controller('CMS::Pages')->action_for('index'), [ $site->id ]));
             $c->detach;
         }
     }
@@ -684,19 +736,17 @@ sub preview :Local :Args(1) {
         if ($site) {
             $page->update({ status => 'published' });
             $c->flash->{status_msg} = 'Successfully published page';
-            $c->res->redirect($c->uri_for($c->controller('CMS::Pages')->action_for('index')));
+            $c->res->redirect($c->uri_for($c->controller('CMS::Pages')->action_for('index'), [ $site->id ]));
             $c->detach;
         }
         else {
             $c->flash->{error_msg} = 'Unable to publish page. Do you have access to it?';
             $c->flash->{status_msg} = 'Successfully published page';
-            $c->res->redirect($c->uri_for($c->controller('CMS::Pages')->action_for('index')));
+            $c->res->redirect($c->uri_for($c->controller('CMS::Pages')->action_for('index'), [ $site->id ]));
             $c->detach;
         }
     }
 
-    my $page = $c->model('CMS::Page')->find($page_id);
-    my $site = $page->site;
     my $asset_rs = $site->assets;
     $c->stash->{me}  = $page;
     $c->stash->{cms} = {

@@ -16,20 +16,23 @@
             </thead>
             <tbody>
                 [% FOREACH page IN pages %]
-                    <tr>
-                        <td>[% page.id %]</td>
-                        <td>[% page.url %]</td>
-                        <td>[% page.breadcrumb %]</td>
-                        <td>[% page.priority %]</td>
-                        <td>[% IF page.status == 'published' %]<font color="green">Published</font>[% ELSIF page.status == 'draft' %]<font color="brown">Draft</font>[% END %]</td>
-                        <td>
-                            <a href="[% c.uri_for(c.controller.action_for('edit_page'), page.id) %]">Edit</a> | 
-                            <a href="[% c.uri_for(c.controller.action_for('delete_page'), page.id) %]">Delete</a> | 
-                            <a href="[% IF c.config.cms_base_url %][% c.config.cms_base_url %][% page.url %][% ELSE %][% c.uri_for(page.url) %][% END %]">View</a> | 
-                            <a href="[% c.uri_for(c.controller.action_for('new_page'), {'parent_id' => page.id}) %]">Create child</a> | 
-                            <a href="[% c.uri_for(c.controller.action_for('revisions'), page.id) %]">Revisions</a>
-                        </td>
-                    </tr>
+                    [% IF page.parent.blog %]
+                    [% ELSE %]
+                        <tr>
+                            <td>[% page.id %]</td>
+                            <td>[% page.url %]</td>
+                            <td>[% page.breadcrumb %]</td>
+                            <td>[% page.priority %]</td>
+                            <td>[% IF page.status == 'published' %]<font color="green">Published</font>[% ELSIF page.status == 'draft' %]<font color="brown">Draft</font>[% END %]</td>
+                            <td>
+                                <a href="[% c.uri_for(c.controller.action_for('edit_page'), [ site.id, page.id ]) %]">Edit</a> | 
+                                <a href="[% c.uri_for(c.controller.action_for('delete_page'), [ site.id, page.id ]) %]">Delete</a> | 
+                                <a href="[% IF c.config.cms_base_url %][% c.config.cms_base_url %][% page.url %][% ELSE %][% c.uri_for(page.url) %][% END %]">View</a> | 
+                                <a href="[% c.uri_for(c.controller.action_for('new_page'), [ site.id ]) %]?parent_id=[% page.id %]">Create child</a> | 
+                                <a href="[% c.uri_for(c.controller.action_for('revisions'), [ site.id, page.id ]) %]">Revisions</a>
+                            </td>
+                        </tr>
+                    [% END %]
                 [% END %]
             </tbody>
         </table>
@@ -40,4 +43,4 @@
 
 
 
-<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('new_page')) %]">New page</a>
+<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('new_page'), [ site.id ]) %]">New page</a>

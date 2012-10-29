@@ -16,7 +16,7 @@
                     <tr>
                         <td>[% template.name %]</td>
                         <td>[% IF template.global %]<font color="green">Yes</font>[% ELSE %]<font color="red">No</font>[% END %]</td>
-                        <td><a href="[% c.uri_for(c.controller.action_for('edit_template'), template.id) %]">Edit</a></td>
+                        <td><a href="[% c.uri_for(c.controller('Modules::CMS::Templates').action_for('edit_template'), [ site.id, template.id ]) %]">Edit</a></td>
                     </tr>
                 [% END %]
             </tbody>
@@ -26,4 +26,4 @@
     [% END %]
 </div>
 
-<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('new_template')) %]">New template</a>
+<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('new_template'), [ site.id ]) %]">New template</a>

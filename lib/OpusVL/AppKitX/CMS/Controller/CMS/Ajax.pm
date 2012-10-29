@@ -28,6 +28,17 @@ sub auto :Private {
     #$c->stash->{current_view} = 'CMS::Ajax';
 }
 
+sub base :Chained('/') :CaptureArgs(1) {
+    my ($self, $c, $site_id) = @_;
+    if (my $site = $c->model('CMS::Site')->find($site_id)) {
+        $c->stash(
+            site        => $site,
+            assets      => [ $site->assets->available->all ],
+            elements    => [$site->elements->available->all ],
+            pages       => [ $c->model('CMS::Page')->search({ site => $site->id})->published->all ],
+        );
+    }
+}
 sub index :Path :Args(0) {
     my ($self, $c) = @_;
 }
@@ -38,15 +49,20 @@ sub list_elements :Local :Args(0) {
     $c->stash->{elements} = $c->model('CMS::Element')->available;
 }
 
-sub load_controls :Local :Args(0) {
-    my ($self, $c) = @_;
-    my $site              = $c->model('CMS::Site')->find($c->stash->{site}->id);
-    $c->stash->{assets}   = [ $site->assets->available->all ];
-    $c->stash->{elements} = $site->elements->available;
-    $c->stash->{pages}    = $c->model('CMS::Page')->published;
-    
+sub load_controls :Local :Args(1) {
+    my ($self, $c, $site_id) = @_;
+    $c->forward('Modules::CMS::Sites', 'base', [ $site_id ]);
+
+    my $site  = $c->stash->{site};
+    my $pages = $c->model('CMS::Page')->search({ site => $site->id})->published;
+    $c->stash(
+        assets      => [ $site->assets->available->all ],
+        elements    => [ $site->elements->available->all ],
+        pages       => [ $pages->all ],
+    );
+
     if (my $page_id = $c->req->param('page_id')) {
-        $c->stash->{page} = $c->model('CMS::Page')->published->find({id => $page_id});
+        $c->stash->{page} = $pages->find({id => $page_id});
     }
 }
 

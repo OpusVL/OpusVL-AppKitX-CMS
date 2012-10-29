@@ -2,8 +2,8 @@
 [% META appkitfeature_tablesorter = 1 %]
 [% PROCESS modules/cms/preprocess.tt %]
 
-[% IF c.can_access(c.controller('UserAccess').action_for('element_allow_list')) %]
-	<a href="[% c.uri_for(c.controller('UserAccess').action_for('element_user_list'), site.id, element.id) %]" class="link_button link_button_delete">Element Permissions</a>
+[% IF c.can_access(c.controller('Modules::CMS::UserAccess').action_for('element_allow_list')) %]
+	<a href="[% c.uri_for(c.controller('Modules::CMS::UserAccess').action_for('element_user_list'), site.id, element.id) %]" class="link_button link_button_delete">Element Permissions</a>
 	<div class="clear" style="height:10px"></div>
 [% END %]
 
@@ -45,5 +45,5 @@
 </form>
 
 <script type="text/javascript">
-    $('#editor-controls').load('/modules/cms/ajax/load_controls');
+    $('#editor-controls').load('/modules/cms/ajax/load_controls/[% site.id %]');
 </script>

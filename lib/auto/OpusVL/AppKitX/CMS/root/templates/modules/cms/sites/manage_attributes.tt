@@ -27,7 +27,7 @@
 								<td>
 								[% IF attr.super %]
 								[% ELSE %]
-								<a href="[% c.uri_for(c.controller.action_for('delete_attribute'), attr.id) %]">Delete</a>
+								<a href="[% c.uri_for(c.controller.action_for('delete_attribute'), [ site.id ]) %]/[% attr.id %]">Delete</a>
 								[% END %]
 								</td>
 							</tr>

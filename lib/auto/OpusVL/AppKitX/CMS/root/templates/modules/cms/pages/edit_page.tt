@@ -1,7 +1,17 @@
+[% IF page.blog OR page.parent.blog %]
+    [% SET type = 'Blog' %]
+[% ELSE %]
+    [% SET type = 'Page' %]
+[% END %]
 [% PROCESS modules/cms/preprocess.tt %]
-[% INCLUDE modules/cms/header.tt title="Edit page" %]
-<a href="[% c.uri_for(c.controller.action_for('index')) %]" class="link_button link_button_back">Back to page list</a>
-<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('clone_page'), site.id, page.id) %]">Clone this page</a>
+[% INCLUDE modules/cms/header.tt title="Edit $type" %]
+
+[% IF page.blog OR page.parent.blog %]
+<a href="[% c.uri_for(c.controller.action_for('blogs'), [ site.id ]) %]" class="link_button link_button_back">Back to blogs</a>
+[% ELSE %]
+<a href="[% c.uri_for(c.controller.action_for('index'), [ site.id ]) %]" class="link_button link_button_back">Back to page list</a>
+<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('clone_page'), [ site.id, page.id ]) %]">Clone this page</a>
+[% END %]
 <br>&nbsp;
 
 [% META appkitfeature_tablesorter = 1 %]
@@ -31,10 +41,10 @@
                 <td colspan="2"><a href="[% IF c.config.cms_base_url %][% c.config.cms_base_url %][% page.url %][% ELSE %][% c.uri_for(page.url) %][% END %]"">View page</a></td>
             </tr>
             [% IF (parent = page.parent) %]
-                <tr><td><a href="[% c.uri_for(c.controller.action_for('edit_page'), parent.id) %]">Go to parent ([% parent.breadcrumb %])</a></td></tr>
+                <tr><td><a href="[% c.uri_for(c.controller.action_for('edit_page'), [ site.id, parent.id ]) %]">Go to [% IF parent.blog %]blog ([% parent.title %])[% ELSE %]parent ([% parent.breadcrumb %]) [% END %]</a></td></tr>
             [% END %]
             <tr>
-                <td colspan="2"><a href="[% c.uri_for(c.controller.action_for('new_page'), {'parent_id' => page.id}) %]">Create child</a></td>
+                <td colspan="2"><a href="[% c.uri_for(c.controller.action_for('new_page'), [ site.id ]) %]?parent_id=[% page.id %]">Create [% IF page.blog %]post[% ELSE %]child[% END %]</a></td>
             </tr>
         </table>
     </div>
@@ -53,6 +63,8 @@
     
     <div id="tab_content">
         [% form.get_all_element( 'name' => 'page_content' ).render | none %]
+        <p><a href="javascript:void(0);" id="slide-change-note">Leave a reason for update?</a></p>
+        [% form.get_all_element( 'name' => 'note_changes' ).render | none %]
     </div>
 
     <div id="tab_details">
@@ -152,7 +164,10 @@
 </div>
 
 <script type="text/javascript">
-    $('#editor-controls').load('/modules/cms/ajax/load_controls?page_id=[% page.id %]');
+    $('#editor-controls').load('/modules/cms/ajax/load_controls/[% site.id %]?page_id=[% page.id %]');
+    $('#slide-change-note').click(function() {
+        $('#note_changes').slideToggle(200);
+    });
 
     $(function() {
         $('#preview').click(function() {

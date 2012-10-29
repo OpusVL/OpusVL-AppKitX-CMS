@@ -11,7 +11,7 @@
     $(function() {
         $("#asset-uploader").pluploadQueue({
             runtimes: 'html5,flash',
-            url: '[% c.uri_for(c.controller.action_for('upload_assets')) %]/' + $('#make-global').val(),
+            url: '[% c.uri_for(c.controller.action_for('upload_assets'), [ site.id ]) %]/' + $('#make-global').val(),
             multiple_queues: true,
             filters: [
                 {title: "Upload Assets", extensions: "*"}
@@ -19,7 +19,7 @@
             init: {
                 StateChanged: function(up) {
                     if(up.state == plupload.STOPPED) {
-                        window.location = "[% c.uri_for(c.controller.action_for('index')) %]"
+                        window.location = "[% c.uri_for(c.controller.action_for('index'), [ site.id ]) %]"
                     }
                 }
             },

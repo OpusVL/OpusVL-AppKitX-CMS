@@ -29,8 +29,8 @@
                             [% END %]
                         </td>
                         <td>
-                            <a href="[% c.uri_for(c.controller.action_for('edit_asset'), asset.id) %]">Edit</a>
-                            <a href="[% c.uri_for(c.controller.action_for('delete_asset'), asset.id) %]">Delete</a>
+                            <a href="[% c.uri_for(c.controller.action_for('edit_asset'), [ site.id, asset.id ]) %]">Edit</a>
+                            <a href="[% c.uri_for(c.controller.action_for('delete_asset'), [ site.id, asset.id ]) %]">Delete</a>
                             <a href="[% c.uri_for(c.controller('Root').action_for('_asset'), asset.id, asset.filename) %]" target="__blank">View</a>
                         </td>
                     </tr>
@@ -42,5 +42,5 @@
     [% END %]
 </div>
 
-<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('new_asset')) %]">New asset</a>
-<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('upload_asset')) %]">Upload asset</a>
+<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('new_asset'), [ site.id ]) %]">New asset</a>
+<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('upload_asset'), [ site.id ]) %]">Upload asset</a>

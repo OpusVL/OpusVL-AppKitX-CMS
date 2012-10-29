@@ -19,18 +19,12 @@ __PACKAGE__->config
     #appkit_css                  => ['/static/modules/cms/cms.css'],
 );
 
- 
 #-------------------------------------------------------------------------------
 
 sub auto :Private {
     my ($self, $c) = @_;
 
     $c->forward('/modules/cms/site_validate');
-
-    if ($c->req->param('cancel')) {
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
-        $c->detach;
-    }
     
     $c->stash->{section} = 'Elements';
  
@@ -40,16 +34,37 @@ sub auto :Private {
     };
 }
 
+#-------------------------------------------------------------------------------
+
+sub base :Chained('/') :PathPart('elements') :CaptureArgs(0) {
+    my ($self, $c) = @_;
+}
+
+sub elements :Chained('base') :PathPart('element') :CaptureArgs(2) {
+    my ($self, $c, $site_id, $element_id) = @_;
+    $c->forward('/modules/cms/sites/base', [ $site_id ]);
+
+    my $element = $c->model('CMS::Element')->find({ site => $site_id, id => $element_id });
+
+    unless ($element) {
+        $c->flash(error_msg => "No such element");
+        $c->res->redirect($c->uri_for($self->action_for('index'), [ $site_id ]));
+        $c->detach;
+    }
+    
+    $c->stash( element => $element );
+}
 
 #-------------------------------------------------------------------------------
 
-sub index :Path :Args(0) :NavigationName('Elements') {
+sub index :Chained('/modules/cms/sites/base') :PathPart('element/list') :Args(0) {
     my ($self, $c) = @_;
-    
+    my $site = $c->stash->{site};
+
     $c->stash->{elements} = [$c->model('CMS::Element')
         ->search({
             -or => [
-                site    => $c->stash->{site}->id,
+                site    => $site->id,
                 global  => 1,
             ]
         })
@@ -58,36 +73,39 @@ sub index :Path :Args(0) :NavigationName('Elements') {
 
 #-------------------------------------------------------------------------------
 
-sub new_element :Local :Args(0) :AppKitForm {
+sub new_element :Chained('/modules/cms/sites/base') :PathPart('element/new') :Args(0) :AppKitForm {
     my ($self, $c) = @_;
-    
+    my $site = $c->stash->{site};
+
     $self->add_final_crumb($c, "New element");
     
     my $form = $c->stash->{form};
     if ($form->submitted_and_valid) {
         my $element = $c->model('CMS::Element')->create({
             name   => $form->param_value('name'),
-            site   => $c->stash->{site}->id,
+            site   => $site->id,
             global => $form->param_value('global')||0,
         });
         
         $element->set_content($form->param_value('content'));
         
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $site->id ]));
     }
 }
 
 
 #-------------------------------------------------------------------------------
 
-sub edit_element :Local :Args(1) :AppKitForm {
-    my ($self, $c, $element_id) = @_;
+sub edit_element :Chained('elements') :PathPart('edit') :Args(0) :AppKitForm {
+    my ($self, $c) = @_;
+    my $element = $c->stash->{element};
+    my $site    = $c->stash->{site};
 
     my $restricted_row = $c->model('CMS::Parameter')->find({ parameter => 'Restricted' });
 
     if ($restricted_row) {
         if ($c->user->users_parameters->find({ parameter_id => $restricted_row->id })) {
-            unless ($c->model('CMS::ElementUser')->find({ element_id => $element_id, user_id => $c->user->id })) {
+            unless ($c->model('CMS::ElementUser')->find({ element_id => $element->id, user_id => $c->user->id })) {
                 $c->detach('/access_denied');
             }
         }
@@ -96,8 +114,6 @@ sub edit_element :Local :Args(1) :AppKitForm {
     $self->add_final_crumb($c, "Edit element");
     
     my $form    = $c->stash->{form};
-    my $element = $c->model('CMS::Element')->published->find({id => $element_id});
-    $c->stash(element => $element);
     $c->stash( attributes => [ $element->element_attributes->all ] );
     
     $form->default_values({
@@ -117,7 +133,14 @@ sub edit_element :Local :Args(1) :AppKitForm {
             $element->set_content($form->param_value('content'));
         }
         
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->flash(status_msg => "Updated element " . $element->name);
+        $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $site->id ]));
+        $c->detach;
+    }
+
+    if ($c->req->param('cancel')) {
+        $c->res->redirect($c->uri_for($self->action_for('index'), [ $site->id ]));
+        $c->detach;
     }
 
     # if a new attribute was specified
@@ -137,23 +160,22 @@ sub edit_element :Local :Args(1) :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
-sub delete_element :Local :Args(1) :AppKitForm {
+sub delete_element :Chained('elements') :PathPart('delete') :Args(0) :AppKitForm {
     my ($self, $c, $element_id) = @_;
+    my $element = $c->stash->{element};
+    my $site    = $c->stash->{site};
 
     $self->add_final_crumb($c, "Delete element");
     
     my $form    = $c->stash->{form};
-    my $element = $c->model('CMS::Element')->find({id => $element_id});
 
     if ($form->submitted_and_valid) {
         $element->remove;
         
-        $c->flash->{status_msg} = "Element deleted";
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
+        $c->flash(status_msg => "Element deleted");
+        $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $site->id ]));
         $c->detach;
     }
-    
-    $c->stash->{element} = $element;
 }
 
 
