@@ -5,7 +5,6 @@ use Moose;
 use namespace::autoclean;
 BEGIN { extends 'Catalyst::Controller' }
 with 'OpusVL::AppKit::RolesFor::Controller::GUI';
-with 'OpusVL::AppKitX::CMS::Controller::CMS::Base';
 
 __PACKAGE__->config
 (
