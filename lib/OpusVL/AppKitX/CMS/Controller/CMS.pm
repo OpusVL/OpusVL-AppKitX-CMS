@@ -24,29 +24,32 @@ sub auto :Private {
         $c->detach;
     }   
 
-    my $sites = $c->model('CMS::SitesUser')
-        ->search({ user_id => $c->user->id });
-
-    if ($sites) {
-        $c->stash->{all_sites} = [ $sites->all ];
-        $DB::single = 1;
-
-        $c->stash->{selected_domain} = $c->session->{selected_domain}
-            if $c->session->{selected_domain};
-
-        # we need to clear out old session data to avoid lurking bugs
-        # or fix AppKit's menu system so we can actually use Chained actions
-        if ($c->session->{site}) {
-            if ($c->model('CMS::Site')->find($c->session->{site}->id)) {
-                $c->stash->{site} = $c->session->{site}
-            }
-            else {
-                delete $c->session->{site};
-                delete $c->session->{selected_domain};
-                delete $c->stash->{site};
-            }
-        }
-    }
+    #$c->stash->{elements} = [ $c->stash->{site}->elements->available->all ];
+    #$c->stash->{pages} = [ $c->stash->{site}->pages->published->all ];
+    
+    #my $sites = $c->model('CMS::SitesUser')
+    #    ->search({ user_id => $c->user->id });
+#
+    #if ($sites) {
+    #    $c->stash->{all_sites} = [ $sites->all ];
+    #    $DB::single = 1;
+#
+    #    $c->stash->{selected_domain} = $c->session->{selected_domain}
+    #        if $c->session->{selected_domain};
+#
+    #    # we need to clear out old session data to avoid lurking bugs
+    #    # or fix AppKit's menu system so we can actually use Chained actions
+    #    if ($c->session->{site}) {
+    #        if ($c->model('CMS::Site')->find($c->session->{site}->id)) {
+    #            $c->stash->{site} = $c->session->{site}
+    #        }
+    #        else {
+    #            delete $c->session->{site};
+    #            delete $c->session->{selected_domain};
+    #            delete $c->stash->{site};
+    #        }
+    #    }
+    #}
 
     1;
         
@@ -67,24 +70,57 @@ sub home
 
 sub portlet_recent_pages : PortletName('Most Recent Pages') {
     my ($self, $c) = @_;
-    my $pages = $c->model('CMS::Page')->search_rs({
+    my $sites = $c->model('CMS::SitesUser')->search({ user_id => $c->user->id });
+
+    # FIXME: This is super inefficient. Learn how to properly join or prefetch the tables required.
+    my $pages = $c->model('CMS::Page')->search({
         created => {
             -between => [
+                DateTime->now->subtract(days => 5),
                 DateTime->now(),
-                DateTime->now()->subtract(days => 5),
-            ]
-        }
+            ],
+        },
+        status => 'published',
     }, {
-        rows        => 5,
-        order_by    => { -desc => [ 'created' ] },
+        rows     => 5,
+        order_by => { -desc => [ 'created' ] },
     });
 
-    $c->stash->{cms_recent_pages} = [ $pages->all ];
+    my @user_pages;
+    for my $page ($pages->all) {
+        if ($page->site->sites_users->find({ user_id => $c->user->id  })) {
+            push @user_pages, $page;
+        }
+    }
+
+    $c->stash(cms_recent_pages => \@user_pages);
+
+    #if ($sites->count > 0) {
+    #    my $pages = $sites->search({
+    #        #'pages.created' => {
+    #        #    -between => [
+    #        #        DateTime->now(),
+    #        #        DateTime->now()->subtract(days => 5),
+    #        #    ]
+    #        #}
+    #    }, {
+    #        prefetch    => 'site',
+    #        rows        => 5,
+    #        order_by    => { -desc => [ 'pages.created' ] },
+    #    });
+#
+    #    die [ $pages->all ]->[0]->site;
+    #    $c->stash->{cms_recent_pages} = [ $pages->all ];
+    #}
 }
 
 sub portlet_current_site : PortletName('Selected Site') {
     my ($self, $c) = @_;
-    $c->stash->{sites} = [$c->model('CMS::Site')->all]; # FIXME: Needs to use sites_users
+    my $sites      = $c->model('CMS::SitesUser')->search({ user_id => $c->user->id });
+    
+    if ($sites->count > 0) {
+        $c->stash(sites => [ $c->model('CMS::SitesUser')->search({ user_id => $c->user->id })->all ]);
+    }
 }
 
 sub redirect_url :Local :Args() {

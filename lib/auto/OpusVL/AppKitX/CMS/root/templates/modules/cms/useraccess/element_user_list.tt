@@ -1,7 +1,7 @@
 [% META appkitfeature_tablesorter = 1 %]
 [% INCLUDE modules/cms/header.tt title="Element user list for $element.name" %]
 
-<a href="[% c.uri_for(c.controller('Modules::CMS::Element').action_for('edit_element'), element.id) %]" class="link_button link_button_back">Back to element</a>
+<a href="[% c.uri_for(c.controller('Modules::CMS::Element').action_for('edit_element'), [ site.id, element.id]) %]" class="link_button link_button_back">Back to element</a>
 <div class="clear" style="height:15px"></div>
 
 <div class="content_block">

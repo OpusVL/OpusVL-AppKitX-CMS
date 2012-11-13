@@ -141,7 +141,7 @@ sub edit :Chained('domains') :Args(0) :PathPart('edit') :AppKitForm {
         }
 
         $c->flash->{status_msg} = "Successfully updated domain";
-        $c->res->redirect($c->uri_for($self->action_for('edit'), [ $site->id, $form->param('master_domain') ]));
+        $c->res->redirect($c->uri_for($self->action_for('manage'), [ $site->id ]));
         $c->detach;
     }
 

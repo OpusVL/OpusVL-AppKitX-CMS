@@ -1,9 +1,5 @@
-[%# META appkitfeature_tablesorter = 1 %]
+[% META appkitfeature_tablesorter = 1 %]
 [% PROCESS modules/cms/preprocess.tt %]
 [% INCLUDE modules/cms/header.tt title="Edit template" %]
 
 [% form.render | none %]
-
-<script type="text/javascript">
-    $('#editor-controls').load('/modules/cms/ajax/load_controls/[% site.id %]);
-</script>

@@ -23,11 +23,11 @@
 						<td>[% user.username %]</td>
 						<td>
 							[% IF c.can_access(c.controller('UserAccess').action_for('page_allow_list')) %]
-								<a href="[% c.uri_for(c.controller('UserAccess').action_for('page_allow_list_multi'), site.id, user.id) %]">Allow Pages</a>
+								<a href="[% c.uri_for(c.controller('Modules::CMS::UserAccess').action_for('page_allow_list_multi'), site.id, user.id) %]">Allow Pages</a>
 							[% END %]
 
 							[% IF c.can_access(c.controller('UserAccess').action_for('element_allow_list')) %]
-								| <a href="[% c.uri_for(c.controller('UserAccess').action_for('element_allow_list_multi'), site.id, user.id) %]">Allow Elements</a>
+								| <a href="[% c.uri_for(c.controller('Modules::CMS::UserAccess').action_for('element_allow_list_multi'), site.id, user.id) %]">Allow Elements</a>
 							[% END %]
 						</td>
 					</tr>

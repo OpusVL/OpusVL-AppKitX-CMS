@@ -2,7 +2,7 @@
 	body {
 		background-color: #000;
 		color: #fff;
-		font-family : Verdana, "Bitstream Vera Sans", "DejaVu Sans", Tahoma, Geneva, Arial, Sans-serif;
+		font-family: Verdana, "Bitstream Vera Sans", "DejaVu Sans", Tahoma, Geneva, Arial, Sans-serif;
 		font-size:12px;
 	}
 
@@ -25,7 +25,7 @@
 	<a id="preview-cancel" href="javascript:void(0);">Cancel</a>
 </span>
 
-<script type="text/javascript" src="/static/js/jquery-1.7.1.min.js"></script>
+<script type="text/javascript" src="[% c.uri_for('/static/js/jquery.js') %]"></script>
 <script type="text/javascript">
 	$(function() {
 		$('#preview-save').click(function() {

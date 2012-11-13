@@ -4,7 +4,7 @@
         <a class="brand" href="[% c.uri_for(c.controller('Modules::CMS::Sites').action_for('edit'), [ site.id ]) %]">[% site.name %]</a>
         <ul class="nav">
           <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-white icon-edit"></i> Manage Content <b class="caret"></b></a>
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-black icon-edit"></i> Manage Content <b class="caret"></b></a>
             <ul class="dropdown-menu">
                 <li><a href="[% c.uri_for(c.controller('Modules::CMS::Templates').action_for('index'), [ site.id ]) %]">Templates</a></li>
                 <li><a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('index'), [ site.id ]) %]">Pages</a></li>
@@ -12,11 +12,12 @@
                 <li><a href="[% c.uri_for(c.controller('Modules::CMS::Assets').action_for('index'), [ site.id ]) %]">Assets</a></li>
                 <li class="divider"></li>
                 <li><a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('blogs'), [ site.id ]) %]">Blogs</a></li>
+                <li><a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('orphan_pages'), [ site.id ]) %]">Orphan Pages</a></li>
             </ul>
           </li>
 
           <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-white icon-cog"></i> Site Configuration <b class="caret"></b></a>
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-black icon-cog"></i> Site Configuration <b class="caret"></b></a>
             <ul class="dropdown-menu">
                 <li><a href="[% c.uri_for(c.controller('Modules::CMS::Domains').action_for('manage'), [ site.id ]) %]">Manage Domains</a></li>
                 <li><a href="[% c.uri_for(c.controller('Modules::CMS::Sites').action_for('manage_attributes'), [ site.id ]) %]">Manage Attributes</a></li>
@@ -27,7 +28,7 @@
         </li>
         </ul>
             <ul class="nav pull-right">
-                <li><a href="[% c.uri_for(c.controller('Modules::CMS::Sites').action_for('index')) %]"><i class="icon-white icon-eject"></i> Different site</a></li>
+                <li><a href="[% c.uri_for(c.controller('Modules::CMS::Sites').action_for('index')) %]"><i class="icon-black icon-eject"></i> Different site</a></li>
             </ul>
       </div>
     </div>

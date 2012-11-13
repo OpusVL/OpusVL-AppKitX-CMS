@@ -11,7 +11,7 @@ __PACKAGE__->config
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
     appkit_css                  => ['/static/css/bootstrap.css'],
-    appkit_js                   => ['/static/js/cms.js', '/static/js/bootstrap.js'],
+    appkit_js                   => ['/static/js/cms.js', '/static/js/bootstrap.js', '/static/js/facebox.js'],
     #appkit_js                   => ['/static/js/facebox.js', '/static/js/cms.js'],
     appkit_method_group         => 'Content Management',
     appkit_method_group_order   => 1,
@@ -218,6 +218,11 @@ sub delete_asset :Chained('assets') :PathPart('delete') :Args(0) :AppKitForm {
         
         $c->flash->{status_msg} = "Asset deleted";
         $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $site->id ]));
+        $c->detach;
+    }
+
+    if ($c->req->param('cancel')) {
+        $c->res->redirect($c->uri_for($self->action_for('index'), [ $site->id ]));
         $c->detach;
     }
 }

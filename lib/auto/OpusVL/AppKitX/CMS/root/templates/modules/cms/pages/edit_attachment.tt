@@ -2,6 +2,8 @@
 <h1>Edit attachment</h1>
 [% META appkitfeature_tablesorter = 1 %]
 
+<a href="[% c.uri_for(c.controller.action_for('edit_page'), [ site.id, attachment.page_id ]) %]" class="link_button link_button_back">Back to page</a>
+<div class="clear" style="height:10px"></div>
 [% form.start | none %]
 
 <div class="content_block tab_header">
@@ -21,9 +23,6 @@
         <table class="vertical_list">
             <tr>
                 <td colspan="2"><a href="[% IF c.config.cms_base_url %][% c.config.cms_base_url %]/_attachment/[% attachment.id %]/[% attachment.filename %][% ELSE %][% c.uri_for(c.controller('Root').action_for('_attachment'), attachment.id, attachment.filename) %][% END %]"">View attachment</a></td>
-            </tr>
-            <tr>
-                <td colspan="2"><a href="[% c.uri_for(c.controller.action_for('edit_page'), attachment.page_id) %]">Edit page</a></td>
             </tr>
         </table>
     </div>

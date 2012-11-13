@@ -27,7 +27,7 @@
 			[% FOREACH attr IN attributes %]
 				<tr>
 					<td>[% attr.code %]</td>
-					<td>Edit | Delete</td>
+					<td><a href="[% c.uri_for(c.controller.action_for('delete_element_attribute'), [ site.id, element.id ]) %]/[% attr.id %]">Remove attribute</a></td>
 				</tr>
 			[% END %]
 				</tbody>
@@ -43,7 +43,3 @@
 
 <input type="submit" class="submit submit_add" value="Add Attribute">
 </form>
-
-<script type="text/javascript">
-    $('#editor-controls').load('/modules/cms/ajax/load_controls/[% site.id %]');
-</script>

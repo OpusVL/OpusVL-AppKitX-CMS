@@ -8,18 +8,18 @@
 		<table class="tablesorter">
 			<thead>
 				<tr>
-					<td>URL</td>
-					<td>Name</td>
-					<td>Action</td>
+					<th>URL</th>
+					<th>Name</th>
+					<th>Action</th>
 				</tr>
 			</thead>
 			<tbody>
 				[% FOREACH blog IN blogs %]
 				<tr>
-					<td>[% blog.url %]</td>
+					<td><a href="[% c.uri_for(c.controller.action_for('edit_page'), [ site.id, blog.id ]) %]">[% blog.url %]</a></td>
 					<td>[% blog.title %]</td>
 					<td>
-						<a href="[% c.uri_for(c.controller.action_for('edit_page'), [ site.id, blog.id ]) %]">Edit</a> | 
+						<a href="[% c.uri_for(c.controller.action_for('blog_posts'), [ site.id, blog.id ]) %]">View Posts</a> | 
 						<a href="[% c.uri_for(c.controller.action_for('new_page'), [ site.id ]) %]?parent_id=[% blog.id %]">Add post</a>
 					</td>
 				</tr>

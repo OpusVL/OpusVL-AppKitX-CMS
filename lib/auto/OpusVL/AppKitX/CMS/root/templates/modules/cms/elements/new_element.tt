@@ -3,7 +3,3 @@
 [% PROCESS modules/cms/preprocess.tt %]
 
 [% form.render | none %]
-
-<script type="text/javascript">
-    $('#editor-controls').load('/modules/cms/ajax/load_controls/[% site.id %]');
-</script>

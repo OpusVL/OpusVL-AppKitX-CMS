@@ -37,9 +37,7 @@
     </div>
     <div class="column">
         <table class="vertical_list">
-            <tr>
-                <td colspan="2"><a href="[% IF c.config.cms_base_url %][% c.config.cms_base_url %][% page.url %][% ELSE %][% c.uri_for(page.url) %][% END %]"">View page</a></td>
-            </tr>
+            
             [% IF (parent = page.parent) %]
                 <tr><td><a href="[% c.uri_for(c.controller.action_for('edit_page'), [ site.id, parent.id ]) %]">Go to [% IF parent.blog %]blog ([% parent.title %])[% ELSE %]parent ([% parent.breadcrumb %]) [% END %]</a></td></tr>
             [% END %]
@@ -75,7 +73,7 @@
     <div id="tab_attachments">
         <fieldset>
             <legend>Existing attachments</legend>
-            [% IF page.attachments_rs.published.size %]
+            [% IF page.get_attachments.size %]
                 <table class="tablesorter">
                     <thead>
                         <tr>
@@ -83,22 +81,20 @@
                             <th>Description</th>
                             <th>Priority</th>
                             <th>Type</th>
-                            <th>Preview</th>
                             <th>Tags</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        [% FOREACH attachment IN page.attachments_rs.published %]
+                        [% FOREACH attachment IN page.get_attachments %]
                             <tr>
                                 <td>[% attachment.filename %]</td>
                                 <td>[% attachment.description %]</td>
                                 <td>[% attachment.priority %]</td>
                                 <td>[% attachment.mime_type %]</td>
-                                <td>[% IF attachment.mime_type.match('image') %]Thumbnail[% END %]</td>
                                 <td></td>
                                 <td>
-                                    <a href="[% IF c.config.cms_base_url %][% c.config.cms_base_url %]/_attachment/[% attachment.id %]/[% attachment.filename %][% ELSE %][% c.uri_for(c.controller('Root').action_for('_attachment'), attachment.id, attachment.filename) %][% END %]">View</a>
+                                    <a target="__blank" href="[% IF c.config.cms_base_url %][% c.config.cms_base_url %]/_attachment/[% attachment.id %]/[% attachment.filename %][% ELSE %][% c.uri_for(c.controller('Modules::CMS::Pages').action_for('_attachment'), attachment.id, attachment.filename) %][% END %]">View</a>
                                     <a href="[% c.uri_for(c.controller.action_for('edit_attachment'), attachment.id) %]">Edit</a>
                                     <a href="[% c.uri_for(c.controller.action_for('delete_attachment'), attachment.id) %]">Delete</a>
                                 </td>
@@ -133,11 +129,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        [% FOREACH page_user IN page_users %]
+                        [% FOREACH puser IN page_users %]
                             <tr>
-                                <td>[% page_user.user.username %]</td>
-                                <td>[% page_user.user.name %]</td>
-                                <td><a href="[% c.uri_for(c.controller('Modules::CMS::UserAccess').action_for('page_revoke_permission'), page.id, page_user.user.id) %]">Revoke Permission</a></td>
+                                <td>[% puser.user.username %]</td>
+                                <td>[% puser.user.name %]</td>
+                                <td><a href="[% c.uri_for(c.controller('Modules::CMS::UserAccess').action_for('page_revoke_permission'), site.id, page.id, puser.user.id) %]">Revoke Permission</a></td>
                             </tr>
                         [% END %]
                     </tbody>
@@ -164,7 +160,6 @@
 </div>
 
 <script type="text/javascript">
-    $('#editor-controls').load('/modules/cms/ajax/load_controls/[% site.id %]?page_id=[% page.id %]');
     $('#slide-change-note').click(function() {
         $('#note_changes').slideToggle(200);
     });

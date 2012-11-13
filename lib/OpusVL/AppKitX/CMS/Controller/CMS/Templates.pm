@@ -10,8 +10,8 @@ __PACKAGE__->config
     appkit_name                 => 'CMS',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
-    appkit_css                  => [qw</static/css/bootstrap.css /static/css/jwysiwyg/jquery.wysiwyg.css /static/css/jwysiwyg/jquery.wysiwyg.modal.css /static/css/cms.css>],
-    appkit_js                   => [qw< /static/js/bootstrap.js /static/js/wysiwyg/jquery.wysiwyg.js /static/js/wysiwyg/controls/wysiwyg.colorpicker.js /static/js/wysiwyg/controls/wysiwyg.cssWrap.js /static/js/wysiwyg/controls/wysiwyg.image.js /static/js/wysiwyg/controls/wysiwyg.link.js /static/js/wysiwyg/controls/wysiwyg.table.js /static/js/cms.js /static/js/bootstrap-button.js /static/js/bootstrap-transition.js /static/js/bootstrap-modal.js>],
+    appkit_css                  => [qw< /static/js/redactor/redactor.css /static/css/bootstrap.css >],
+    appkit_js                   => [qw< /static/js/bootstrap.js /static/js/redactor/redactor.js >],
     #appkit_js                   => [qw< /static/js/wysiwyg/jquery.wysiwyg.js /static/js/cms.js >],
     #appkit_js                     => ['/static/js/nicEdit.js', '/static/js/cms.js'],
     appkit_method_group         => 'Content Management',
@@ -107,6 +107,9 @@ sub new_template :Chained('/modules/cms/sites/base') :Args(0) :PathPart('templat
        $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $c->stash->{site}->id ]));
        $c->detach;
     }
+
+    $c->stash->{elements} = [ $c->stash->{site}->elements->available->all ];
+    $c->stash->{pages} = [ $c->stash->{site}->pages->published->all ];
 }
 
 

@@ -10,9 +10,8 @@ __PACKAGE__->config
     appkit_name                 => 'CMS',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
-    appkit_css                  => [qw</static/css/bootstrap.css /static/css/jwysiwyg/jquery.wysiwyg.css /static/css/jwysiwyg/jquery.wysiwyg.modal.css>],
-    appkit_js                   => [qw< /static/js/bootstrap.js /static/js/wysiwyg/jquery.wysiwyg.js /static/js/wysiwyg/controls/wysiwyg.colorpicker.js /static/js/wysiwyg/controls/wysiwyg.cssWrap.js /static/js/wysiwyg/controls/wysiwyg.image.js /static/js/wysiwyg/controls/wysiwyg.link.js /static/js/wysiwyg/controls/wysiwyg.table.js /static/js/cms.js /static/js/bootstrap-button.js /static/js/bootstrap-transition.js /static/js/bootstrap-modal.js>],
-    #appkit_js                     => ['/static/js/nicEdit.js', '/static/js/cms.js'],
+    appkit_css                  => [qw< /static/js/redactor/redactor.css /static/css/bootstrap.css >],
+    appkit_js                   => [qw< /static/js/bootstrap.js /static/js/redactor/redactor.js >],
     appkit_method_group         => 'Content Management',
     appkit_method_group_order   => 1,
     appkit_shared_module        => 'CMS',
@@ -23,8 +22,6 @@ __PACKAGE__->config
 
 sub auto :Private {
     my ($self, $c) = @_;
-
-    $c->forward('/modules/cms/site_validate');
     
     $c->stash->{section} = 'Elements';
  
@@ -178,6 +175,21 @@ sub delete_element :Chained('elements') :PathPart('delete') :Args(0) :AppKitForm
     }
 }
 
+
+#-------------------------------------------------------------------------------
+
+sub delete_element_attribute :Chained('elements') :PathPart('delete/element/attribute') :Args(1) {
+    my ($self, $c, $attr_id) = @_;
+    my $element = $c->stash->{element};
+    my $site    = $c->stash->{site};
+
+    if (my $attr = $element->element_attributes->find( $attr_id )) {
+        $attr->delete;
+        $c->flash(status_msg => "Successfully delete attribute");
+        $c->res->redirect($c->uri_for($self->action_for('edit_element'), [ $site->id, $element->id ]));
+        $c->detach;
+    }
+}
 
 #-------------------------------------------------------------------------------
 

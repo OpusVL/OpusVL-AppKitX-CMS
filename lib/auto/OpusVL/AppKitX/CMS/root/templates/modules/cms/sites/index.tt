@@ -1,9 +1,9 @@
 <h1>Sites</h1>
 
 <div class="content_block">
-	[% IF all_sites.size > 0 %]
+	[% IF sites.size > 0 %]
 		<ol>
-			[% FOREACH site IN all_sites %]
+			[% FOREACH site IN sites %]
 				<li><strong><a href="[% c.uri_for(c.controller.action_for('edit'), [ site.site.id ]) %]">[% site.site.name %]</a></strong></li>
 			[% END %]
 		</ol>

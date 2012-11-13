@@ -1,3 +1,267 @@
 <style type="text/css">
-    @import url(/static/css/cms.css);
+    body .redactor_toolbar li a.redactor_btn_elements {
+        background: url([% c.uri_for('/static/js/redactor/img/elements.png') %]) no-repeat;
+        background-position: center;
+    }
+
+    body .redactor_toolbar li a.redactor_btn_pages {
+        background: url([% c.uri_for('/static/js/redactor/img/pages.png') %]) no-repeat;
+        background-position: center;
+    }
+
+    body .redactor_toolbar li a.redactor_btn_assets {
+        background: url([% c.uri_for('/static/js/redactor/img/assets.png') %]) no-repeat;
+        background-position: center;
+    }
+
+    body .redactor_toolbar li a.redactor_btn_attachments {
+        background: url([% c.uri_for('/static/js/redactor/img/attachments.png') %]) no-repeat;
+        background-position: center;
+    }
+
+    .tt {
+        background-color: #ccccff;
+    }
+
+    .save_indicator.unsaved {
+        display: none;
+    }
 </style>
+
+<div id="pages" style="display: none;">
+    <div id="redactor_modal_content">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                [% FOREACH p IN pages %]
+                    <tr>
+                        <td>[% p.id %]</td>
+                        <td><a rel="[% p.id %]" href="javascript:void(0);" class="insert-page">[% p.title %]</a></td>
+                        <td>[% p.description %]</td>
+                    </tr>
+                [% END %]
+            </tbody>
+        </table>
+    </div>
+    <div id="redactor_modal_footer">
+        <a href="#" class="redactor_modal_btn redactor_btn_modal_close">Close</a>
+    </div>
+</div>
+
+<div id="assets" style="display: none;">
+    <div id="redactor_modal_content">
+        <div style="overflow:scroll; height:400px">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    [% FOREACH a IN assets %]
+                        <tr>
+                            <td>[% a.id %]</td>
+                            <td><a rel="[% a.id %]" href="javascript:void(0);" class="insert-asset">[% a.filename %]</a></td>
+                            <td>[% a.description %]</td>
+                        </tr>
+                    [% END %]
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="redactor_modal_footer">
+        <a href="#" class="redactor_modal_btn redactor_btn_modal_close">Close</a>
+    </div>
+</div>
+
+<div id="attachments" style="display: none;">
+    <div id="redactor_modal_content">
+        <div style="overflow:scroll; height:400px">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    [% FOREACH a IN attachments %]
+                        <tr>
+                            <td>[% a.id %]</td>
+                            <td><a rel="[% a.id %]" href="javascript:void(0);" class="insert-attachment">[% a.filename %]</a></td>
+                            <td>[% a.description %]</td>
+                        </tr>
+                    [% END %]
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="redactor_modal_footer">
+        <a href="#" class="redactor_modal_btn redactor_btn_modal_close">Close</a>
+    </div>
+</div>
+
+<div id="elements" style="display: none;">
+    <div id="redactor_modal_content">
+        <div style="overflow:scroll; height:400px">
+            <table class="table">
+            	<thead>
+            		<tr>
+            			<th>ID</th>
+            			<th>Name</th>
+            		</tr>
+            	</thead>
+            	<tbody>
+            		[% FOREACH e IN elements %]
+            			<tr>
+            				<td>[% e.id %]</td>
+            				<td><a rel="[% e.id %]" href="javascript:void(0);" class="insert-element">[% e.name %]</a></td>
+            			</tr>
+            		[% END %]
+            	</tbody>
+            </table>
+        </div>
+    </div>
+    <div id="redactor_modal_footer">
+        <a href="#" class="redactor_modal_btn redactor_btn_modal_close">Close</a>
+    </div>
+</div>
+
+<div id="tt-element-modal" style="display: none;">
+    <div id="redactor_modal_content">
+        <p><strong>Editing element</strong></p>
+    </div>
+    <div id="redactor_modal_footer">
+        <a href="#" class="redactor_modal_btn redactor_btn_modal_close">Close</a>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    $(function() {
+        $('#wysiwyg').redactor({
+            focus: true,
+            buttonsAdd: ['|', 'elements', 'pages', 'assets', 'attachments'], 
+            buttonsCustom: {
+                elements: {
+                    title: 'Elements', 
+                    callback: function(obj) {
+                        var callback = $.proxy(function() {
+                            $('.insert-element').click(function() {
+                                var id = $(this).attr('rel');
+                                if ($.editorType == 'raw')
+                                    insertAtCaret('wysiwyg', '<span class="tt tt-element" rel="' + id + '">[\% cms.element(' + id + ', {}) \%]</span>&nbsp;');
+                                else
+                                    $('#wysiwyg').insertHtml('<span class="tt tt-element" rel="' + id + '">[\% cms.element(' + id + ', {}) \%]</span> ');
+                                obj.modalClose();
+                                obj.observeTT();
+                            });
+                        }, this);
+
+                        obj.modalInit('Choose an element...', '#elements', 500, callback);
+                    }
+                },
+
+                pages: {
+                    title: 'Pages', 
+                    callback: function(obj) {
+                        var callback = $.proxy(function() {
+                            $('.insert-page').click(function() {
+                                var id = $(this).attr('rel');
+                                if ($.editorType == 'raw')
+                                    insertAtCaret('wysiwyg', '<span class="tt tt-page" rel="' + id + '">[\% cms.page(' + id + ') \%]</span>&nbsp;');
+                                else
+                                    $('#wysiwyg').insertHtml('<span class="tt tt-page" rel="' + id + '">[\% cms.page(' + id + ') \%]</span> ');
+                                obj.modalClose();
+                                obj.observeTT();
+                            });
+                        }, this);
+
+                        obj.modalInit('Choose a page...', '#pages', 500, callback);
+                    }
+                },
+
+                assets: {
+                    title: 'Assets', 
+                    callback: function(obj) {
+                        var callback = $.proxy(function() {
+                            $('.insert-asset').click(function() {
+                                var id = $(this).attr('rel');
+                                if ($.editorType == 'raw')
+                                    insertAtCaret('wysiwyg', '<span class="tt tt-asset" rel="' + id + '">[\% cms.asset(' + id + ') \%]</span>&nbsp;');
+                                else
+                                    $('#wysiwyg').insertHtml('<span class="tt tt-asset" rel="' + id + '">[\% cms.asset(' + id + ') \%]</span> ');
+                                obj.modalClose();
+                                obj.observeTT();
+                            });
+                        }, this);
+
+                        obj.modalInit('Choose an asset...', '#assets', 500, callback);
+                    }
+                },
+
+                attachments: {
+                    title: 'Attachments', 
+                    callback: function(obj) {
+                        var callback = $.proxy(function() {
+                            $('.insert-attachment').click(function() {
+                                var id = $(this).attr('rel');
+                                if ($.editorType == 'raw')
+                                    insertAtCaret('wysiwyg', '<span class="tt tt-attachment" rel="' + id + '">[\% cms.attachment(' + id + ') \%]</span>&nbsp;');
+                                else
+                                    $('#wysiwyg').insertHtml('<span class="tt tt-attachment" rel="' + id + '">[\% cms.attachment(' + id + ') \%]</span> ');
+                                obj.modalClose();
+                                obj.observeTT();
+                            });
+                        }, this);
+
+                        obj.modalInit('Choose an attachment...', '#attachments', 500, callback);
+                    }
+                }
+            }
+        });
+    });
+
+    function insertAtCaret(areaId,text) {
+        var txtarea = document.getElementById(areaId);
+        var scrollPos = txtarea.scrollTop;
+        var strPos = 0;
+        var br = ((txtarea.selectionStart || txtarea.selectionStart == '0') ? 
+            "ff" : (document.selection ? "ie" : false ) );
+        if (br == "ie") { 
+            txtarea.focus();
+            var range = document.selection.createRange();
+            range.moveStart ('character', -txtarea.value.length);
+            strPos = range.text.length;
+        }
+        else if (br == "ff") strPos = txtarea.selectionStart;
+
+        var front = (txtarea.value).substring(0,strPos);  
+        var back = (txtarea.value).substring(strPos,txtarea.value.length); 
+        txtarea.value=front+text+back;
+        strPos = strPos + text.length;
+        if (br == "ie") { 
+            txtarea.focus();
+            var range = document.selection.createRange();
+            range.moveStart ('character', -txtarea.value.length);
+            range.moveStart ('character', strPos);
+            range.moveEnd ('character', 0);
+            range.select();
+        }
+        else if (br == "ff") {
+            txtarea.selectionStart = strPos;
+            txtarea.selectionEnd = strPos;
+            txtarea.focus();
+        }
+        txtarea.scrollTop = scrollPos;
+    }
+</script>

@@ -23,11 +23,11 @@ sub page_allow_list :Local :Args(0) :AppKitFeature('Allow users to modify pages'
 	my ($self, $c) = @_;
 }
 
-sub page_revoke_permission :Local :Args(2) :AppKitFeature('Allow users to modify pages') {
-	my ($self, $c, $page_id, $user_id) = @_;
+sub page_revoke_permission :Local :Args(3) :AppKitFeature('Allow users to modify pages') {
+	my ($self, $c, $site_id, $page_id, $user_id) = @_;
 	if (my $perm = $c->model('CMS::PageUser')->find({ page_id => $page_id, user_id => $user_id })) {
 		$perm->delete;
-		$c->res->redirect($c->uri_for($c->controller('Modules::CMS::Pages')->action_for('edit_page'), $page_id) . '#tab_users');
+		$c->res->redirect($c->uri_for($c->controller('Modules::CMS::Pages')->action_for('edit_page'), [ $site_id, $page_id ]) . '#tab_users');
 		$c->detach;
 	}
 }
@@ -157,7 +157,10 @@ sub manage_users :Local :Path('users/manage') :Args(1) :AppKitFeature('Manage Us
 	my ($self, $c, $site_id) = @_;
 
 	if (my $site = $c->model('CMS::Site')->find($site_id)) {
-		$c->stash(users => [ $site->sites_users->all ]);
+		$c->stash(
+			site  => $site,
+			users => [ $site->sites_users->all ]
+		);
 	}
 }
 

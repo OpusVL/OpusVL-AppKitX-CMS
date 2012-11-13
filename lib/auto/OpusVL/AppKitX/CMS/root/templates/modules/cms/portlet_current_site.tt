@@ -1,25 +1,5 @@
-[% IF all_sites.size > 0 %]
-	[% IF site %]
-		<p>You're currently viewing <strong>[% site.name %]</strong></p>
-	[% ELSE %]
-		<p>You have no site selected</p>
-	[% END %]
-	<small><strong>View</strong> <select id="selected_site" name="select_site">
-		[% FOREACH thesite IN all_sites %]
-			<option value="[% thesite.site.id %]" [% IF site.id == thesite.site.id %]SELECTED[% END %]>[% thesite.site.name %]</option>
-		[% END %]
-		</select>
-	&nbsp;
-	<a id="select_site" href="javascript:void(0);">Choose</a>
-	</small>
-	<script type="text/javascript">
-		$(function() {
-			$('#select_site').click(function() {
-				var site_id = $('#selected_site :selected').val();
-				window.location.replace("[% c.uri_for(c.controller('Modules::CMS').action_for('redirect_url')) %]/domains/manage/" + site_id);
-			});
-		});
-	</script>
+[% IF sites.size > 0 %]
+	<p>You have access to <strong>[% sites.size %]</strong> site[% IF sites.size > 1 %]s[% END %]. <a href="[% c.uri_for(c.controller('Modules::CMS::Sites').action_for('index')) %]">View them now</a></p>
 [% ELSE %]
-	<p>You have no sites created. <a href="[% c.uri_for(c.controller('Sites').action_for('add')) %]">Add one now</a></p>
+	<p>You have no sites created. <a href="[% c.uri_for(c.controller('Modules::CMS::Sites').action_for('add')) %]">Add one now</a></p>
 [% END %]

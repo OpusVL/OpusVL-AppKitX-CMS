@@ -12,13 +12,11 @@ __PACKAGE__->config
     appkit_name                 => 'CMS',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
-    appkit_css                  => [qw</static/css/bootstrap.css /static/css/jwysiwyg/jquery.wysiwyg.css /static/css/jwysiwyg/jquery.wysiwyg.modal.css>],
-    appkit_js                   => [qw< /static/js/bootstrap.js /static/js/wysiwyg/jquery.wysiwyg.js /static/js/wysiwyg/controls/wysiwyg.colorpicker.js /static/js/wysiwyg/controls/wysiwyg.cssWrap.js /static/js/wysiwyg/controls/wysiwyg.image.js /static/js/wysiwyg/controls/wysiwyg.link.js /static/js/wysiwyg/controls/wysiwyg.table.js /static/js/cms.js /static/js/bootstrap-button.js /static/js/bootstrap-transition.js /static/js/bootstrap-modal.js>],
-    #appkit_js                     => ['/static/js/cms.js', '/static/js/nicEdit.js', '/static/js/src/addElement/addElement.js'],
+    appkit_css                  => [qw< /static/js/redactor/redactor.css /static/css/bootstrap.css >],
+    appkit_js                   => [qw< /static/js/bootstrap.js /static/js/redactor/redactor.js >],
     appkit_method_group         => 'Content Management',
     appkit_method_group_order   => 1,
     appkit_shared_module        => 'CMS',
-    #appkit_css                  => ['/static/modules/cms/cms.css'],
 );
 
  
@@ -59,18 +57,71 @@ sub pages :Chained('base') :PathPart('page') :CaptureArgs(2) {
     $c->stash( page => $page );
 }
 
+sub page_contents :Chained('base') :PathPart('page') :CaptureArgs(2) {
+    my ($self, $c, $site_id, $page_id) = @_;
+    $c->forward('/modules/cms/sites/base', [ $site_id ]);
+
+    my $page_content = $c->model('CMS::PageContent')->find({ page_id => $page_id });
+
+    unless ($page_content) { #and $page_content->page->site->id == $site_id) {
+        $c->flash(error_msg => "No such page");
+        $c->res->redirect($c->uri_for($self->action_for('index'), [ $site_id ]));
+        $c->detach;
+    }
+    
+    $c->stash( page_content => $page_content );
+}
+
 #-------------------------------------------------------------------------------
 
 sub index :Chained('/modules/cms/sites/base') :PathPart('pages/list') :Args(0) {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
 
-    $c->stash->{pages} = [ $c->model('CMS::Page')
+    my $pages = [ $c->model('CMS::Page')
         ->search({
             site => $site->id,
             status => 'published',
             blog   => 0,
-        }, { order_by => { '-asc' => 'url' }}) ];
+            parent_id => undef,
+        }, { order_by => { '-asc' => 'url' }})->all ];
+
+    $c->stash( pages => $pages );
+
+    if ($c->req->body_params->{edit_page}) {
+        if (my $page = $site->pages->find({ status => 'published', url => $c->req->body_params->{edit_page} })) {
+            $c->res->redirect($c->uri_for($self->action_for('edit_page'), [ $site->id, $page->id ]));
+            $c->detach;
+        }
+    }
+}
+
+sub page_list :Chained('pages') :PathPart('page/list') :Args(0) {
+    my ($self, $c) = @_;
+    my $site = $c->stash->{site};
+    my $page = $c->stash->{page};
+
+    $c->stash( kids => [ $page->children()->all ] || [] );
+}
+
+#-------------------------------------------------------------------------------
+
+sub orphan_pages :Chained('/modules/cms/sites/base') :PathPart('pages/orphaned') :Args(0) {
+    my ($self, $c) = @_;
+    my $site = $c->stash->{site};
+
+    my @orphans;
+    my $non_published_pages = $site->pages->search({ status => 'deleted' });
+    if ($non_published_pages->count > 0) {
+        for my $page ($non_published_pages->all) {
+            my $alive_children = $page->children()->search({ status => 'published' });
+            for my $child ($alive_children->all) {
+                unshift @orphans, $child;
+            }
+        }
+
+        if (scalar(@orphans) > 0) { $c->stash(orphans => \@orphans); }
+    }
 }
 
 #-------------------------------------------------------------------------------
@@ -81,6 +132,14 @@ sub blogs :Chained('/modules/cms/sites/base') :PathPart('blogs') :Args(0) {
     $c->stash(blogs => [ $c->model('CMS::Page')->search({ site => $site->id, blog => 1 })->all ]);
 }
 
+sub blog_posts :Chained('pages') :PathPart('blog/posts') :Args(0) {
+    my ($self, $c) = @_;
+    my $site = $c->stash->{site};
+    my $blog = $c->stash->{page};
+
+    $c->stash(posts => [ $blog->children()->all ]);
+}
+
 #-------------------------------------------------------------------------------
 
 sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) :AppKitForm {
@@ -88,10 +147,10 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
     my $site       = $c->stash->{site};
 
     my $templates = $c->model('CMS::Template')
-        ->search({ site => $site->id });
+        ->search({ -or => [ site => $site->id, global => 1 ]  });
     if ($templates->count < 1) {
         $c->flash->{error_msg} = "You may want to setup a template before you create a page";
-        $c->res->redirect($c->uri_for($c->controller('Modules::CMS::Templates')->action_for('new_template')));
+        $c->res->redirect($c->uri_for($c->controller('Modules::CMS::Templates')->action_for('new_template'), [ $site->id ]));
         $c->detach;
     }
 
@@ -106,7 +165,8 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
     my $form = $c->stash->{form};
     
     $form->get_all_element({name=>'template'})->options(
-        [map {[$_->id, $_->name . " (" . $_->site->name . ")"]} $site->templates->all]
+        [map {[$_->id, $_->name . " (" . $_->site->name . ")"]} $c->model('CMS::Template')
+            ->search({ -or => [ site => $site->id, global => 1 ] })]
     );
     $form->get_all_element({name=>'parent'})->options(
         [map {[$_->id, $_->breadcrumb . " - " . $_->url]} $c->model('CMS::Page')->search({ site => $site->id })->published->all]
@@ -119,7 +179,7 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
         if (my $parent = $c->model('CMS::Page')->find($parent_id)) {
             $form->default_values({
                 parent => $parent_id,
-                url    => $parent->url . "/",
+                url    => $parent->url eq '/' ? '/' : $parent->url . "/",
             });
 
             $c->stash->{is_a_post} = 1 if $parent->blog;
@@ -129,20 +189,34 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
     if ($c->req->query_params->{type} eq 'blog') {
         $form->default_values({
             content => q{
-                [% USE scalar %]
-                [% page = cms.param('page') %]
-                [% UNLESS page %][% page = 1 %][% END %]
-                [% articles = me.scalar.children({},{'sort' = 'newest', 'rows' = 5, 'page' = page}) %]
+[% USE scalar %]
+[% page = cms.param('page') %]
+[% UNLESS page %][% page = 1 %][% END %]
+[% articles = me.scalar.children({},{'sort' = 'newest', 'rows' = 5, 'page' = page}) %]
 
-                [% FOREACH article IN articles.all %]
-                    <div class="">
-                        <h3>[% article.title %]</h3>
-                        <strong>[% article.description %]</strong>
-                        <p>[% article.content.substr(0, 300) %]...</p>
+[% FOREACH article IN articles.all %]
+    <div class="">
+        <h3>[% article.title %]</h3>
+        <strong>[% article.description %]</strong>
+        <p>[% article.content.substr(0, 300) %]...</p>
 
-                        <a href="[% article.url %]">Read more</a>
-                    </div>
-                [% END %]
+        <a href="[% article.url %]">Read more</a>
+    </div>
+[% END %]
+
+<div id="pager">
+[% pager = articles.pager %]
+[% IF pager.previous_page %]
+    <div id="pager_prev">
+        <a href="[% me.url %]?page=[% pager.previous_page %]">Previous page</a>
+    </div>
+[% END %]
+[% IF pager.next_page %]
+    <div id="pager_next">
+        <a href="[% me.url %]?page=[% pager.next_page %]">Next page</a>
+    </div>
+[% END %]
+</div>
             },
         });
     }
@@ -178,6 +252,12 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
             $c->detach;
         }
 
+        if (my $parent = $form->param_value('parent')) {
+            if (my $blog = $c->model('CMS::Page')->search({ id => $parent, blog => 1 })->first) {
+                $c->res->redirect($c->uri_for($self->action_for('blog_posts'), [ $site->id, $blog->id ]));
+                $c->detach;
+            }
+        }
         my $redirect_page = $c->req->query_params->{type} eq 'blog' ? 'blogs' : 'index';
         $c->res->redirect($c->uri_for($c->controller->action_for($redirect_page), [ $site->id ]));
     }
@@ -216,9 +296,7 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm {
 
     if ($restricted_row) {
         if ($c->user->users_parameters->find({ parameter_id => $restricted_row->id })) {
-            my $url = $page->url;
-            my $results = $c->model('CMS::PageUser')->search_related('pages', { url => $url });
-            if ($results->count < 1) {
+            unless ($c->model('CMS::PageUser')->find({ page_id => $page->id, user_id => $c->user->id })) {
                 $c->detach('/access_denied');
             }
         }
@@ -235,13 +313,16 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm {
     my $site_users = [ $site->sites_users->all ];
     my $form = $c->stash->{form};
     
-    $c->stash->{site_users} = $site_users;
-    #FIXME: $c->stash->{page_users} = $page_users;
+    $c->stash(
+        site_users => $site_users,
+        page_users => [ $page->page_users->all ],
+    );
+
     $form->get_all_element({name=>'template'})->options(
-        [map {[$_->id, $_->name . " (" . $_->site->name . ")"]} $c->model('CMS::Template')->all]
+        [map {[$_->id, $_->name . " (" . $_->site->name . ")"]} $site->templates->all]
     );
     $form->get_all_element({name=>'parent'})->options(
-        [map {[$_->id, $_->breadcrumb . " - " . $_->url]} $c->model('CMS::Page')->all]
+        [map {[$_->id, $_->breadcrumb . " - " . $_->url]} $site->pages->published->all ]
     );
     
     my $aliases_fieldset = $form->get_all_element({name=>'page_aliases'});
@@ -303,23 +384,23 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm {
 
         if ($c->req->body_params->{preview}) {
             if ($page->content ne $form->param_value('content')) {
-                my $copy = $page->copy({ status => 'preview', created => DateTime->now() });
+                my $copy = $page->get_page_content->copy({ status => 'preview', body => $form->param_value('content'), created => DateTime->now() });
                 if ($copy) {
-                    $copy->set_content($form->param_value('content'));
                     $c->res->redirect($c->uri_for($self->action_for('preview'), [ $site->id, $copy->id ]) . "?panel=1");
                     $c->detach;
                 }
             }
             else {
-                $c->res->redirect($c->uri_for($self->action_for('preview'), [ $site->id, $page->id ]) . "?panel=1");
+                $c->res->redirect($c->uri_for($self->action_for('preview'), [ $site->id, $page->get_page_content->id ]) . "?panel=1");
                 $c->detach;
             }
         }
 
-        my $new_page = $page->copy({ status => 'published', created => DateTime->now() });
-        $new_page->set_content($form->param_value('content'));
+        my $new_content = $page->create_related('page_contents', {
+            body => $form->param_value('content')
+        });
 
-        $new_page->update({
+        $page->update({
             url         => $url,
             description => $form->param_value('description'),
             title       => $form->param_value('title'),
@@ -333,7 +414,7 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm {
         });
         
         if (my $file  = $c->req->upload('new_att_file')) {
-            my $attachment = $new_page->create_related('attachments', {
+            my $attachment = $page->create_related('attachments', {
                 filename    => $file->basename,
                 mime_type   => $file->type,
                 description => $form->param_value('new_att_desc'),
@@ -345,7 +426,7 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm {
         
         PARAM: foreach my $param (keys %{$c->req->params}) {
             if ($param =~ /delete_alias_(\d+)/) {
-                if (my $alias = $new_page->find_related('aliases', {id => $1})) {
+                if (my $alias = $page->find_related('aliases', {id => $1})) {
                     $alias->delete;
                 }
             }
@@ -355,7 +436,7 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm {
                     my $alias_url = $form->param_value($param);
                     unless ($alias_url =~ m!^/!) {$alias_url = "/$url"}
                     if ($alias_url ne $alias->url) {
-                        $new_page->create_related('aliases', {url => $alias_url});
+                        $page->create_related('aliases', {url => $alias_url});
                     }
                 }
             }
@@ -363,12 +444,10 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm {
         
         if (my $alias_url = $form->param_value('new_alias_url')) {
             unless ($alias_url =~ m!^/!) {$alias_url = "/$url"}
-            $new_page->create_related('aliases', {url => $alias_url});
+            $page->create_related('aliases', {url => $alias_url});
         }
 
-        $self->update_page_attributes($c, $new_page);
-        
-        $page->update({ status => 'draft' });
+        $self->update_page_attributes($c, $page);
 
         if ($c->req->body_params->{allow_users}) {
             my $user_rs = $c->model('CMS::User');
@@ -377,8 +456,8 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm {
             for my $user (@$users) {
                 $user = $user_rs->find($user);
                 if ($user) {
-                    $new_page->page_users->find_or_create({
-                        page_id => $new_page->id,
+                    $page->page_users->find_or_create({
+                        page_id => $page->id,
                         user_id => $user->id,
                     });
                 }
@@ -386,7 +465,7 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm {
         }
 
         $c->flash->{status_msg} = "Your changes have been saved";
-        $c->res->redirect($c->uri_for($self->action_for('edit_page'), [ $site->id, $new_page->id ]));
+        $c->res->redirect($c->uri_for($self->action_for('edit_page'), [ $site->id, $page->id ]));
         $c->detach;
     }
     
@@ -411,6 +490,13 @@ sub delete_page :Chained('pages') :PathPart('delete') :Args(0) :AppKitForm {
     $self->add_final_crumb($c, "Delete page");
     
     if ($form->submitted_and_valid) {
+        if (my $parent = $page->parent) {
+            if (my $blog = $c->model('CMS::Page')->find({ id => $parent->id, type => 'blog' })) {
+                $page->remove;
+                $c->res->redirect($c->uri_for($self->action_for('blog_posts'), [ $site->id, $blog->id ]));
+                $c->detach;
+            }
+        }
         $page->remove;
         
         $c->flash->{status_msg} = "Page deleted";
@@ -422,21 +508,21 @@ sub delete_page :Chained('pages') :PathPart('delete') :Args(0) :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
-sub save_preview :Chained('pages') :Args(0) {
-    my ($self, $c) = @_;
-    my $site = $c->stash->{site};
-    my $page = $c->stash->{page};
+sub save_preview :Chained('page_contents') :Args(0) {
+    my ($self, $c)   = @_;
+    my $site         = $c->stash->{site};
+    my $page_content = $c->stash->{page_content};
 
     # There's a bug where if you save a preview of an edited page
     # you end up with duplicate published versions.. let's try to patch that 
     # up briefly here, for now
-    if (my $is_page = $c->model('CMS::Page')->find({ url => $page->url, status => 'published' })) {
-        $is_page->update({ status => 'draft' });
-    }
-    if ($page->status eq 'preview') {
-        $page->update({ status => 'published' });
-        $c->flash->{status_msg} = "Successfully saved your page";
-        $c->res->redirect($c->uri_for($self->action_for('edit_page'), [ $site->id, $page->id ]));
+    #if (my $is_page = $c->model('CMS::Page')->find({ url => $page->url, status => 'published' })) {
+    #    $is_page->update({ status => 'draft' });
+    #}
+    if ($page_content->status eq 'preview') {
+        $page_content->update({ status => 'Published' });
+        $c->flash(status_msg => "Successfully saved your page");
+        $c->res->redirect($c->uri_for($self->action_for('edit_page'), [ $site->id, $page_content->page->id ]));
         $c->detach;
     }
 }
@@ -463,11 +549,12 @@ sub delete_attachment :Local :Args(1) :AppKitForm {
     
     $self->add_final_crumb($c, 'Delete attachment');
     
-    my $attachment = $c->model('CMS::Attachments')->find({id => $attachment_id});
+    my $attachment = $c->model('CMS::Attachment')->find({id => $attachment_id});
     my $form       = $c->stash->{form};
+    my $page = $c->model('CMS::Page')->find($attachment->page_id);
 
     if ($c->req->param('cancel')) {
-        $c->res->redirect($c->uri_for($c->controller->action_for('edit_page'), $attachment->page_id));
+        $c->res->redirect($c->uri_for($c->controller->action_for('edit_page'), [ $page->site->id, $attachment->page_id ]));
         $c->detach;
     }
     
@@ -475,7 +562,7 @@ sub delete_attachment :Local :Args(1) :AppKitForm {
         $attachment->remove;
         
         $c->flash->{status_msg} = "Attachment deleted";
-        $c->res->redirect($c->uri_for($c->controller->action_for('edit_page'), $attachment->page_id));
+        $c->res->redirect($c->uri_for($c->controller->action_for('edit_page'), [ $page->site->id, $attachment->page_id ]));
         $c->detach;
     }
     
@@ -490,17 +577,17 @@ sub edit_attachment :Local :Args(1) :AppKitForm {
     
     $self->add_final_crumb($c, 'Delete attachment');
     
-    my $attachment = $c->model('CMS::Attachments')->find({id => $attachment_id});
+    my $attachment = $c->model('CMS::Attachment')->find({id => $attachment_id});
     my $form       = $c->stash->{form};
-
+    my $page       = $c->model('CMS::Page')->find( $attachment->page_id );
     my $defaults = {
         description => $attachment->description,
         priority    => $attachment->priority,
     };
     
-    $self->construct_attribute_form($c, 'CMS::AttachmentAttributeDetails');
+    $self->construct_attribute_form($c, 'CMS::AttachmentAttributeDetail');
 
-    my @fields = $c->model('CMS::AttachmentAttributeDetails')->active->all;
+    my @fields = $c->model('CMS::AttachmentAttributeDetail')->active->all;
     for my $field (@fields)
     {
         my $value = $attachment->attribute($field);
@@ -511,7 +598,7 @@ sub edit_attachment :Local :Args(1) :AppKitForm {
     $form->process;
 
     if ($c->req->param('cancel')) {
-        $c->res->redirect($c->uri_for($c->controller->action_for('edit_page'), $attachment->page_id) . '#tab_attachments');
+        $c->res->redirect($c->uri_for($c->controller->action_for('edit_page'), [ $page->site->id, $attachment->page_id ]) . '#tab_attachments');
         $c->detach;
     }
     
@@ -531,11 +618,14 @@ sub edit_attachment :Local :Args(1) :AppKitForm {
         
         $self->update_attachment_attributes($c, $attachment);
 
-        $c->res->redirect($c->uri_for($c->controller->action_for('edit_page'), $attachment->page_id) . '#tab_attachments');
+        $c->res->redirect($c->uri_for($c->controller->action_for('edit_page'), [ $page->site->id, $attachment->page_id ]) . '#tab_attachments');
         $c->detach;        
     }
 
-    $c->stash->{attachment} = $attachment;
+    $c->stash(
+        attachment => $attachment,
+        site       => $page->site,
+    );
 }
 
 #-------------------------------------------------------------------------------
@@ -545,11 +635,7 @@ sub revisions :Chained('pages') :Args(0) {
     my $site = $c->stash->{site};
     my $page = $c->stash->{page};
 
-    $c->stash->{getpage} = $page; #FIXME: why is this here?
-    $c->stash->{pages}  = $c->model('CMS::Page')->search({
-        url => $page->url
-    },
-    {
+    $c->stash->{pages}  = $page->search_related('page_contents', undef, {
         rows     => 15,
         page     => $c->req->query_params->{page} || 1,
         order_by => { -desc => 'created' }
@@ -559,26 +645,15 @@ sub revisions :Chained('pages') :Args(0) {
 
 #-------------------------------------------------------------------------------
 
-sub restore :Chained('pages') :Args(0) {
+sub restore :Chained('page_contents') :Args(0) {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
-    my $page = $c->stash->{page};
+    my $page_content = $c->stash->{page_content};
 
-    my $old_page = $c->model('CMS::Page')->find({ id => $page->id, status => { '!=' => 'published' }});
-    if ($old_page) {
-        my $current_page = $c->model('CMS::Page')->find({ url => $old_page->url, status => 'published' });
-        $current_page->update({ status => 'draft' });
-        $old_page->update({ status => 'published' });
-
-        $c->flash->{status_msg} = "Successfully restored revision from " . $old_page->created->dmy . ' ' . $old_page->created->hms;
-        $c->res->redirect($c->uri_for($self->action_for('revisions'), [ $site->id, $old_page->id ]));
-        $c->detach;
-    }
-    else {
-        $c->flash->{error_msg} = "Can't restore an already published page";
-        $c->res->redirect($c->uri_for($self->action_for('revisions'), [ $site->id, $page->id ]));
-        $c->detach;
-    }
+    $c->flash(status_msg => "Successfully restored revision from " . $page_content->created->dmy . ' ' . $page_content->created->hms);
+    $page_content->update({ status => 'Published' }) if $page_content->status ne 'Published';
+    $page_content->update({ created => DateTime->now() });
+    $c->res->redirect($c->uri_for($self->action_for('revisions'), [ $site->id, $page_content->page->id ]));
 }
 
 #-------------------------------------------------------------------------------
@@ -675,7 +750,7 @@ sub update_attachment_attributes
     my ($self, $c, $page) = @_;
 
     my $form = $c->stash->{form};
-    my @fields = $c->model('CMS::AttachmentAttributeDetails')->active->all;
+    my @fields = $c->model('CMS::AttachmentAttributeDetail')->active->all;
     for my $field (@fields)
     {
         my $value = $form->param_value('global_fields_' . $field->code);
@@ -708,10 +783,12 @@ sub draft_delete :Local :Path('draft/delete') :Args(1) {
 
 #-------------------------------------------------------------------------------
 
-sub preview :Chained('pages') :Args(0) {
-    my ($self, $c) = @_;
-    my $site = $c->stash->{site};
-    my $page = $c->stash->{page};
+sub preview :Chained('page_contents') :Args(0) {
+    my ($self, $c)   = @_;
+    my $site         = $c->stash->{site};
+    my $page_content = $c->stash->{page_content};
+
+    my $page = $page_content->page;
 
     if ($c->req->body_params->{cancel}) {
         my $page = $c->model('CMS::Page')->find($c->req->body_params->{page_id});
@@ -731,9 +808,8 @@ sub preview :Chained('pages') :Args(0) {
     }
 
     if ($c->req->body_params->{publish}) {
-        my $page = $c->model('CMS::Page')->find($c->req->body_params->{page_id});
-        my $site = $c->model('CMS::SitesUser')->find({ site_id => $page->site->id, user_id => $c->user->id });
-        if ($site) {
+        my $page = $c->model('CMS::PageContent')->find($c->req->body_params->{page_id});
+        if ($page) {
             $page->update({ status => 'published' });
             $c->flash->{status_msg} = 'Successfully published page';
             $c->res->redirect($c->uri_for($c->controller('CMS::Pages')->action_for('index'), [ $site->id ]));
@@ -819,9 +895,9 @@ sub preview :Chained('pages') :Args(0) {
                     .cms-preview-content { margin-top: 50px; }
                 </style>
             };
-            $template .= '<iframe frameborder="0" border="0" cellspacing="0" class="iframe-panel" src="' . $c->uri_for($c->controller('Modules::CMS::Ajax')->action_for('preview_panel'), $page->id) . '"></iframe>';
+            $template .= '<iframe frameborder="0" border="0" cellspacing="0" class="iframe-panel" src="' . $c->uri_for($c->controller('Modules::CMS::Ajax')->action_for('preview_panel'), $page_content->id) . '"></iframe>';
         }
-        $template = '<div class="cms-preview-content">[% BLOCK content %]' . $page->content . '[% END %]' . $template . '</div>';
+        $template = '<div class="cms-preview-content">[% BLOCK content %]' . $page_content->body . '[% END %]' . $template . '</div>';
         $c->stash->{template}   = \$template;
         $c->stash->{no_wrapper} = 1;
     }

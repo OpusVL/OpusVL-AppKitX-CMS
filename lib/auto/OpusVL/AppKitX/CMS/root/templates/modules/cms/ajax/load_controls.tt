@@ -28,7 +28,7 @@
                 <tr>
                     <td>[% a.id %]</td>
                     <td>
-                        <a href="javascript:;" rel="[% a.id %]" class="insert-asset link">[% a.filename %]</a>
+                        <a href="javascript:;" rel="[% a.id %]:[% a.mime_type %]:[% a.description %]" class="insert-asset link">[% a.filename %]</a>
                         [% IF a.mime_type.match('^image') %]
                             - <a href="javascript:;" rel="[% a.id %]" class="insert-asset-thumbnail link">Thumbnail</a>
                         [% END %]
@@ -218,11 +218,21 @@
         });
 
         $('.insert-asset').click(function() {
-            var asset_id = $(this).attr('rel');
+            var rel   = $(this).attr('rel');
+            var attrs = rel.split(':');
+            var asset_id  = attrs[0];
+            var mime_type = attrs[1];
+            var description = attrs[2];
             if (editorState == 'GUI')
                 $('#wysiwyg').wysiwyg("insertHtml", "&#91;% cms.asset(" +  asset_id + ") %&#93");
-            else
-                insertAtCaret('wysiwyg', "[" + "%" + " cms.asset(" +  asset_id + ") %" + "]");
+            else {
+                if (mime_type.indexOf('image') != -1) {
+                    insertAtCaret('wysiwyg', "<img src=\"[" + "%" + " cms.asset(" +  asset_id + ") %" + "]\" alt=\"" + description + "\">");
+                }
+                else {
+                    insertAtCaret('wysiwyg', "[" + "%" + " cms.asset(" +  asset_id + ") %" + "]");
+                }
+            }
     
             $('#assets').dialog('close');
         });

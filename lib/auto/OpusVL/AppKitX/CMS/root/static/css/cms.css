@@ -1,7 +1,6 @@
 /* @override http://localhost:3000/static/css/cms.css */
 
 .hidden { display: none; }
-textarea { width: 100%; }
 
 .form_error_message {
     /* width: 350px;*/

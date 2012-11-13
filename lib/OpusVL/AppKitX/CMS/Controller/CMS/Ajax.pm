@@ -56,7 +56,7 @@ sub load_controls :Local :Args(1) {
     my $site  = $c->stash->{site};
     my $pages = $c->model('CMS::Page')->search({ site => $site->id})->published;
     $c->stash(
-        assets      => [ $site->assets->available->all ],
+        assets      => [ $site->assets->published->all ],
         elements    => [ $site->elements->available->all ],
         pages       => [ $pages->all ],
     );
@@ -66,11 +66,82 @@ sub load_controls :Local :Args(1) {
     }
 }
 
-sub preview_panel :Local :Args(1) {
-    my ($self, $c, $page_id) = @_;
-    my $page = $c->model('CMS::Page')->find($page_id);
+sub edit_element :Local :Args(1) {
+    my ($self, $c, $id) = @_;
+    if (my $element = $c->model('CMS::Element')->find($id)) {
+        my $attr_values;
+        my $element_name = $element->name;
+        my $edit_link    = $c->uri_for($c->controller('Modules::CMS::Elements')->action_for('edit_element'), [ $element->site->id, $id ]);
+        my $element_attributes = "<p>This element has no attributes.</p>";
 
-    $c->stash->{page} = $page;
+        if ($element->element_attributes->count > 0) {
+            if ($c->req->param('attributes')) {
+                $attr_values = { eval $c->req->param('attributes') };
+            }
+            $element_attributes = "<table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody>";
+            for my $attr ($element->element_attributes->all) {
+                $element_attributes .= "<tr>";
+                $element_attributes .= "<td>" . $attr->code . "</td>";
+                $element_attributes .= '<td><input type="text" rel="' . $attr->code . '" class="element-attribute element-attribute-' . $attr->id . '" value="' . $attr_values->{$attr->code} . '" /></td></tr>';
+            }
+            $element_attributes .= "</tbody></table>";
+            $element_attributes .= '<br /><p><a class="redactor_modal_btn element-save-attributes" href="javascript:;">Save</a>';
+            $element_attributes .= q{
+                <script type="text/javascript">
+                    $('.element-save-attributes').click(function() {
+                        var buildHash = '{';
+                        var lastElement = $.lastElementClicked;
+                        $('.element-attribute').each(function(index) {
+                            if ($(this).val() != '')
+                                buildHash += $(this).attr('rel') + ' => "' + $(this).val() + '",';
+                        });
+                        buildHash += '}';
+                        lastElement.text("[% cms.element(" + lastElement.attr('rel') + ", " + buildHash + ") %]");
+                    });
+                </script>
+            };
+        }
+
+        $c->res->body(qq{
+            <h4>$element_name Properties</h4>
+            $element_attributes
+        });
+    }
+}
+
+sub read_url_contents :Local :Args(1) {
+    my ($self, $c, $url) = @_;
+    my $mech = WWW::Mechanize->new();
+    $mech->get($url);
+    return $mech->contents();
+}
+
+sub pages_typeahead :Local :Args(1) {
+    my ($self, $c, $site_id) = @_;
+
+    my @json;
+    my $site = $c->model('CMS::Site')->find($site_id);
+
+    if ($site) {
+        my $pages = $site->pages;
+        while(my $p = $pages->next) {
+            push @json, $p->url;
+        }
+
+        $c->stash(json => \@json);
+        $c->detach('View::JSON');
+    }
+}
+
+sub preview_panel :Local :Args(1) {
+    my ($self, $c, $page_content_id) = @_;
+    my $page = $c->model('CMS::PageContent')->find($page_content_id);
+
+    $c->stash(
+        page_content => $page,
+        page         => $page->page,
+        site         => $page->page->site,
+    );
 }
 
 sub preview_page :Local :Args(0) {

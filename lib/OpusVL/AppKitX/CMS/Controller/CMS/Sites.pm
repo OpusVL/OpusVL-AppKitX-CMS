@@ -35,11 +35,10 @@ sub auto :Private {
 
 sub index :Path :Args(0) :NavigationName('Sites') {
     my ($self, $c) = @_;
-    my $sites = $c->stash->{all_sites};
-    #my $sites = $c->user->sites_users;
-    if ($sites) {
-        if (! $c->stash->{site}) { $c->session->{site} = $sites->[0]->site }
-    }
+    my $sites = [ $c->model('CMS::SitesUser')
+        ->search({ user_id => $c->user->id })->all ];
+
+    $c->stash->{sites} = $sites;
 }
 
 
@@ -74,6 +73,17 @@ sub add :Local :Args(0) :AppKitForm {
                 });
             }
 
+            my $site_attr = $c->model('CMS::SiteAttribute');
+            for my $attr ($c->model('CMS::DefaultAttribute')->all) {
+                $site_attr->find_or_create({
+                    site_id => $site->id,
+                    code    => $attr->code,
+                    value   => $attr->value,
+                    name    => $attr->name,
+                    super   => 1,
+                });
+            }
+            
             my $many = scalar(@{$users_to_add}) > 1 ? 'users' : 'user'; 
             $c->flash->{status_msg} = "Successfully added ${many} to site " . $form->param('name');
             $c->res->redirect($c->uri_for($self->action_for('index')));
@@ -96,12 +106,20 @@ sub add :Local :Args(0) :AppKitForm {
 
 sub base :Chained('/') :PathPart('site') :CaptureArgs(1) {
     my ($self, $c, $site_id) = @_;
-    $c->stash->{site} = $c->model('CMS::Site')->find($site_id);
-    unless ($c->stash->{site}) {
+    my $site = $c->model('CMS::Site')->find($site_id);
+    unless ($site) {
         $c->flash->{error_msg} = "Could not locate site";
         $c->res->redirect($c->uri_for($self->action_for('index')));
         $c->detach;
     }
+
+    $c->stash(
+        site        => $site,
+        elements    => [ $site->elements->available->all ],
+        assets      => [ $site->assets->published->all ],
+        pages       => [ $site->pages->published->all ],
+        attachments => [ $site->pages->search_related('attachments', { 'attachments.status' => 'published' })->all ],
+    );
 }
 
 #-------------------------------------------------------------------------------

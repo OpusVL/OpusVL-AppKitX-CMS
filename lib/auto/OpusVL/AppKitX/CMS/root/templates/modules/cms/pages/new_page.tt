@@ -6,9 +6,10 @@
 
 [% IF is_a_post %][% SET type = 'Post' %][% END %]
 
+[% PROCESS modules/cms/preprocess.tt %]
 [% INCLUDE modules/cms/header.tt title="New $type" %]
 [% META appkitfeature_tablesorter = 1 %]
-[% PROCESS modules/cms/preprocess.tt %]
+
 
 [% IF type == 'Blog' OR type == 'Post' %]
 	<a href="[% c.uri_for(c.controller.action_for('blogs'), [ site.id ]) %]" class="link_button link_button_back">Back to blogs</a>
@@ -18,10 +19,3 @@
 
 <div style="height:10px" class="clear"></div>
 [% form.render | none %]
-
-<script type="text/javascript">
-    $('#editor-controls').load('/modules/cms/ajax/load_controls/[% site.id %]');
-    $(function() {
-    	//$('#preview_content').load('/modules/cms/ajax/preview_page/[% site.id %]/[% page.id %]);
-    });
-</script>

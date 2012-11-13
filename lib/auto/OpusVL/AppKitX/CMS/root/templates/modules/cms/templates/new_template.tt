@@ -2,7 +2,3 @@
 [% PROCESS modules/cms/preprocess.tt %]
 [% INCLUDE modules/cms/header.tt title="New template" %]
 [% form.render | none %]
-
-<script type="text/javascript">
-    $('#editor-controls').load('/modules/cms/ajax/load_controls');
-</script>
