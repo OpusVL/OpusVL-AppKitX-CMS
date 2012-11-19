@@ -7,7 +7,7 @@
 
 <div class="content_block">
 	<fieldset>
-		<legend>Current Site Owners</legend>
+		<legend>Current Site Editors</legend>
 		<table class="tablesorter">
 			<thead>
 				<tr>

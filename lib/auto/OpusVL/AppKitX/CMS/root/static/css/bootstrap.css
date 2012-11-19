@@ -809,7 +809,8 @@ input[type="color"],
   margin-bottom: 9px;
   font-size: .9em;
   line-height: 21px;
-  color: #777777;
+  /*color: #777777;*/
+  color: #555555;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   border-radius: 3px;
@@ -2288,7 +2289,7 @@ table [class*=span],
   position: absolute;
   top: 100%;
   left: 0;
-  z-index: 1000;
+  z-index: 9000;
   display: none;
   float: left;
   min-width: 160px;
@@ -4470,7 +4471,7 @@ a.thumbnail:hover {
   /*color: #ffffff;*/
   color: #000;
   vertical-align: baseline;
-  white-space: nowrap;
+  /*white-space: nowrap;*/
   /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);*/
   /*background-color: #bbbbbb;*/
 }
@@ -5373,4 +5374,8 @@ ul.nav li.dropdown:hover ul.dropdown-menu{
 #wysiwyg {
     height:300px !important;
     width: 100% !important;
+}
+
+div.content_block {
+  overflow: visible !important;
 }

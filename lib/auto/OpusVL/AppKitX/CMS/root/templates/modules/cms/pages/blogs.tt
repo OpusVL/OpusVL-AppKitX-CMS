@@ -20,7 +20,10 @@
 					<td>[% blog.title %]</td>
 					<td>
 						<a href="[% c.uri_for(c.controller.action_for('blog_posts'), [ site.id, blog.id ]) %]">View Posts</a> | 
-						<a href="[% c.uri_for(c.controller.action_for('new_page'), [ site.id ]) %]?parent_id=[% blog.id %]">Add post</a>
+						<a href="[% c.uri_for(c.controller.action_for('new_page'), [ site.id ]) %]?parent_id=[% blog.id %]">
+						Add post</a>
+						|
+						<a href="[% c.uri_for(c.controller.action_for('delete_page'), [ site.id, blog.id ]) %]">Delete blog</a>
 					</td>
 				</tr>
 				[% END %]

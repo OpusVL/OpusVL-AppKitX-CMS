@@ -148,7 +148,14 @@
 <script type="text/javascript">
 
     $(function() {
+        var source = true;
+        if ($('#wysiwyg')) {
+            if ($('#wysiwyg').hasClass('no-gui'))
+                source = false;
+        }
+
         $('#wysiwyg').redactor({
+            source: source,
             focus: true,
             buttonsAdd: ['|', 'elements', 'pages', 'assets', 'attachments'], 
             buttonsCustom: {
@@ -229,6 +236,13 @@
                 }
             }
         });
+
+        if (source === false) {
+            var wys = $('#wysiwyg');
+            wys.getObject().opts.visual = false;
+            wys.getObject().$editor.hide();
+            wys.getObject().$el.height(300).val(wys.val()).show().focus();
+        }
     });
 
     function insertAtCaret(areaId,text) {

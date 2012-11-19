@@ -20,7 +20,7 @@ elements:
 
           - type: Select
             name: user_list
-            label: Site Owners *
+            label: Site Editors *
             constraints:
               - type: Required
             attributes:

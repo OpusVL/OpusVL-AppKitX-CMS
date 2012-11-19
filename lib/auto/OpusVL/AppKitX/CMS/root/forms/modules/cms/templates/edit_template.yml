@@ -27,6 +27,7 @@ elements:
             #label: Content *
             attributes:
                 id: wysiwyg
+                class: no-gui
             constraints:
               - type: Required
 

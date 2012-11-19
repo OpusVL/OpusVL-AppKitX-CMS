@@ -13,8 +13,18 @@ elements:
         legend: Page details
         elements:
           - type: Text
+            name: title
+            label: Title *
+            attributes:
+              id: page_title
+            constraints:
+              - type: Required
+              
+          - type: Text
             name: url
             label: URL *
+            attributes:
+              id: page_url
             constraints:
               - type: Required
           
@@ -28,20 +38,18 @@ elements:
             label: Template
           
           - type: Text
-            name: title
-            label: Title *
-            constraints:
-              - type: Required
-          
-          - type: Text
             name: breadcrumb
             label: Breadcrumb *
+            attributes:
+              id: page_breadcrumb
             constraints:
               - type: Required
           
           - type: Text
             name: h1
             label: H1 Heading
+            attributes:
+              id: page_heading
           
           - type: Text
             name: priority

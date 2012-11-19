@@ -29,11 +29,12 @@
 <script type="text/javascript">
 	$(function() {
 		$('#preview-save').click(function() {
-			window.top.location.replace("[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('save_preview'), [ site.id, page.id]) %]");
+			window.top.location.replace("[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('save_preview'), [ site.id, page.id]) %]?content=[% c.req.param('content') %]");
 		});
 
 		$('#preview-cancel').click(function() {
-			window.top.location.replace("[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('edit_page'), [ site.id, page.id]) %]");
+			//window.top.location.replace("[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('edit_page'), [ site.id, page.id]) %]");
+			javascript:history.go(-1);
 		});
 	});
 </script>

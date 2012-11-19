@@ -100,6 +100,7 @@ sub new_template :Chained('/modules/cms/sites/base') :Args(0) :PathPart('templat
         
         $template->set_content($form->param_value('content'));
         
+        $c->flash( status_msg => 'Created new template' );
         $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $c->stash->{site}->id ]));
     }
 
@@ -107,9 +108,6 @@ sub new_template :Chained('/modules/cms/sites/base') :Args(0) :PathPart('templat
        $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $c->stash->{site}->id ]));
        $c->detach;
     }
-
-    $c->stash->{elements} = [ $c->stash->{site}->elements->available->all ];
-    $c->stash->{pages} = [ $c->stash->{site}->pages->published->all ];
 }
 
 

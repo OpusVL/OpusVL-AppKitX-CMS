@@ -19,3 +19,18 @@
 
 <div style="height:10px" class="clear"></div>
 [% form.render | none %]
+
+<script type="text/javascript">
+	$(function() {
+		$('#page_title').keyup(function() {
+			var str = $(this).val();
+			$('#page_heading').val( str );
+			$('#page_breadcrumb').val( str );
+
+			str = str.replace(/[^\w\s]|_/g, "")
+         		.replace(/\s+/g, "_");
+         	$('#page_url').val( "/" + str.toLowerCase() );
+
+		});
+	});
+</script>

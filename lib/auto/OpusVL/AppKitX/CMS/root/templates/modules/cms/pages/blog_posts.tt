@@ -1,6 +1,8 @@
 [% META appkitfeature_tablesorter = 1 %]
 [% INCLUDE modules/cms/header.tt title="$page.title Posts" %]
 
+<a href="[% c.uri_for(c.controller.action_for('blogs'), [ site.id ]) %]" class="link_button link_button_back">Back to blogs</a>
+<div class="clear" style="height:10px"></div>
 <div class="content_block">
 	<fieldset>
 		<legend>Blog posts for [% page.title %]</legend>

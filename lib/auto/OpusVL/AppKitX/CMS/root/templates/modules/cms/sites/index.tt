@@ -1,12 +1,31 @@
+[% META appkitfeature_tablesorter = 1 %]
 <h1>Sites</h1>
 
 <div class="content_block">
 	[% IF sites.size > 0 %]
-		<ol>
+		<table class="tablesorter">
+			<tbody>
 			[% FOREACH site IN sites %]
-				<li><strong><a href="[% c.uri_for(c.controller.action_for('edit'), [ site.site.id ]) %]">[% site.site.name %]</a></strong></li>
+				<tr>
+					<td>
+						<a href="[% c.uri_for(c.controller.action_for('edit'), [ site.site.id ]) %]">[% site.site.name %]</a>
+					</td>
+					<td>
+						<div class="dropdown">
+						  <a class="dropdown-toggle" id="dLabel" role="button" data-toggle="dropdown" data-target="#" href="#">
+						    Actions
+						    <b class="caret"></b>
+						  </a>
+						  <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+						  	<li><span style="font-weight:bold; color:#c0c0c0; padding-left: 20px">[% site.site.name %]</span></li>
+						  	<li class="divider"></li>
+						    <li><a href="#"><i class="icon icon-pencil"></i> Edit</a></li>
+						    <li><a href="#"><i class="icon icon-remove"></i> Delete</a></li>
+						  </ul>
+						</div>
+					</td>
 			[% END %]
-		</ol>
+		</table>
 	[% ELSE %]
 		<p>There are no available sites. <a href="[% c.uri_for(c.controller.action_for('add')) %]">Add one now</a></p>
 	[% END %]

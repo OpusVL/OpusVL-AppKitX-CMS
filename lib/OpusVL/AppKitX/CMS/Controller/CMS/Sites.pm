@@ -113,6 +113,12 @@ sub base :Chained('/') :PathPart('site') :CaptureArgs(1) {
         $c->detach;
     }
 
+    if (! $c->model('CMS::SitesUser')->find({ site_id => $site_id, user_id => $c->user->id })) {
+        $c->flash(error_msg => "Sorry, but you don't have access to this site");
+        $c->res->redirect($c->uri_for($self->action_for('index')));
+        $c->detach;
+    }
+
     $c->stash(
         site        => $site,
         elements    => [ $site->elements->available->all ],

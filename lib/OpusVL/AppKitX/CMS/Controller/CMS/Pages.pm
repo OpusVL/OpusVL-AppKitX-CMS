@@ -62,6 +62,7 @@ sub page_contents :Chained('base') :PathPart('page') :CaptureArgs(2) {
     $c->forward('/modules/cms/sites/base', [ $site_id ]);
 
     my $page_content = $c->model('CMS::PageContent')->find({ page_id => $page_id });
+    #my $page_content = $c->model('CMS::PageContent')->find($page_id);
 
     unless ($page_content) { #and $page_content->page->site->id == $site_id) {
         $c->flash(error_msg => "No such page");
@@ -69,7 +70,10 @@ sub page_contents :Chained('base') :PathPart('page') :CaptureArgs(2) {
         $c->detach;
     }
     
-    $c->stash( page_content => $page_content );
+    $c->stash(
+        page_content => $page_content,
+        page         => $page_content->page,
+    );
 }
 
 #-------------------------------------------------------------------------------
@@ -129,7 +133,7 @@ sub orphan_pages :Chained('/modules/cms/sites/base') :PathPart('pages/orphaned')
 sub blogs :Chained('/modules/cms/sites/base') :PathPart('blogs') :Args(0) {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
-    $c->stash(blogs => [ $c->model('CMS::Page')->search({ site => $site->id, blog => 1 })->all ]);
+    $c->stash(blogs => [ $c->model('CMS::Page')->search({ status => 'published', site => $site->id, blog => 1 })->all ]);
 }
 
 sub blog_posts :Chained('pages') :PathPart('blog/posts') :Args(0) {
@@ -186,7 +190,7 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
         }
     }
 
-    if ($c->req->query_params->{type} eq 'blog') {
+    if ($c->req->query_params && $c->req->query_params->{type} eq 'blog') {
         $form->default_values({
             content => q{
 [% USE scalar %]
@@ -242,7 +246,7 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
             site        => $site->id,
             status      => $status,
             created_by  => $c->user->id,
-            blog        => $c->req->param('type') eq 'blog' ? 1 : 0,
+            blog        => $c->req->query_params && $c->req->param('type') eq 'blog' ? 1 : 0,
         });
         
         $page->set_content($form->param_value('content'));
@@ -386,12 +390,12 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm {
             if ($page->content ne $form->param_value('content')) {
                 my $copy = $page->get_page_content->copy({ status => 'preview', body => $form->param_value('content'), created => DateTime->now() });
                 if ($copy) {
-                    $c->res->redirect($c->uri_for($self->action_for('preview'), [ $site->id, $copy->id ]) . "?panel=1");
+                    $c->res->redirect($c->uri_for($self->action_for('preview'), [ $site->id, $page->id ]) . "?panel=1&content=" . $copy->id);
                     $c->detach;
                 }
             }
             else {
-                $c->res->redirect($c->uri_for($self->action_for('preview'), [ $site->id, $page->get_page_content->id ]) . "?panel=1");
+                $c->res->redirect($c->uri_for($self->action_for('preview'), [ $site->id, $page->id ]) . "?panel=1");
                 $c->detach;
             }
         }
@@ -411,6 +415,7 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm {
             parent_id   => $form->param_value('parent') || undef,
             site        => $site->id,
             note_changes => $form->param_value('note_changes'),
+            status      => 'published',
         });
         
         if (my $file  = $c->req->upload('new_att_file')) {
@@ -490,17 +495,20 @@ sub delete_page :Chained('pages') :PathPart('delete') :Args(0) :AppKitForm {
     $self->add_final_crumb($c, "Delete page");
     
     if ($form->submitted_and_valid) {
-        if (my $parent = $page->parent) {
+        my $parent = $page->parent;
+        if ($parent && $parent->blog) {
+            my $parent = $page->parent;
             if (my $blog = $c->model('CMS::Page')->find({ id => $parent->id, type => 'blog' })) {
                 $page->remove;
                 $c->res->redirect($c->uri_for($self->action_for('blog_posts'), [ $site->id, $blog->id ]));
                 $c->detach;
             }
         }
+        my $action = $page->blog ? 'blogs' : 'index';
         $page->remove;
         
         $c->flash->{status_msg} = "Page deleted";
-        $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $site->id ]));
+        $c->res->redirect($c->uri_for($c->controller->action_for($action), [ $site->id ]));
         $c->detach;
     }
 }
@@ -512,19 +520,28 @@ sub save_preview :Chained('page_contents') :Args(0) {
     my ($self, $c)   = @_;
     my $site         = $c->stash->{site};
     my $page_content = $c->stash->{page_content};
-
+    my $page         = $c->stash->{page};
     # There's a bug where if you save a preview of an edited page
     # you end up with duplicate published versions.. let's try to patch that 
     # up briefly here, for now
     #if (my $is_page = $c->model('CMS::Page')->find({ url => $page->url, status => 'published' })) {
     #    $is_page->update({ status => 'draft' });
     #}
-    if ($page_content->status eq 'preview') {
+    
+    #if ($page->status eq 'preview') {
         $page_content->update({ status => 'Published' });
+        $page->update({ status => 'published' });
+
+        if ($c->req->query_params && $c->req->query_params->{content} ne '') {
+            if (my $new_content = $c->model('CMS::PageContent')->find( $c->req->param('content'))) {
+                $page_content->update({ status => 'draft' });
+                $new_content->update({ status => 'Published' });
+            }
+        }
         $c->flash(status_msg => "Successfully saved your page");
         $c->res->redirect($c->uri_for($self->action_for('edit_page'), [ $site->id, $page_content->page->id ]));
         $c->detach;
-    }
+    #}
 }
 
 #-------------------------------------------------------------------------------
@@ -536,7 +553,7 @@ sub cancel_preview :Chained('pages') :Args(0) {
     my $page = $c->stash->{page};
 
     if ($page->status eq 'preview') {
-        $c->flash->{status_msg} = "Cancelled preview";
+        $c->flash(status_msg => "Cancelled preview");
         $c->res->redirect($c->uri_for($self->action_for('edit_page'), [ $site->id, $page->id ]));
         $c->detach;
     }
@@ -647,8 +664,16 @@ sub revisions :Chained('pages') :Args(0) {
 
 sub restore :Chained('page_contents') :Args(0) {
     my ($self, $c) = @_;
-    my $site = $c->stash->{site};
+    my $site         = $c->stash->{site};
     my $page_content = $c->stash->{page_content};
+    my $page         = $c->stash->{page};
+
+    if ($c->req->query_params && $c->req->query_params->{content} ne '') {
+        if (my $con = $c->model('CMS::PageContent')->find({ page_id => $page->id, id => $c->req->param('content') })) {
+            $page_content->update({ status => 'draft' });
+            $page_content = $con;
+        }
+    }
 
     $c->flash(status_msg => "Successfully restored revision from " . $page_content->created->dmy . ' ' . $page_content->created->hms);
     $page_content->update({ status => 'Published' }) if $page_content->status ne 'Published';
@@ -787,8 +812,13 @@ sub preview :Chained('page_contents') :Args(0) {
     my ($self, $c)   = @_;
     my $site         = $c->stash->{site};
     my $page_content = $c->stash->{page_content};
+    my $page         = $c->stash->{page};
 
-    my $page = $page_content->page;
+    if ($c->req->query_params && $c->req->query_params->{content}) {
+        if (my $con = $c->model('CMS::PageContent')->find( $c->req->param('content') )) {
+            $page_content = $con;
+        }
+    }
 
     if ($c->req->body_params->{cancel}) {
         my $page = $c->model('CMS::Page')->find($c->req->body_params->{page_id});
@@ -895,7 +925,7 @@ sub preview :Chained('page_contents') :Args(0) {
                     .cms-preview-content { margin-top: 50px; }
                 </style>
             };
-            $template .= '<iframe frameborder="0" border="0" cellspacing="0" class="iframe-panel" src="' . $c->uri_for($c->controller('Modules::CMS::Ajax')->action_for('preview_panel'), $page_content->id) . '"></iframe>';
+            $template .= '<iframe frameborder="0" border="0" cellspacing="0" class="iframe-panel" src="' . $c->uri_for($c->controller('Modules::CMS::Ajax')->action_for('preview_panel'), $page_content->id) . '?content=' . $c->req->param('content') . '"></iframe>';
         }
         $template = '<div class="cms-preview-content">[% BLOCK content %]' . $page_content->body . '[% END %]' . $template . '</div>';
         $c->stash->{template}   = \$template;
