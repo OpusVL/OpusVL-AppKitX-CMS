@@ -146,12 +146,42 @@
 </div>
 
 <script type="text/javascript">
+    var the = {
+        use_codemirror: ( ! window.location.href.match(/without-codemirror/)),
+        beautify_in_progress: false,
+        editor: null,
+    };
 
     $(function() {
+        //var editor = CodeMirror.fromTextArea(document.getElementById("wysiwyg"), {mode: "text/html", tabMode: "indent"});
+        $('#wysiwyg').keydown(function (e) {
+            if (e.keyCode == 9) {
+                var myValue = "    ";
+                var startPos = this.selectionStart;
+                var endPos = this.selectionEnd;
+                var scrollTop = this.scrollTop;
+                this.value = this.value.substring(0, startPos) + myValue + this.value.substring(endPos,this.value.length);
+                this.focus();
+                this.selectionStart = startPos + myValue.length;
+                this.selectionEnd = startPos + myValue.length;
+                this.scrollTop = scrollTop;
+
+                e.preventDefault();
+            }
+        });
+
+        $(window).bind('keydown', function (e) {
+            if (e.ctrlKey && e.keyCode == 13) {
+                beautify();
+            }
+        });
+
         var source = true;
         if ($('#wysiwyg')) {
-            if ($('#wysiwyg').hasClass('no-gui'))
+            if ($('#wysiwyg').hasClass('no-gui')) {
                 source = false;
+                $.editorType = 'raw';
+            }
         }
 
         $('#wysiwyg').redactor({
@@ -165,8 +195,12 @@
                         var callback = $.proxy(function() {
                             $('.insert-element').click(function() {
                                 var id = $(this).attr('rel');
-                                if ($.editorType == 'raw')
-                                    insertAtCaret('wysiwyg', '<span class="tt tt-element" rel="' + id + '">[\% cms.element(' + id + ', {}) \%]</span>&nbsp;');
+                                if ($.editorType == 'raw') {
+                                    if ($.codeMirror != null)
+                                        insertAtCaret('wysiwyg', '[\% cms.element(' + id + '), {} \%]');
+                                    else
+                                        insertAtCaret('wysiwyg', '<span class="tt tt-element" rel="' + id + '">[\% cms.element(' + id + ', {}) \%]</span>&nbsp;');
+                                }
                                 else
                                     $('#wysiwyg').insertHtml('<span class="tt tt-element" rel="' + id + '">[\% cms.element(' + id + ', {}) \%]</span> ');
                                 obj.modalClose();
@@ -184,8 +218,12 @@
                         var callback = $.proxy(function() {
                             $('.insert-page').click(function() {
                                 var id = $(this).attr('rel');
-                                if ($.editorType == 'raw')
-                                    insertAtCaret('wysiwyg', '<span class="tt tt-page" rel="' + id + '">[\% cms.page(' + id + ') \%]</span>&nbsp;');
+                                if ($.editorType == 'raw') {
+                                    if ($.codeMirror != null)
+                                        insertAtCaret('wysiwyg', '[\% cms.page(' + id + ') \%]');
+                                    else
+                                        insertAtCaret('wysiwyg', '<span class="tt tt-page" rel="' + id + '">[\% cms.page(' + id + ') \%]</span>&nbsp;');
+                                }
                                 else
                                     $('#wysiwyg').insertHtml('<span class="tt tt-page" rel="' + id + '">[\% cms.page(' + id + ') \%]</span> ');
                                 obj.modalClose();
@@ -203,8 +241,12 @@
                         var callback = $.proxy(function() {
                             $('.insert-asset').click(function() {
                                 var id = $(this).attr('rel');
-                                if ($.editorType == 'raw')
-                                    insertAtCaret('wysiwyg', '<span class="tt tt-asset" rel="' + id + '">[\% cms.asset(' + id + ') \%]</span>&nbsp;');
+                                if ($.editorType == 'raw') {
+                                    if ($.codeMirror != null)
+                                        insertAtCaret('wysiwyg', '[\% cms.asset(' + id + ') \%]');
+                                    else
+                                        insertAtCaret('wysiwyg', '<span class="tt tt-asset" rel="' + id + '">[\% cms.asset(' + id + ') \%]</span>&nbsp;');
+                                }
                                 else
                                     $('#wysiwyg').insertHtml('<span class="tt tt-asset" rel="' + id + '">[\% cms.asset(' + id + ') \%]</span> ');
                                 obj.modalClose();
@@ -222,8 +264,12 @@
                         var callback = $.proxy(function() {
                             $('.insert-attachment').click(function() {
                                 var id = $(this).attr('rel');
-                                if ($.editorType == 'raw')
-                                    insertAtCaret('wysiwyg', '<span class="tt tt-attachment" rel="' + id + '">[\% cms.attachment(' + id + ') \%]</span>&nbsp;');
+                                if ($.editorType == 'raw') {
+                                    if ($.codeMirror != null)
+                                        insertAtCaret('wysiwyg', '[\% cms.attachment(' + id + ') \%]');
+                                    else
+                                        insertAtCaret('wysiwyg', '<span class="tt tt-attachment" rel="' + id + '">[\% cms.attachment(' + id + ') \%]</span>&nbsp;');
+                                }
                                 else
                                     $('#wysiwyg').insertHtml('<span class="tt tt-attachment" rel="' + id + '">[\% cms.attachment(' + id + ') \%]</span> ');
                                 obj.modalClose();
@@ -243,6 +289,8 @@
             wys.getObject().$editor.hide();
             wys.getObject().$el.height(300).val(wys.val()).show().focus();
         }
+
+        $.codeMirror = CodeMirror.fromTextArea($('#wysiwyg').get(0));
     });
 
     function insertAtCaret(areaId,text) {
@@ -277,5 +325,56 @@
             txtarea.focus();
         }
         txtarea.scrollTop = scrollPos;
+        if ($.codeMirror != null) {
+            $.codeMirror.replaceSelection(text, "end");
+        }
+    }
+
+    function beautify() {
+        if (the.beautify_in_progress) return;
+
+        //store_settings_to_cookie();
+
+        the.beautify_in_progress = true;
+
+        var source = the.editor ? the.editor.getValue() : $('#wysiwyg').val(),
+            output,
+            opts = {};
+
+        opts.indent_size = 4;
+        opts.indent_char = opts.indent_size == 1 ? '\t' : ' ';
+        opts.preserve_newlines = true;
+        opts.keep_array_indentation = false;
+        opts.break_chained_methods = false;
+        opts.indent_scripts = 'normal';
+        opts.brace_style = 'collapse';
+        opts.space_before_conditional = true;
+        opts.unescape_strings = false;
+        opts.space_after_anon_function = true;
+
+        if (looks_like_html(source)) {
+            output = style_html(source, opts);
+        } else {
+            if ($('#detect-packers').attr('checked')) {
+                source = unpacker_filter(source);
+            }
+            output = js_beautify(source, opts);
+        }
+        if (the.editor) {
+            the.editor.setValue(output);
+        } else {
+            $('#wysiwyg').val(output);
+        }
+
+        the.beautify_in_progress = false;
+    }
+
+    function looks_like_html(source) {
+        // <foo> - looks like html
+        // <!--\nalert('foo!');\n--> - doesn't look like html
+
+        var trimmed = source.replace(/^[ \t\n\r]+/, '');
+        var comment_mark = '<' + '!-' + '-';
+        return (trimmed && (trimmed.substring(0, 1) === '<' && trimmed.substring(0, 4) !== comment_mark));
     }
 </script>
