@@ -197,7 +197,7 @@
                                 var id = $(this).attr('rel');
                                 if ($.editorType == 'raw') {
                                     if ($.codeMirror != null)
-                                        insertAtCaret('wysiwyg', '[\% cms.element(' + id + '), {} \%]');
+                                        insertAtCaret('wysiwyg', '[\% cms.element(' + id + ', {}) \%]');
                                     else
                                         insertAtCaret('wysiwyg', '<span class="tt tt-element" rel="' + id + '">[\% cms.element(' + id + ', {}) \%]</span>&nbsp;');
                                 }
