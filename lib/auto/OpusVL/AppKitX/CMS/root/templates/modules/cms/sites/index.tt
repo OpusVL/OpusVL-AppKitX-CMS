@@ -1,11 +1,20 @@
 [% META appkitfeature_tablesorter = 1 %]
 <h1>Sites</h1>
 
+<script type="text/javascript">
+function delete_site(site_id, site_name) {
+	var ans = confirm("Do you really want to delete " + site_name + "?");
+	if (ans === true) {
+		window.location.replace("[% c.uri_for(c.controller.action_for('delete_site')) %]/" + site_id);
+	}
+}
+</script>
 <div class="content_block">
 	[% IF sites.size > 0 %]
 		<table class="tablesorter">
 			<tbody>
 			[% FOREACH site IN sites %]
+				[% IF site.site.status == 'active' %]
 				<tr>
 					<td>
 						<a href="[% c.uri_for(c.controller.action_for('edit'), [ site.site.id ]) %]">[% site.site.name %]</a>
@@ -19,11 +28,13 @@
 						  <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
 						  	<li><span style="font-weight:bold; color:#c0c0c0; padding-left: 20px">[% site.site.name %]</span></li>
 						  	<li class="divider"></li>
-						    <li><a href="#"><i class="icon icon-pencil"></i> Edit</a></li>
-						    <li><a href="#"><i class="icon icon-remove"></i> Delete</a></li>
+						    <li><a href="[% c.uri_for(c.controller.action_for('edit'), [ site.site.id ]) %]"><i class="icon icon-pencil"></i> Edit</a></li>
+						    <li><a onclick="delete_site([% site.site.id %], '[% site.site.name %]');" href="javascript:void(0);"><i class="icon icon-remove"></i> Delete</a></li>
 						  </ul>
 						</div>
 					</td>
+				</tr>
+				[% END %]
 			[% END %]
 		</table>
 	[% ELSE %]

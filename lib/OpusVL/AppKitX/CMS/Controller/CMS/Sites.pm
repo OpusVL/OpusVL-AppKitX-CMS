@@ -41,7 +41,6 @@ sub index :Path :Args(0) :NavigationName('Sites') {
     $c->stash->{sites} = $sites;
 }
 
-
 #-------------------------------------------------------------------------------
 
 sub add :Local :Args(0) :AppKitForm {
@@ -126,6 +125,26 @@ sub base :Chained('/') :PathPart('site') :CaptureArgs(1) {
         pages       => [ $site->pages->published->all ],
         attachments => [ $site->pages->search_related('attachments', { 'attachments.status' => 'published' })->all ],
     );
+}
+
+#-------------------------------------------------------------------------------
+
+sub delete_site :Local :Args(1) {
+    my ($self, $c, $site_id) = @_;
+    
+    if (my $site = $c->model('CMS::Site')->find($site_id)) {
+        if ($c->model('CMS::SitesUser')->find({ user_id => $c->user->id, site_id => $site_id })) {
+            $site->update({ status => 'deleted' });
+            $c->flash(status_msg => 'Successfully removed ' . $site->name);
+        }
+        else {
+            $c->flash(error_msg => 'You do not have access to ' . $site->name);
+        }
+    }
+
+    
+    $c->res->redirect($c->uri_for($self->action_for('index')));
+    $c->detach;
 }
 
 #-------------------------------------------------------------------------------

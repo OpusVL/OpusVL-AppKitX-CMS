@@ -808,6 +808,15 @@ sub draft_delete :Local :Path('draft/delete') :Args(1) {
 
 #-------------------------------------------------------------------------------
 
+sub cms_preview :Local :Args(1) {
+    my ($self, $c, $url) = @_;
+    my $base = $c->config->{CMSView}->{url};
+    $c->res->redirect("${base}/${url}");
+    $c->detach;
+}
+
+#-------------------------------------------------------------------------------
+
 sub preview :Chained('page_contents') :Args(0) {
     my ($self, $c)   = @_;
     my $site         = $c->stash->{site};
