@@ -105,7 +105,7 @@ sub add :Local :Args(0) :AppKitForm {
 
 sub base :Chained('/') :PathPart('site') :CaptureArgs(1) {
     my ($self, $c, $site_id) = @_;
-    my $site = $c->model('CMS::Site')->find($site_id);
+    my $site = $c->model('CMS::Site')->find({ id => $site_id, status => 'active' });
     unless ($site) {
         $c->flash->{error_msg} = "Could not locate site";
         $c->res->redirect($c->uri_for($self->action_for('index')));
