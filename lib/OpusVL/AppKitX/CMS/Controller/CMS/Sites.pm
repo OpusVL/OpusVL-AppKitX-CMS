@@ -105,7 +105,7 @@ sub add :Local :Args(0) :AppKitForm {
 
 sub base :Chained('/') :PathPart('site') :CaptureArgs(1) {
     my ($self, $c, $site_id) = @_;
-    my $site = $c->model('CMS::Site')->find({ id => $site_id, status => 'active' });
+    my $site = $c->model('CMS::Site')->search({ id => $site_id, status => 'active' })->first;
     unless ($site) {
         $c->flash->{error_msg} = "Could not locate site";
         $c->res->redirect($c->uri_for($self->action_for('index')));
@@ -135,6 +135,7 @@ sub delete_site :Local :Args(1) {
     if (my $site = $c->model('CMS::Site')->find($site_id)) {
         if ($c->model('CMS::SitesUser')->find({ user_id => $c->user->id, site_id => $site_id })) {
             $site->update({ status => 'deleted' });
+            $site->master_domains->delete;
             $c->flash(status_msg => 'Successfully removed ' . $site->name);
         }
         else {
