@@ -124,7 +124,22 @@
             		[% FOREACH e IN elements %]
             			<tr>
             				<td>[% e.id %]</td>
-            				<td><a rel="[% e.id %]" href="javascript:void(0);" class="insert-element">[% e.name %]</a></td>
+            				<td><a rel="[% e.id %]" href="javascript:void(0);" class="insert-element">[% e.name %]</a>
+                            [% IF e.tt_get_attributes.size > 0 %]
+                             (<a rel=".attribute-options-[% e.id %]" class="collapse-element-attributes link" href="javascript:void(0);">Show attributes</a>)
+                            <div class="attribute-options-[% e.id %]" style="display:none">
+                                <br />
+                                <form>
+                                [% FOREACH el_attr IN e.tt_get_attributes %]
+                                        <div class="text label">
+                                            <label>[% el_attr.code %]</label>
+                                            <input type="text" class="element-attribute-[% e.id %]" rel="[% el_attr.code %]" value="">
+                                        </div>
+                                [% END %]
+                                </form>
+                            </div>
+                        [% END %]
+                            </td>
             			</tr>
             		[% END %]
             	</tbody>
@@ -147,13 +162,15 @@
 
 <script type="text/javascript">
     var the = {
-        use_codemirror: ( ! window.location.href.match(/without-codemirror/)),
+        use_codemirror: false,
         beautify_in_progress: false,
         editor: null,
     };
 
+    if (typeof CodeMirror != 'undefined')
+        the.use_codemirror = true;
+
     $(function() {
-        //var editor = CodeMirror.fromTextArea(document.getElementById("wysiwyg"), {mode: "text/html", tabMode: "indent"});
         $('#wysiwyg').keydown(function (e) {
             if (e.keyCode == 9) {
                 var myValue = "    ";
@@ -184,7 +201,8 @@
             }
         }
 
-        $('#wysiwyg').redactor({
+        var redactorSettings = {
+            convertDivs: false,
             source: source,
             focus: true,
             buttonsAdd: ['|', 'elements', 'pages', 'assets', 'attachments'], 
@@ -193,16 +211,37 @@
                     title: 'Elements', 
                     callback: function(obj) {
                         var callback = $.proxy(function() {
+                            $('.collapse-element-attributes').click(function() {
+                                var _attr = $(this).attr('rel');
+                                $(_attr).slideToggle('fast');
+                            });
+
                             $('.insert-element').click(function() {
                                 var id = $(this).attr('rel');
+
+                                var buildHash = "{";
+                                if ($(".element-attribute-" + id)[0]) {
+                                    var buildHash = "{ ";
+                                    $('.element-attribute-' + id).each(function() {
+                                        console.log($(this));
+                                        var key = $(this).attr('rel');
+                                        var value = $(this).val();
+                                        if (key && value) {
+                                            buildHash += "'" + key + "' => '" + value + "', ";
+                                        }
+                                    });
+
+                                }
+                                buildHash += " }";
+
                                 if ($.editorType == 'raw') {
                                     if ($.codeMirror != null)
-                                        insertAtCaret('wysiwyg', '[\% cms.element(' + id + ', {}) \%]');
+                                        insertAtCaret('wysiwyg', '[\% cms.element(' + id + ', ' + buildHash + ') \%]');
                                     else
-                                        insertAtCaret('wysiwyg', '<span class="tt tt-element" rel="' + id + '">[\% cms.element(' + id + ', {}) \%]</span>&nbsp;');
+                                        insertAtCaret('wysiwyg', '<span class="tt tt-element" rel="' + id + '">[\% cms.element(' + id + ', ' + buildHash + ') \%]</span>&nbsp;');
                                 }
                                 else
-                                    $('#wysiwyg').insertHtml('<span class="tt tt-element" rel="' + id + '">[\% cms.element(' + id + ', {}) \%]</span> ');
+                                    $('#wysiwyg').insertHtml('<span class="tt tt-element" rel="' + id + '">[\% cms.element(' + id + ', ' + buildHash + ') \%]</span> ');
                                 obj.modalClose();
                                 obj.observeTT();
                             });
@@ -281,7 +320,12 @@
                     }
                 }
             }
-        });
+        };
+
+        if (the.use_codemirror)
+            redactorSettings.buttons = [];
+
+        $('#wysiwyg').redactor(redactorSettings);
 
         if (source === false) {
             var wys = $('#wysiwyg');
@@ -290,7 +334,9 @@
             wys.getObject().$el.height(300).val(wys.val()).show().focus();
         }
 
-        $.codeMirror = CodeMirror.fromTextArea($('#wysiwyg').get(0));
+        if (the.use_codemirror)
+            $.codeMirror = CodeMirror.fromTextArea($('#wysiwyg').get(0));
+
     });
 
     function insertAtCaret(areaId,text) {
