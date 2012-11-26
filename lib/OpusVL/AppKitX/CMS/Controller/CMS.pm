@@ -22,41 +22,9 @@ sub auto :Private {
     if (! $c->user) {
         $c->res->redirect('/logout');
         $c->detach;
-    }   
-
-    #$c->stash->{elements} = [ $c->stash->{site}->elements->available->all ];
-    #$c->stash->{pages} = [ $c->stash->{site}->pages->published->all ];
-    
-    #my $sites = $c->model('CMS::SitesUser')
-    #    ->search({ user_id => $c->user->id });
-#
-    #if ($sites) {
-    #    $c->stash->{all_sites} = [ $sites->all ];
-    #    $DB::single = 1;
-#
-    #    $c->stash->{selected_domain} = $c->session->{selected_domain}
-    #        if $c->session->{selected_domain};
-#
-    #    # we need to clear out old session data to avoid lurking bugs
-    #    # or fix AppKit's menu system so we can actually use Chained actions
-    #    if ($c->session->{site}) {
-    #        if ($c->model('CMS::Site')->find($c->session->{site}->id)) {
-    #            $c->stash->{site} = $c->session->{site}
-    #        }
-    #        else {
-    #            delete $c->session->{site};
-    #            delete $c->session->{selected_domain};
-    #            delete $c->stash->{site};
-    #        }
-    #    }
-    #}
+    }
 
     1;
-        
-    #push @{ $c->stash->{breadcrumbs} }, {
-    #    name    => 'CMS',
-    #    url     => $c->uri_for( $c->controller('Modules::CMS::Pages')->action_for('index'))
-    #};
 }
 
 sub home
@@ -68,6 +36,16 @@ sub home
     my ($self, $c) = @_;
 }
 
+sub confirm :Local :Args(2) {
+    my ($self, $c, $action, $table) = @_;
+    for (lc $action) {
+        if (/^delete$/) {
+            if ($table eq 'sites') {
+
+            }
+        }
+    }
+}
 sub portlet_recent_pages : PortletName('Most Recent Pages') {
     my ($self, $c) = @_;
     my $sites = $c->model('CMS::SitesUser')->search({ user_id => $c->user->id });

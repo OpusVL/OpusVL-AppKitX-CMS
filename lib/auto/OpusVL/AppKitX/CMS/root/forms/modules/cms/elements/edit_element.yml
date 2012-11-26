@@ -25,13 +25,19 @@ elements:
               - type: Block
                 attributes:
                     id: "editor-controls"
-                
+              
               - type: Textarea
                 name: content
+                attributes:
+                  id: wysiwyg-content
+                  style: "display:none"
+              
+              - type: Textarea
+                name: content_edit
                 #label: Content *
                 attributes:
                     id: wysiwyg
-                    style: "width: 584px;"
+                    class: "no-gui"
                 constraints:
                   - type: Required
 

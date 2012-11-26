@@ -19,6 +19,21 @@
         background-position: center;
     }
 
+    body .redactor_toolbar li a.redactor_btn_insert_content {
+        background: url([% c.uri_for('/static/js/redactor/img/insert_content.png') %]) no-repeat;
+        background-position: center;
+    }
+
+    body .redactor_toolbar li a.redactor_btn_html {
+        background: url([% c.uri_for('/static/js/redactor/img/redactor-gui-btn.png') %]) no-repeat;
+        background-position: center;
+    }
+
+    body .redactor_toolbar li a.redactor_btn_html.redactor_act {
+        background: url([% c.uri_for('/static/js/redactor/img/redactor-source-btn.png') %]) no-repeat;
+        background-position: center;
+    }
+
     .tt {
         background-color: #ccccff;
     }
@@ -26,7 +41,32 @@
     .save_indicator.unsaved {
         display: none;
     }
+
+    div.centered {
+        display:block;
+
+        z-index: 9999;
+        position:fixed;
+        top:50%;
+        left:35%;
+        width:350px;
+        color: #fff;
+        background: #000;
+        opacity:0.7;
+        padding: 10px;
+        text-align: center;
+        font-weight: bold;
+        filter:alpha(opacity=70); /* For IE8 and earlier */
+    }
 </style>
+
+<div style="display:none" class="centered" id="redactor-toggle-gui">
+    GUI mode toggled
+</div>
+
+<div style="display:none" class="centered" id="redactor-toggle-source">
+    Source mode toggled
+</div>
 
 <div id="pages" style="display: none;">
     <div id="redactor_modal_content">
@@ -202,11 +242,19 @@
         }
 
         var redactorSettings = {
+            autoresize: false,
             convertDivs: false,
             source: source,
             focus: true,
             buttonsAdd: ['|', 'elements', 'pages', 'assets', 'attachments'], 
             buttonsCustom: {
+                insert_content: {
+                    title: 'Insert Content',
+                    callback: function(obj) {
+                        insertAtCaret('wysiwyg', "\[\% PROCESS content \%\]");
+                    },
+                },
+
                 elements: {
                     title: 'Elements', 
                     callback: function(obj) {
@@ -236,12 +284,12 @@
 
                                 if ($.editorType == 'raw') {
                                     if ($.codeMirror != null)
-                                        insertAtCaret('wysiwyg', '[\% cms.element(' + id + ', ' + buildHash + ') \%]');
+                                        insertAtCaret('wysiwyg', '[\% cms.element(' + id + ', ' + buildHash + ') | eval \%]');
                                     else
-                                        insertAtCaret('wysiwyg', '<span class="tt tt-element" rel="' + id + '">[\% cms.element(' + id + ', ' + buildHash + ') \%]</span>&nbsp;');
+                                        insertAtCaret('wysiwyg', '<span class="tt tt-element" rel="' + id + '">[\% cms.element(' + id + ', ' + buildHash + ') | eval \%]</span>&nbsp;');
                                 }
                                 else
-                                    $('#wysiwyg').insertHtml('<span class="tt tt-element" rel="' + id + '">[\% cms.element(' + id + ', ' + buildHash + ') \%]</span> ');
+                                    $('#wysiwyg').insertHtml('<span class="tt tt-element" rel="' + id + '">[\% cms.element(' + id + ', ' + buildHash + ') | eval \%]</span> ');
                                 obj.modalClose();
                                 obj.observeTT();
                             });
@@ -322,8 +370,10 @@
             }
         };
 
-        if (the.use_codemirror)
+        if (the.use_codemirror) {
             redactorSettings.buttons = [];
+            redactorSettings.buttonsAdd.push( 'insert_content' );
+        }
 
         $('#wysiwyg').redactor(redactorSettings);
 
@@ -332,6 +382,10 @@
             wys.getObject().opts.visual = false;
             wys.getObject().$editor.hide();
             wys.getObject().$el.height(300).val(wys.val()).show().focus();
+        }
+
+        if ($('#wysiwyg-content').length > 0) {
+            $('#wysiwyg').val( $('#wysiwyg-content').val() );
         }
 
         if (the.use_codemirror)

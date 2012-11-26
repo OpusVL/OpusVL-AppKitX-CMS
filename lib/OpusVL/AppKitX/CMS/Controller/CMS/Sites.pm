@@ -11,7 +11,7 @@ __PACKAGE__->config
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
     appkit_css                  => [ '/static/css/bootstrap.css' ],
-    appkit_js                     => ['/static/js/cms.js', '/static/js/bootstrap.js', '/static/js/nicEdit.js', '/static/js/src/addElement/addElement.js'],
+    appkit_js                     => ['/static/js/bootstrap.js'],
     appkit_method_group         => 'Content Management',
     appkit_method_group_order   => 1,
     appkit_shared_module        => 'CMS',

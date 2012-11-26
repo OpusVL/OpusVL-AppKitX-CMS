@@ -10,8 +10,8 @@ __PACKAGE__->config
     appkit_name                 => 'CMS',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
-    appkit_css                  => [qw< /static/js/redactor/redactor.css /static/css/bootstrap.css >],
-    appkit_js                   => [qw< /static/js/bootstrap.js /static/js/redactor/redactor.js >],
+    appkit_css                  => [qw</static/js/redactor/redactor.css /static/css/bootstrap.css /static/js/codemirror/codemirror.css>],
+    appkit_js                   => [qw</static/js/bootstrap.js /static/js/redactor/redactor.js /static/js/beautify/beautify.js /static/js/beautify/beautify-html.js /static/js/beautify/beautify-css.js /static/js/codemirror/codemirror.js /static/js/codemirror/mode/xml/xml.js /static/js/codemirror/mode/javascript/javascript.js /static/js/codemirror/mode/css/css.js /static/js/codemirror/mode/htmlmixed/htmlmixed.js>],
     appkit_method_group         => 'Content Management',
     appkit_method_group_order   => 1,
     appkit_shared_module        => 'CMS',
@@ -126,8 +126,8 @@ sub edit_element :Chained('elements') :PathPart('edit') :Args(0) :AppKitForm {
             $element->update({name => $form->param_value('name'),global => $form->param_value('global')||0});
         #}
 
-        if ($form->param_value('content') ne $element->content) {
-            $element->set_content($form->param_value('content'));
+        if ($form->param_value('content_edit') ne $element->content) {
+            $element->set_content($form->param_value('content_edit'));
         }
         
         $c->flash(status_msg => "Updated element " . $element->name);

@@ -26,6 +26,7 @@ elements:
             name: content
             #label: Content *
             attributes:
+                class: no-gui
                 id: wysiwyg
                 style: "width: 584px;"
             constraints:
