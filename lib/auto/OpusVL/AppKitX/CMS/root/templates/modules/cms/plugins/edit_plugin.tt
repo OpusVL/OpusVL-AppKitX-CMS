@@ -1,5 +1,17 @@
 [% META appkitfeature_tablesorter = 1 %]
-[% PROCESS modules/cms/preprocess.tt %]
+[%# PROCESS modules/cms/preprocess.tt %]
+
+<style type="text/css">
+	.CodeMirror {
+		background-color: #fff;
+	}
+</style>
 
 <h1>Edit Plugin</h1>
 [% form.render | none %]
+
+<script type="text/javascript">
+	$(function() {
+		$.codeMirror = CodeMirror.fromTextArea($('#wysiwyg').get(0));
+	});
+</script>
