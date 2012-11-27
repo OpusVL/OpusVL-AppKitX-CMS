@@ -97,6 +97,12 @@ after 'setup_components' => sub {
         component => 'OpusVL::AppKitX::CMS::Controller::CMS::UserAccess',
         as        => 'Controller::Modules::CMS::UserAccess',
     );
+
+    CatalystX::InjectComponent->inject(
+        into      => $class,
+        component => 'OpusVL::AppKitX::CMS::Controller::CMS::Plugins',
+        as        => 'Controller::Modules::CMS::Plugins',
+    );
 };
 
 1;
