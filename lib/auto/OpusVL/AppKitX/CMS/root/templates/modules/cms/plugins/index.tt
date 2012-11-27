@@ -14,6 +14,7 @@
 						<th>Author</th>
 						<th>Description</th>
 						<th>Loaded</th>
+						<th>Actions</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -24,6 +25,9 @@
 							<td>[% plugin.author %]</td>
 							<td>[% plugin.description %]</td>
 							<td>[% IF plugin.status == 'active' %]<font color="green">Yes</font> (<a href="[% c.uri_for(c.controller.action_for('disable_plugin'), [ plugin.id ]) %]">Disable</a>)[% ELSE %]<font color="red">No</font> (<a href="[% c.uri_for(c.controller.action_for('enable_plugin'), [ plugin.id ]) %]">Enable</a>)[% END %]</td>
+							<td>
+								<a href="[% c.uri_for(c.controller.action_for('edit_plugin'), [ plugin.id ]) %]">Edit</a>
+							</td>
 						</tr>
 					[% END %]
 				</tbody>

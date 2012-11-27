@@ -100,4 +100,42 @@ sub new_plugin :Local :PathPart('plugin/new') :Args(0) :AppKitForm {
     }
 }
 
+#-------------------------------------------------------------------------------
+
+sub edit_plugin :Chained('base') :PathPart('edit') :Args(0) :AppKitForm {
+    my ($self, $c) = @_;
+    my $plugin     = $c->stash->{plugin};
+    my $form       = $c->stash->{form};
+
+    $form->default_values({
+        action      => $plugin->action,
+        name        => $plugin->name,
+        code        => $plugin->code,
+        description => $plugin->description,
+    });
+
+    $form->process;
+
+    if ($form->submitted_and_valid) {
+        $plugin->update({
+            author      => $c->user->name,
+            action      => $form->param_value('action'),
+            name        => $form->param_value('name'),
+            code        => $form->param_value('code'),
+            description => $form->param_value('description'),
+        });
+
+        $c->flash(status_msg => 'Successfully updated your plugin');
+        $c->res->redirect($c->uri_for($self->action_for('index')));
+        $c->detach;
+    }
+
+    if ($c->req->body_params && $c->req->body_params->{'cancel'}) {
+        $c->res->redirect($c->uri_for($self->action_for('index')));
+        $c->detach;
+    }
+}
+
+#-------------------------------------------------------------------------------
+
 1;

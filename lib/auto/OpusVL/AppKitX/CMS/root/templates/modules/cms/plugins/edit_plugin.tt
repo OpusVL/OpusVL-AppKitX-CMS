@@ -1,0 +1,5 @@
+[% META appkitfeature_tablesorter = 1 %]
+[% PROCESS modules/cms/preprocess.tt %]
+
+<h1>Edit Plugin</h1>
+[% form.render | none %]
