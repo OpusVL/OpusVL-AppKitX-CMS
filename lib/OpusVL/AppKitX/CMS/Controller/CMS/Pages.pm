@@ -862,24 +862,25 @@ sub preview :Chained('page_contents') :Args(0) {
         }
     }
 
-    my $asset_rs = $site->assets;
+    my $asset_rs   = $c->model('CMS::Asset');
+    my $element_rs = $c->model('CMS::Element');
     $c->stash->{me}  = $page;
     $c->stash->{cms} = {
         asset => sub {
             my $id = shift;
             if (looks_like_number $id) {
-                if (my $asset = $site->assets->available->find({id => $id})) {
+                if (my $asset = $asset_rs->available($site->id)->find({id => $id})) {
                     return $c->uri_for($self->action_for('_asset'), $asset->id, $asset->filename);
                 }
             }
             else {
                 # not a number? then we may be looking for a logo!
                 if ($id eq 'logo') {
-                    if (my $logo = $site->assets->published->find({ description => 'Logo' })) {
+                    if (my $logo = $asset_rs->available($site->id)->find({ description => 'Logo' })) {
                         return $c->uri_for($self->action_for('_asset'), $logo->id, $logo->filename);
                     }
                     else {
-                        if ($logo = $c->model('CMS::Asset')->find({ global => 1, description => 'Logo' })) {
+                        if ($logo = $asset_rs->available($site->id)->find({ global => 1, description => 'Logo' })) {
                             return $c->uri_for($self->action_for('_asset'), $logo->id, $logo->filename);
                         }
                     }
@@ -898,7 +899,7 @@ sub preview :Chained('page_contents') :Args(0) {
                     $c->stash->{me}->{$attr} = $attrs->{$attr};
                 }
             }
-            if (my $element = $site->elements->available->find({id => $id})) {
+            if (my $element = $element_rs->available($site->id)->find({id => $id})) {
                 return $element->content;
             }
         },

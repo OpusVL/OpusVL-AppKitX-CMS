@@ -38,7 +38,7 @@
                             <td>
                                 <a href="[% c.uri_for(c.controller.action_for('edit_page'), [ site.id, kid.id ]) %]">Edit</a> | 
                                 <a href="[% c.uri_for(c.controller.action_for('delete_page'), [ site.id, kid.id ]) %]">Delete</a> | 
-                                <a href="[% c.config.CMSView.url %][% page.url %]" target="__blank">View</a> | 
+                                <a href="[% c.uri_for(c.controller.action_for('preview'), [ site.id, kid.id ]) %]" target="__blank">View</a> | 
                                 <a href="[% c.uri_for(c.controller.action_for('new_page'), [ site.id ]) %]?parent_id=[% kid.id %]">Create child</a> | 
                                 <a href="[% c.uri_for(c.controller.action_for('revisions'), [ site.id, kid.id ]) %]">Revisions</a>
                                 [% IF kid.children.size > 0 %] | <a href="[% c.uri_for(c.controller.action_for('page_list'), [ site.id, kid.id ]) %]"><strong>View Children &rarr;</strong></a>

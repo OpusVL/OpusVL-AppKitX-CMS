@@ -2332,10 +2332,14 @@ table [class*=span],
   line-height: 21px;
   color: #2d2d2d;
   white-space: nowrap;
+  margin: 5px;
 }
 .dropdown-menu li > a:hover,
 .dropdown-menu li > a:focus,
 .dropdown-submenu:hover > a {
+  -webkit-border-radius: 4px 4px 4px 4px;
+  -moz-border-radius: 4px 4px 4px 4px;
+  border-radius: 4px 4px 4px 4px;
   text-decoration: none;
   color: #ffffff;
   background-color: #558bc4;

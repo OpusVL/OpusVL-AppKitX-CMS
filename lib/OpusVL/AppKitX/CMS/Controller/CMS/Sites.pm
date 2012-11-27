@@ -120,8 +120,8 @@ sub base :Chained('/') :PathPart('site') :CaptureArgs(1) {
 
     $c->stash(
         site        => $site,
-        elements    => [ $site->elements->available->all ],
-        assets      => [ $site->assets->published->all ],
+        elements    => [ $c->model('CMS::Element')->available($site_id)->all ],
+        assets      => [ $c->model('CMS::Asset')->available($site_id)->all ],
         pages       => [ $site->pages->published->all ],
         attachments => [ $site->pages->search_related('attachments', { 'attachments.status' => 'published' })->all ],
     );
