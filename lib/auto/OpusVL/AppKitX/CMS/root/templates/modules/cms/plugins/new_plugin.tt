@@ -12,6 +12,12 @@
 
 <script type="text/javascript">
 	$(function() {
-		$.codeMirror = CodeMirror.fromTextArea($('#wysiwyg').get(0));
+		$.codeMirror = CodeMirror.fromTextArea($('#wysiwyg').get(0), {
+			lineWrapping: true,
+            indentUnit: 4,
+            tabSize: 4,
+            indentWithTabs: false,
+            lineNumbers: true,
+		});
 	});
 </script>

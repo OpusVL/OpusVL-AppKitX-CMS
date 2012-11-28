@@ -388,8 +388,14 @@
             $('#wysiwyg').val( $('#wysiwyg-content').val() );
         }
 
-        if (the.use_codemirror)
-            $.codeMirror = CodeMirror.fromTextArea($('#wysiwyg').get(0));
+        if (the.use_codemirror) {
+            $.codeMirror = CodeMirror.fromTextArea($('#wysiwyg').get(0), {
+                lineWrapping: true,
+                indentUnit: 4,
+                tabSize: 4,
+                indentWithTabs: false,
+            });
+        }
 
     });
 

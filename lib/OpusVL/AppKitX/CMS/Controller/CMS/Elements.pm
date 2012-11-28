@@ -131,7 +131,7 @@ sub edit_element :Chained('elements') :PathPart('edit') :Args(0) :AppKitForm {
         }
         
         $c->flash(status_msg => "Updated element " . $element->name);
-        $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $site->id ]));
+        $c->res->redirect($c->req->uri);
         $c->detach;
     }
 
