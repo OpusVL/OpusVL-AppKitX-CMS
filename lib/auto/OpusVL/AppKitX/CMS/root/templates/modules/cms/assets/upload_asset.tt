@@ -9,9 +9,9 @@
 <div id="files_uploaded"></div>
 <script type="text/javascript">
     $(function() {
-        $("#asset-uploader").pluploadQueue({
+        var config = {
             runtimes: 'html5,flash',
-            url: '[% c.uri_for(c.controller.action_for('upload_assets'), [ site.id ]) %]/' + $('#make-global').val(),
+            url: "[% c.uri_for(c.controller.action_for('upload_assets'), [ site.id ]) %]",
             multiple_queues: true,
             filters: [
                 {title: "Upload Assets", extensions: "*"}
@@ -24,7 +24,20 @@
                 }
             },
             drop_element: 'asset-uploader'
+        };
+
+        $('#make-global').click(function() {
+            if ($(this).is(':checked')) {
+                config['url'] = "[% c.uri_for(c.controller.action_for('upload_assets_global'), [ site.id ]) %]";
+                $("#asset-uploader").pluploadQueue(config);
+            }
+            else {
+                config['url'] = "[% c.uri_for(c.controller.action_for('upload_assets'), [ site.id ]) %]";
+                $("#asset-uploader").pluploadQueue(config);
+            }
         });
+        
+        $("#asset-uploader").pluploadQueue(config);
     });
 </script>
 

@@ -184,18 +184,33 @@ sub edit_asset :Chained('assets') :PathPart('edit') :Args(0) :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
-sub upload_assets :Chained('/modules/cms/sites/base') :Args(1) {
-    my ($self, $c, $global) = @_;
+sub upload_assets :Chained('/modules/cms/sites/base') :Args(0) {
+    my ($self, $c) = @_;
     my $site = $c->stash->{site};
     
-    $global = $global eq 'on' ? 1 : 0;
     my $asset_rs = $c->model('CMS::Asset');
     if (my $file = $c->req->upload('file')) {
         my $asset = $asset_rs->create({
             mime_type   => $file->type,
             filename    => $file->basename,
             site        => $site->id,
-            global      => $global,
+        });
+
+        $asset->set_content($file->slurp);       
+    }
+}
+
+sub upload_assets_global :Chained('/modules/cms/sites/base') :Args(0) {
+    my ($self, $c) = @_;
+    my $site = $c->stash->{site};
+    
+    my $asset_rs = $c->model('CMS::Asset');
+    if (my $file = $c->req->upload('file')) {
+        my $asset = $asset_rs->create({
+            mime_type   => $file->type,
+            filename    => $file->basename,
+            site        => $site->id,
+            global      => 1,
         });
 
         $asset->set_content($file->slurp);       
