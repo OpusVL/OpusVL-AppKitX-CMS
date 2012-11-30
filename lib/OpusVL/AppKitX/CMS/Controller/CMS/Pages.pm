@@ -9,7 +9,7 @@ with 'OpusVL::AppKit::RolesFor::Controller::GUI';
  
 __PACKAGE__->config
 (
-    appkit_name                 => 'CMS',
+    appkit_name                 => 'Pages',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
     appkit_css                  => [qw< /static/js/redactor/redactor.css /static/css/bootstrap.css >],
@@ -26,7 +26,6 @@ sub auto :Private {
     my ($self, $c) = @_;
 
     $c->stash->{section} = 'Pages';
-    #$c->forward('/modules/cms/site_validate');
     push @{ $c->stash->{breadcrumbs} }, {
         name    => 'Pages',
         url     => $c->uri_for( $c->controller->action_for('index'))
@@ -38,11 +37,11 @@ sub auto :Private {
 
 #-------------------------------------------------------------------------------
 
-sub base :Chained('/') :PathPart('pages') :CaptureArgs(0) {
+sub base :Chained('/') :PathPart('pages') :CaptureArgs(0) :AppKitFeature('Pages - Read Access') {
     my ($self, $c) = @_;
 }
 
-sub pages :Chained('base') :PathPart('page') :CaptureArgs(2) {
+sub pages :Chained('base') :PathPart('page') :CaptureArgs(2) :AppKitFeature('Pages - Read Access') {
     my ($self, $c, $site_id, $page_id) = @_;
     $c->forward('/modules/cms/sites/base', [ $site_id ]);
 
@@ -57,12 +56,12 @@ sub pages :Chained('base') :PathPart('page') :CaptureArgs(2) {
     $c->stash( page => $page );
 }
 
-sub page_contents :Chained('base') :PathPart('page') :CaptureArgs(2) {
+sub page_contents :Chained('base') :PathPart('page') :CaptureArgs(2) :AppKitFeature('Pages - Read Access') {
     my ($self, $c, $site_id, $page_id) = @_;
     $c->forward('/modules/cms/sites/base', [ $site_id ]);
 
-    my $page_content = $c->model('CMS::PageContent')->find({ page_id => $page_id });
-    #my $page_content = $c->model('CMS::PageContent')->find($page_id);
+    my $page = $c->model('CMS::Page')->find($page_id);
+    my $page_content = $page->get_page_content;
 
     unless ($page_content) { #and $page_content->page->site->id == $site_id) {
         $c->flash(error_msg => "No such page");
@@ -72,13 +71,13 @@ sub page_contents :Chained('base') :PathPart('page') :CaptureArgs(2) {
     
     $c->stash(
         page_content => $page_content,
-        page         => $page_content->page,
+        page         => $page,
     );
 }
 
 #-------------------------------------------------------------------------------
 
-sub index :Chained('/modules/cms/sites/base') :PathPart('pages/list') :Args(0) {
+sub index :Chained('/modules/cms/sites/base') :PathPart('pages/list') :Args(0) :AppKitFeature('Pages - Read Access') {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
 
@@ -100,7 +99,7 @@ sub index :Chained('/modules/cms/sites/base') :PathPart('pages/list') :Args(0) {
     }
 }
 
-sub page_list :Chained('pages') :PathPart('page/list') :Args(0) {
+sub page_list :Chained('pages') :PathPart('page/list') :Args(0) :AppKitFeature('Pages - Read Access') {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
     my $page = $c->stash->{page};
@@ -110,7 +109,7 @@ sub page_list :Chained('pages') :PathPart('page/list') :Args(0) {
 
 #-------------------------------------------------------------------------------
 
-sub orphan_pages :Chained('/modules/cms/sites/base') :PathPart('pages/orphaned') :Args(0) {
+sub orphan_pages :Chained('/modules/cms/sites/base') :PathPart('pages/orphaned') :Args(0) :AppKitFeature('Pages - Read Access') {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
 
@@ -130,13 +129,13 @@ sub orphan_pages :Chained('/modules/cms/sites/base') :PathPart('pages/orphaned')
 
 #-------------------------------------------------------------------------------
 
-sub blogs :Chained('/modules/cms/sites/base') :PathPart('blogs') :Args(0) {
+sub blogs :Chained('/modules/cms/sites/base') :PathPart('blogs') :Args(0) :AppKitFeature('Blogs') {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
     $c->stash(blogs => [ $c->model('CMS::Page')->search({ status => 'published', site => $site->id, blog => 1 })->all ]);
 }
 
-sub blog_posts :Chained('pages') :PathPart('blog/posts') :Args(0) {
+sub blog_posts :Chained('pages') :PathPart('blog/posts') :Args(0) :AppKitFeature('Blogs') {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
     my $blog = $c->stash->{page};
@@ -146,7 +145,7 @@ sub blog_posts :Chained('pages') :PathPart('blog/posts') :Args(0) {
 
 #-------------------------------------------------------------------------------
 
-sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) :AppKitForm {
+sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) :AppKitForm :AppKitFeature('Pages - Write Access') {
     my ($self, $c) = @_;
     my $site       = $c->stash->{site};
 
@@ -270,7 +269,7 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
 
 #-------------------------------------------------------------------------------
 
-sub clone_page :Chained('pages') :PathPart('clone') :Args(0) {
+sub clone_page :Chained('pages') :PathPart('clone') :Args(0) :AppKitFeature('Pages - Write Access') {
     my ($self, $c) = @_;
     my $page = $c->stash->{page};
     my $site = $c->stash->{site};
@@ -291,7 +290,7 @@ sub clone_page :Chained('pages') :PathPart('clone') :Args(0) {
 
 #-------------------------------------------------------------------------------
 
-sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm {
+sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm :AppKitFeature('Pages - Write Access') {
     my ($self, $c) = @_;
     my $page = $c->stash->{page};
     my $site = $c->stash->{site};
@@ -480,7 +479,7 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
-sub delete_page :Chained('pages') :PathPart('delete') :Args(0) :AppKitForm {
+sub delete_page :Chained('pages') :PathPart('delete') :Args(0) :AppKitForm :AppKitFeature('Pages - Write Access') {
     my ($self, $c) = @_;
 
     my $page = $c->stash->{page};
@@ -516,7 +515,7 @@ sub delete_page :Chained('pages') :PathPart('delete') :Args(0) :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
-sub save_preview :Chained('page_contents') :Args(0) {
+sub save_preview :Chained('page_contents') :Args(0) :AppKitFeature('Pages - Write Access') {
     my ($self, $c)   = @_;
     my $site         = $c->stash->{site};
     my $page_content = $c->stash->{page_content};
@@ -546,7 +545,7 @@ sub save_preview :Chained('page_contents') :Args(0) {
 
 #-------------------------------------------------------------------------------
 
-sub cancel_preview :Chained('pages') :Args(0) {
+sub cancel_preview :Chained('pages') :Args(0) :AppKitFeature('Pages - Read Access') {
     my ($self, $c, $page_id) = @_;
 
     my $site = $c->stash->{site};
@@ -561,7 +560,7 @@ sub cancel_preview :Chained('pages') :Args(0) {
 
 #-------------------------------------------------------------------------------
 
-sub delete_attachment :Local :Args(1) :AppKitForm {
+sub delete_attachment :Local :Args(1) :AppKitForm :AppKitFeature('Pages - Write Access') {
     my ($self, $c, $attachment_id) = @_;
     
     $self->add_final_crumb($c, 'Delete attachment');
@@ -589,7 +588,7 @@ sub delete_attachment :Local :Args(1) :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
-sub edit_attachment :Local :Args(1) :AppKitForm {
+sub edit_attachment :Local :Args(1) :AppKitForm :AppKitFeature('Pages - Write Access') {
     my ($self, $c, $attachment_id) = @_;
     
     $self->add_final_crumb($c, 'Delete attachment');
@@ -647,7 +646,7 @@ sub edit_attachment :Local :Args(1) :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
-sub revisions :Chained('pages') :Args(0) {
+sub revisions :Chained('pages') :Args(0) :AppKitFeature('Pages - Read Access') {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
     my $page = $c->stash->{page};
@@ -662,7 +661,7 @@ sub revisions :Chained('pages') :Args(0) {
 
 #-------------------------------------------------------------------------------
 
-sub restore :Chained('page_contents') :Args(0) {
+sub restore :Chained('page_contents') :Args(0) :AppKitFeature('Pages - Write Access') {
     my ($self, $c) = @_;
     my $site         = $c->stash->{site};
     my $page_content = $c->stash->{page_content};
@@ -786,7 +785,7 @@ sub update_attachment_attributes
 
 #-------------------------------------------------------------------------------
 
-sub draft_delete :Local :Path('draft/delete') :Args(1) {
+sub draft_delete :Local :Path('draft/delete') :Args(1) :AppKitFeature('Pages - Write Access') {
     my ($self, $c, $draft_id) = @_;
     my $draft = $c->model('CMS::PageDraft')->find($draft_id);
     my $page;
@@ -808,16 +807,7 @@ sub draft_delete :Local :Path('draft/delete') :Args(1) {
 
 #-------------------------------------------------------------------------------
 
-sub cms_preview :Local :Args(1) {
-    my ($self, $c, $url) = @_;
-    my $base = $c->config->{CMSView}->{url};
-    $c->res->redirect("${base}/${url}");
-    $c->detach;
-}
-
-#-------------------------------------------------------------------------------
-
-sub preview :Chained('page_contents') :Args(0) {
+sub preview :Chained('page_contents') :Args(0) :AppKitFeature('Pages - Read Access') {
     my ($self, $c)   = @_;
     my $site         = $c->stash->{site};
     my $page_content = $c->stash->{page_content};
@@ -869,18 +859,18 @@ sub preview :Chained('page_contents') :Args(0) {
         asset => sub {
             my $id = shift;
             if (looks_like_number $id) {
-                if (my $asset = $asset_rs->available($site->id)->find({id => $id})) {
+                if (my $asset = $c->model('CMS::Asset')->available($site->id)->find({id => $id})) {
                     return $c->uri_for($self->action_for('_asset'), $asset->id, $asset->filename);
                 }
             }
             else {
                 # not a number? then we may be looking for a logo!
                 if ($id eq 'logo') {
-                    if (my $logo = $asset_rs->available($site->id)->find({ description => 'Logo' })) {
+                    if (my $logo = $c->model('CMS::Asset')->available($site->id)->find({ description => 'Logo' })) {
                         return $c->uri_for($self->action_for('_asset'), $logo->id, $logo->filename);
                     }
                     else {
-                        if ($logo = $asset_rs->available($site->id)->find({ global => 1, description => 'Logo' })) {
+                        if ($logo = $c->model('CMS::Asset')->available($site->id)->find({ global => 1, description => 'Logo' })) {
                             return $c->uri_for($self->action_for('_asset'), $logo->id, $logo->filename);
                         }
                     }
@@ -919,7 +909,20 @@ sub preview :Chained('page_contents') :Args(0) {
             return $c->uri_for($self->action_for('_thumbnail'), @_);
         },
     };
-    
+
+    # load any plugins
+    my @plugins = $c->model('CMS::Plugin')->search({ status => 'active' })->all;
+    if (scalar @plugins > 0) {
+      {
+        no strict 'refs';
+        foreach my $plugin (@plugins) {
+          my $code = $plugin->code;
+          $code !~ s/[^[:ascii:]]//g;
+          $c->stash->{cms}->{plugin}->{ $plugin->action } = sub { eval($code) };
+        }
+      }
+    }
+
     if (my $template = $page->template->content) {
         if ($c->req->query_params->{panel}) {
             $template .= q{
@@ -943,10 +946,10 @@ sub preview :Chained('page_contents') :Args(0) {
     }
     
     ##$c->forward($c->view('CMS'));
-    $c->forward('AppKitTT');
+    $c->view('CMS::Preview');
 }
 
-sub _asset :Local :Args(2) {
+sub _asset :Path('/_asset') :Args(2) {
     my ($self, $c, $asset_id, $filename) = @_;
     
     if (my $asset = $c->model('CMS::Asset')->published->find({id => $asset_id})) {
@@ -958,7 +961,7 @@ sub _asset :Local :Args(2) {
     }
 }
 
-sub _attachment :Local :Args(2) {
+sub _attachment :Path('/_attachment') :Args(2) {
     my ($self, $c, $attachment_id, $filename) = @_;
     
     if (my $attachment = $c->model('CMS::Attachment')->find({id => $attachment_id})) {
@@ -970,7 +973,7 @@ sub _attachment :Local :Args(2) {
     }
 }
 
-sub _thumbnail :Local :Args(2) {
+sub _thumbnail :Path('/_thumbnail') :Args(2) {
     my ($self, $c, $type, $id) = @_;
     
     given ($type) {

@@ -7,7 +7,7 @@ with 'OpusVL::AppKit::RolesFor::Controller::GUI';
  
 __PACKAGE__->config
 (
-    appkit_name                 => 'CMS',
+    appkit_name                 => 'Templates',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
     appkit_css                  => [qw</static/js/redactor/redactor.css /static/css/bootstrap.css /static/js/codemirror/codemirror.css /static/js/codemirror/util/dialog.css>],
@@ -38,11 +38,11 @@ sub auto :Private {
 
 #-------------------------------------------------------------------------------
 
-sub base :Chained('/') :PathPart('') :CaptureArgs(0) {
+sub base :Chained('/') :PathPart('') :CaptureArgs(0) :AppKitFeature('Templates - Read Access') {
     my ($self, $c, $site_id) = @_;  
 }
 
-sub templates :Chained('base') :PathPart('template') :CaptureArgs(2) {
+sub templates :Chained('base') :PathPart('template') :CaptureArgs(2) :AppKitFeature('Templates - Read Access') {
     my ($self, $c, $site_id, $template_id)  = @_;
     $c->forward('/modules/cms/sites/base', [ $site_id ]);
 
@@ -63,7 +63,7 @@ sub templates :Chained('base') :PathPart('template') :CaptureArgs(2) {
 
 #-------------------------------------------------------------------------------
 
-sub index :Chained('/modules/cms/sites/base') :PathPart('list') :Args(0) {
+sub index :Chained('/modules/cms/sites/base') :PathPart('template/list') :Args(0) :AppKitFeature('Templates - Read Access') {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
     if ($site) {
@@ -82,7 +82,7 @@ sub index :Chained('/modules/cms/sites/base') :PathPart('list') :Args(0) {
 
 #-------------------------------------------------------------------------------
 
-sub new_template :Chained('/modules/cms/sites/base') :Args(0) :PathPart('template/new') :AppKitForm {
+sub new_template :Chained('/modules/cms/sites/base') :Args(0) :PathPart('template/new') :AppKitForm :AppKitFeature('Templates - Write Access') {
     my ($self, $c) = @_;
 
     push @{ $c->stash->{breadcrumbs} }, {
@@ -113,7 +113,7 @@ sub new_template :Chained('/modules/cms/sites/base') :Args(0) :PathPart('templat
 
 #-------------------------------------------------------------------------------
 
-sub edit_template :Chained('templates') :PathPart('edit') :Args(0) :AppKitForm {
+sub edit_template :Chained('templates') :PathPart('edit') :Args(0) :AppKitForm :AppKitFeature('Templates - Write Access') {
     my ($self, $c) = @_;
 
     push @{ $c->stash->{breadcrumbs} }, {

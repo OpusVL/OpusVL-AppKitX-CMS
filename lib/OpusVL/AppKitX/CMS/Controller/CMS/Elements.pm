@@ -7,7 +7,7 @@ with 'OpusVL::AppKit::RolesFor::Controller::GUI';
  
 __PACKAGE__->config
 (
-    appkit_name                 => 'CMS',
+    appkit_name                 => 'Elements',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
     appkit_css                  => [qw</static/js/redactor/redactor.css /static/css/bootstrap.css /static/js/codemirror/codemirror.css /static/js/codemirror/util/dialog.css>],
@@ -33,11 +33,11 @@ sub auto :Private {
 
 #-------------------------------------------------------------------------------
 
-sub base :Chained('/') :PathPart('elements') :CaptureArgs(0) {
+sub base :Chained('/') :PathPart('elements') :CaptureArgs(0) :AppKitFeature('Elements - Read Access') {
     my ($self, $c) = @_;
 }
 
-sub elements :Chained('base') :PathPart('element') :CaptureArgs(2) {
+sub elements :Chained('base') :PathPart('element') :CaptureArgs(2) :AppKitFeature('Elements - Read Access') {
     my ($self, $c, $site_id, $element_id) = @_;
     $c->forward('/modules/cms/sites/base', [ $site_id ]);
 
@@ -54,7 +54,7 @@ sub elements :Chained('base') :PathPart('element') :CaptureArgs(2) {
 
 #-------------------------------------------------------------------------------
 
-sub index :Chained('/modules/cms/sites/base') :PathPart('element/list') :Args(0) {
+sub index :Chained('/modules/cms/sites/base') :PathPart('element/list') :Args(0) :AppKitFeature('Elements - Read Access') {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
 
@@ -70,7 +70,7 @@ sub index :Chained('/modules/cms/sites/base') :PathPart('element/list') :Args(0)
 
 #-------------------------------------------------------------------------------
 
-sub new_element :Chained('/modules/cms/sites/base') :PathPart('element/new') :Args(0) :AppKitForm {
+sub new_element :Chained('/modules/cms/sites/base') :PathPart('element/new') :Args(0) :AppKitForm :AppKitFeature('Elements - Write Access') {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
 
@@ -93,7 +93,7 @@ sub new_element :Chained('/modules/cms/sites/base') :PathPart('element/new') :Ar
 
 #-------------------------------------------------------------------------------
 
-sub edit_element :Chained('elements') :PathPart('edit') :Args(0) :AppKitForm {
+sub edit_element :Chained('elements') :PathPart('edit') :Args(0) :AppKitForm :AppKitFeature('Elements - Write Access') {
     my ($self, $c) = @_;
     my $element = $c->stash->{element};
     my $site    = $c->stash->{site};
@@ -157,7 +157,7 @@ sub edit_element :Chained('elements') :PathPart('edit') :Args(0) :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
-sub delete_element :Chained('elements') :PathPart('delete') :Args(0) :AppKitForm {
+sub delete_element :Chained('elements') :PathPart('delete') :Args(0) :AppKitForm :AppKitFeature('Elements - Write Access') {
     my ($self, $c, $element_id) = @_;
     my $element = $c->stash->{element};
     my $site    = $c->stash->{site};
@@ -178,7 +178,7 @@ sub delete_element :Chained('elements') :PathPart('delete') :Args(0) :AppKitForm
 
 #-------------------------------------------------------------------------------
 
-sub delete_element_attribute :Chained('elements') :PathPart('delete/element/attribute') :Args(1) {
+sub delete_element_attribute :Chained('elements') :PathPart('delete/element/attribute') :Args(1) :AppKitFeature('Elements - Write Access') {
     my ($self, $c, $attr_id) = @_;
     my $element = $c->stash->{element};
     my $site    = $c->stash->{site};

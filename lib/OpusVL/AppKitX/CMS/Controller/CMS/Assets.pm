@@ -7,7 +7,7 @@ with 'OpusVL::AppKit::RolesFor::Controller::GUI';
  
 __PACKAGE__->config
 (
-    appkit_name                 => 'CMS',
+    appkit_name                 => 'Assets',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
     appkit_css                  => ['/static/css/bootstrap.css'],
@@ -34,11 +34,11 @@ sub auto :Private {
 
 #-------------------------------------------------------------------------------
 
-sub base :Chained('/') :PathPart('assets') :CaptureArgs(0) {
+sub base :Chained('/') :PathPart('assets') :CaptureArgs(0) :AppKitFeature('Assets - Read Access') {
     my ($self, $c) = @_;
 }
 
-sub assets :Chained('base') :PathPart('asset') :CaptureArgs(2) {
+sub assets :Chained('base') :PathPart('asset') :CaptureArgs(2) :AppKitFeature('Assets - Read Access') {
     my ($self, $c, $site_id, $asset_id) = @_;
     $c->forward('/modules/cms/sites/base', [ $site_id ]);
 
@@ -56,7 +56,7 @@ sub assets :Chained('base') :PathPart('asset') :CaptureArgs(2) {
 
 #-------------------------------------------------------------------------------
 
-sub index :Chained('/modules/cms/sites/base') :PathPart('assets/list') :Args(0) {
+sub index :Chained('/modules/cms/sites/base') :PathPart('assets/list') :Args(0) :AppKitFeature('Assets - Read Access') {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
 
@@ -73,7 +73,7 @@ sub index :Chained('/modules/cms/sites/base') :PathPart('assets/list') :Args(0) 
 
 #-------------------------------------------------------------------------------
 
-sub upload_asset :Chained('/modules/cms/sites/base') :PathPart('assets/upload') :Args(0) {
+sub upload_asset :Chained('/modules/cms/sites/base') :PathPart('assets/upload') :Args(0) :AppKitFeature('Assets - Write Access') {
     my ($self, $c) = @_;
 
     $self->add_final_crumb($c, "Upload assets");
@@ -82,7 +82,7 @@ sub upload_asset :Chained('/modules/cms/sites/base') :PathPart('assets/upload') 
 
 #-------------------------------------------------------------------------------
 
-sub new_asset :Chained('/modules/cms/sites/base') :PathPart('assets/new') :Args(0) :AppKitForm {
+sub new_asset :Chained('/modules/cms/sites/base') :PathPart('assets/new') :Args(0) :AppKitForm :AppKitFeature('Assets - Write Access') {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
 
@@ -113,7 +113,7 @@ sub new_asset :Chained('/modules/cms/sites/base') :PathPart('assets/new') :Args(
 
 #-------------------------------------------------------------------------------
 
-sub edit_asset :Chained('assets') :PathPart('edit') :Args(0) :AppKitForm {
+sub edit_asset :Chained('assets') :PathPart('edit') :Args(0) :AppKitForm :AppKitFeature('Assets - Write Access') {
     my ($self, $c) = @_;
     my $site  = $c->stash->{site};
     my $asset = $c->stash->{asset};
@@ -184,7 +184,7 @@ sub edit_asset :Chained('assets') :PathPart('edit') :Args(0) :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
-sub upload_assets :Chained('/modules/cms/sites/base') :Args(0) {
+sub upload_assets :Chained('/modules/cms/sites/base') :Args(0) :AppKitFeature('Assets - Write Access') {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
     
@@ -200,7 +200,7 @@ sub upload_assets :Chained('/modules/cms/sites/base') :Args(0) {
     }
 }
 
-sub upload_assets_global :Chained('/modules/cms/sites/base') :Args(0) {
+sub upload_assets_global :Chained('/modules/cms/sites/base') :Args(0) :AppKitFeature('Assets - Write Access') {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
     
@@ -220,7 +220,7 @@ sub upload_assets_global :Chained('/modules/cms/sites/base') :Args(0) {
 
 #-------------------------------------------------------------------------------
 
-sub delete_asset :Chained('assets') :PathPart('delete') :Args(0) :AppKitForm {
+sub delete_asset :Chained('assets') :PathPart('delete') :Args(0) :AppKitForm :AppKitFeature('Assets - Write Access') {
     my ($self, $c) = @_;
     my $site  = $c->stash->{site};
     my $asset = $c->stash->{asset};

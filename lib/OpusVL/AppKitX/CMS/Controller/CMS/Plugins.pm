@@ -8,7 +8,7 @@ with 'OpusVL::AppKit::RolesFor::Controller::GUI';
  
 __PACKAGE__->config
 (
-    appkit_name                 => 'CMS',
+    appkit_name                 => 'Plugins',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
     appkit_css                  => [qw</static/js/redactor/redactor.css /static/css/bootstrap.css /static/js/codemirror/codemirror.css>],
@@ -36,7 +36,7 @@ sub auto :Private {
 
 #-------------------------------------------------------------------------------
 
-sub base :Chained('/') :PathPart('plugin') :CaptureArgs(1) {
+sub base :Chained('/') :PathPart('plugin') :CaptureArgs(1) :AppKitFeature('Plugin - Read Access') {
     my ($self, $c, $plugin_id) = @_;
     my $plugin = $c->model('CMS::Plugin')->find($plugin_id);
 
@@ -51,7 +51,7 @@ sub base :Chained('/') :PathPart('plugin') :CaptureArgs(1) {
 
 #-------------------------------------------------------------------------------
 
-sub index :Local :Args(0) :NavigationName('Plugins') {
+sub index :Local :Args(0) :NavigationName('Plugins') :AppKitFeature('Plugin - Read Access') {
     my ($self, $c) = @_;
     my $plugins = $c->model('CMS::Plugin');
     if ($plugins->count > 0) {
@@ -61,7 +61,7 @@ sub index :Local :Args(0) :NavigationName('Plugins') {
 
 #-------------------------------------------------------------------------------
 
-sub enable_plugin :Chained('base') :PathPart('enable') :Args(0) {
+sub enable_plugin :Chained('base') :PathPart('enable') :Args(0) :AppKitFeature('Plugin - Read Access') {
     my ($self, $c) = @_;
     my $plugin = $c->stash->{plugin};
     $plugin->update({ status => 'active' });
@@ -70,7 +70,7 @@ sub enable_plugin :Chained('base') :PathPart('enable') :Args(0) {
     $c->detach;
 }
 
-sub disable_plugin :Chained('base') :PathPart('disable') :Args(0) {
+sub disable_plugin :Chained('base') :PathPart('disable') :Args(0) :AppKitFeature('Plugin - Read Access') {
     my ($self, $c) = @_;
     my $plugin = $c->stash->{plugin};
     $plugin->update({ status => 'disabled' });
@@ -81,7 +81,7 @@ sub disable_plugin :Chained('base') :PathPart('disable') :Args(0) {
 
 #-------------------------------------------------------------------------------
 
-sub new_plugin :Local :PathPart('plugin/new') :Args(0) :AppKitForm {
+sub new_plugin :Local :PathPart('plugin/new') :Args(0) :AppKitForm :AppKitFeature('Plugin - Write Access') {
     my ($self, $c) = @_;
     my $form       = $c->stash->{form};
 
@@ -107,7 +107,7 @@ sub new_plugin :Local :PathPart('plugin/new') :Args(0) :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
-sub edit_plugin :Chained('base') :PathPart('edit') :Args(0) :AppKitForm {
+sub edit_plugin :Chained('base') :PathPart('edit') :Args(0) :AppKitForm :AppKitFeature('Plugin - Write Access') {
     my ($self, $c) = @_;
     my $plugin     = $c->stash->{plugin};
     my $form       = $c->stash->{form};

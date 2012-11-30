@@ -30,6 +30,11 @@ function delete_site(site_id, site_name) {
 						  	<li class="divider"></li>
 						    <li><a href="[% c.uri_for(c.controller.action_for('edit'), [ site.site.id ]) %]"><i class="icon icon-pencil"></i> Edit</a></li>
 						    <li><a onclick="delete_site([% site.site.id %], '[% site.site.name %]');" href="javascript:void(0);"><i class="icon icon-remove"></i> Delete</a></li>
+						    <li class="divider"></li>
+						    <li><a href="[% c.uri_for(c.controller('Modules::CMS::Templates').action_for('index'), [ site.site.id ]) %]"><i class="icon icon-book"></i> View Templates</a></li>
+						    <li><a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('index'), [ site.site.id ]) %]"><i class="icon icon-file"></i> View Pages</a></li>
+						    <li><a href="[% c.uri_for(c.controller('Modules::CMS::Elements').action_for('index'), [ site.site.id ]) %]"><i class="icon icon-tint"></i> View Elements</a></li>
+						    <li><a href="[% c.uri_for(c.controller('Modules::CMS::Assets').action_for('index'), [ site.site.id ]) %]"><i class="icon icon-briefcase"></i> View Assets</a></li>
 						  </ul>
 						</div>
 					</td>

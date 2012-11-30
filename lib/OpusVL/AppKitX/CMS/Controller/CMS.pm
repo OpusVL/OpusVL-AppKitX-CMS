@@ -10,7 +10,7 @@ __PACKAGE__->config
     appkit_name                 => 'CMS',
     # appkit_icon                 => 'static/images/flagA.jpg',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
-    appkit_js                     => ['/static/js/nicEdit.js', '/static/js/cms.js'],
+    appkit_js                     => ['/static/js/cms.js'],
     # appkit_method_group         => 'Extension A',
     # appkit_method_group_order   => 2,
     # appkit_shared_module        => 'ExtensionA',
@@ -36,17 +36,7 @@ sub home
     my ($self, $c) = @_;
 }
 
-sub confirm :Local :Args(2) {
-    my ($self, $c, $action, $table) = @_;
-    for (lc $action) {
-        if (/^delete$/) {
-            if ($table eq 'sites') {
-
-            }
-        }
-    }
-}
-sub portlet_recent_pages : PortletName('Most Recent Pages') {
+sub portlet_recent_pages : PortletName('Most Recent Pages') :AppKitFeature('Portlets') {
     my ($self, $c) = @_;
     my $sites = $c->model('CMS::SitesUser')->search({ user_id => $c->user->id });
 
@@ -72,27 +62,9 @@ sub portlet_recent_pages : PortletName('Most Recent Pages') {
     }
 
     $c->stash(cms_recent_pages => \@user_pages);
-
-    #if ($sites->count > 0) {
-    #    my $pages = $sites->search({
-    #        #'pages.created' => {
-    #        #    -between => [
-    #        #        DateTime->now(),
-    #        #        DateTime->now()->subtract(days => 5),
-    #        #    ]
-    #        #}
-    #    }, {
-    #        prefetch    => 'site',
-    #        rows        => 5,
-    #        order_by    => { -desc => [ 'pages.created' ] },
-    #    });
-#
-    #    die [ $pages->all ]->[0]->site;
-    #    $c->stash->{cms_recent_pages} = [ $pages->all ];
-    #}
 }
 
-sub portlet_current_site : PortletName('Selected Site') {
+sub portlet_current_site : PortletName('Sites') :AppKitFeature('Portlets') {
     my ($self, $c) = @_;
     my $sites      = $c->model('CMS::SitesUser')->search({ user_id => $c->user->id });
     
@@ -105,7 +77,7 @@ sub portlet_current_site : PortletName('Selected Site') {
     }
 }
 
-sub redirect_url :Local :Args() {
+sub redirect_url :Local :Args() :AppKitFeature('Redirect URL') {
     my ($self, $c, $controller, $action, @args) = @_;
     $controller = ucfirst($controller);
     if (@args) {
@@ -119,19 +91,9 @@ sub redirect_url :Local :Args() {
     }
 }
 
-sub forget_site :Local :Args(0) {
-    my ($self, $c) = @_;
-    delete $c->stash->{site};
-    delete $c->session->{site};
-    delete $c->session->{selected_domain};
-    $c->res->redirect($c->uri_for($c->controller('Sites')->action_for('index')));
-    $c->detach;
-}
-
-sub site_validate :Action :Args(0) {
+sub site_validate :Action :Args(0) :AppKitFeature('Validate Site') {
     my ($self, $c) = @_;
     my $site   = $c->stash->{site};
-    #my $domain = $c->stash->{selected_domain};
     if (! $site) {
         $c->flash->{error_msg} = "Please select a site before proceeding";
         $c->res->redirect($c->uri_for($c->controller('Sites')->action_for('index')));

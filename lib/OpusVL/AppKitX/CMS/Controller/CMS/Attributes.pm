@@ -8,7 +8,7 @@ with 'OpusVL::AppKit::RolesFor::Controller::GUI';
  
 __PACKAGE__->config
 (
-    appkit_name                 => 'CMS',
+    appkit_name                 => 'Attributes',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
     appkit_shared_module        => 'CMS',
@@ -44,6 +44,7 @@ sub index
     : Args(0)
     : NavigationName('Attributes')
     : AppKitForm
+    : AppKitFeature('Attributes - Read Access')
 {
     my($self, $c) = @_;
     
@@ -184,6 +185,7 @@ sub value_chain
     : Chained('/')
     : PathPart('admin/globalfields')
     : CaptureArgs(2)
+    : AppKitFeature('Attributes - Read Access')
 {
     my ($self, $c, $object_type, $code) = @_;
 
@@ -212,6 +214,7 @@ sub edit_values
     : Chained('value_chain')
     : PathPart('edit')
     : AppKitForm
+    : AppKitFeature('Attributes - Write Access')
 {
     my ($self, $c) = @_;
 

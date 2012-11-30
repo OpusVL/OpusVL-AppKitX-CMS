@@ -10,7 +10,7 @@ with 'OpusVL::AppKit::RolesFor::Controller::GUI';
  
 __PACKAGE__->config
 (
-    #appkit_name                 => 'CMS',
+    appkit_name                 => 'Domains',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
     appkit_css                  => [ '/static/css/bootstrap.css' ],
@@ -22,11 +22,11 @@ __PACKAGE__->config
 
 #-------------------------------------------------------------------------------
 
-sub base :Chained('/') :PathPart('domains') :CaptureArgs(0) {
+sub base :Chained('/') :PathPart('domains') :CaptureArgs(0) :AppKitFeature('Domains - Read Access') {
     my ($self, $c) = @_;
 }
 
-sub domains :Chained('base') :PathPart('domain') :CaptureArgs(2) {
+sub domains :Chained('base') :PathPart('domain') :CaptureArgs(2) :AppKitFeature('Domains - Read Access') {
     my ($self, $c, $site_id, $domain) = @_;
     $c->forward('Modules::CMS::Sites', 'base', [ $site_id ]);
 
@@ -49,13 +49,13 @@ sub domains :Chained('base') :PathPart('domain') :CaptureArgs(2) {
 
 #-------------------------------------------------------------------------------
 
-sub index :Chained('base') :Args(0) {
+sub index :Chained('base') :Args(0) :AppKitFeature('Domains - Read Access') {
     my ($self, $c) = @_;
 }
 
 #-------------------------------------------------------------------------------
 
-sub manage :Chained('/modules/cms/sites/base') :PathPart('domains/manage') :Args(0) {
+sub manage :Chained('/modules/cms/sites/base') :PathPart('domains/manage') :Args(0) :AppKitFeature('Domains - Read Access') {
     my ($self, $c) = @_;
     my $site       = $c->stash->{site};
     my $domains    = $site->master_domains;
@@ -67,7 +67,7 @@ sub manage :Chained('/modules/cms/sites/base') :PathPart('domains/manage') :Args
 
 #-------------------------------------------------------------------------------
 
-sub edit :Chained('domains') :Args(0) :PathPart('edit') :AppKitForm {
+sub edit :Chained('domains') :Args(0) :PathPart('edit') :AppKitForm :AppKitFeature('Domains - Write Access') {
     my ($self, $c) = @_;
     my $form       = $c->stash->{form};
     my $site       = $c->stash->{site};
@@ -153,7 +153,7 @@ sub edit :Chained('domains') :Args(0) :PathPart('edit') :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
-sub add_master :Chained('/modules/cms/sites/base') :Args(0) :PathPart('add/master') :AppKitForm {
+sub add_master :Chained('/modules/cms/sites/base') :Args(0) :PathPart('add/master') :AppKitForm :AppKitFeature('Domains - Write Access') {
     my ($self, $c)  = @_;
     my $form        = $c->stash->{form};
     my $site        = $c->stash->{site};
@@ -186,7 +186,7 @@ sub add_master :Chained('/modules/cms/sites/base') :Args(0) :PathPart('add/maste
 
 #-------------------------------------------------------------------------------
 
-sub delete_domain :Chained('domains') :PathPart('delete') :Args(0) {
+sub delete_domain :Chained('domains') :PathPart('delete') :Args(0) :AppKitFeature('Domains - Write Access') {
     my ($self, $c) = @_;
     my $domain = $c->stash->{domain};
     my $site   = $c->stash->{site};

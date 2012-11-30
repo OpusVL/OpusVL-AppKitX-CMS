@@ -7,7 +7,7 @@ with 'OpusVL::AppKit::RolesFor::Controller::GUI';
  
 __PACKAGE__->config
 (
-    appkit_name                 => 'CMS',
+    appkit_name                 => 'Sites',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
     appkit_css                  => [ '/static/css/bootstrap.css' ],
@@ -33,7 +33,7 @@ sub auto :Private {
 
 #-------------------------------------------------------------------------------
 
-sub index :Path :Args(0) :NavigationName('Sites') {
+sub index :Path :Args(0) :NavigationName('Sites') :AppKitFeature('Site - Read Access') {
     my ($self, $c) = @_;
     my $sites = [ $c->model('CMS::SitesUser')
         ->search({ user_id => $c->user->id })->all ];
@@ -43,7 +43,7 @@ sub index :Path :Args(0) :NavigationName('Sites') {
 
 #-------------------------------------------------------------------------------
 
-sub add :Local :Args(0) :AppKitForm {
+sub add :Local :Args(0) :AppKitForm :AppKitFeature('Site - Write Access'){
     my ($self, $c) = @_;
     my $form       = $c->stash->{form};
     my $users      = [ $c->model('CMS::User')->all ];
@@ -103,7 +103,7 @@ sub add :Local :Args(0) :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
-sub base :Chained('/') :PathPart('site') :CaptureArgs(1) {
+sub base :Chained('/') :PathPart('site') :CaptureArgs(1) :AppKitFeature('Site - Read Access') {
     my ($self, $c, $site_id) = @_;
     my $site = $c->model('CMS::Site')->search({ id => $site_id, status => 'active' })->first;
     unless ($site) {
@@ -130,7 +130,7 @@ sub base :Chained('/') :PathPart('site') :CaptureArgs(1) {
 
 #-------------------------------------------------------------------------------
 
-sub delete_site :Local :Args(1) {
+sub delete_site :Local :Args(1) :AppKitFeature('Site - Write Access') {
     my ($self, $c, $site_id) = @_;
     
     if (my $site = $c->model('CMS::Site')->find($site_id)) {
@@ -151,7 +151,7 @@ sub delete_site :Local :Args(1) {
 
 #-------------------------------------------------------------------------------
 
-sub edit :Chained('base') :PathPart('edit') :Args(0) :AppKitForm {
+sub edit :Chained('base') :PathPart('edit') :Args(0) :AppKitForm :AppKitFeature('Site - Write Access') {
     my ($self, $c)  = @_;
     my $form        = $c->stash->{form};
     my $site        = $c->stash->{site};
@@ -201,7 +201,7 @@ sub edit :Chained('base') :PathPart('edit') :Args(0) :AppKitForm {
 
 #-------------------------------------------------------------------------------
 
-sub manage_attributes :Chained('base') :PathPart('attributes/manage') :Args(0) :AppKitForm {
+sub manage_attributes :Chained('base') :PathPart('attributes/manage') :Args(0) :AppKitForm :AppKitFeature('Site - Write Access') {
     my ($self, $c) = @_;
     my $site = $c->stash->{site};
     my $form = $c->stash->{form};
@@ -252,7 +252,7 @@ sub manage_attributes :Chained('base') :PathPart('attributes/manage') :Args(0) :
 
 #-------------------------------------------------------------------------------
 
-sub delete_attribute :Chained('base') :PathPart('attribute/delete') :Args(1) {
+sub delete_attribute :Chained('base') :PathPart('attribute/delete') :Args(1) :AppKitFeature('Site - Write Access') {
     my ($self, $c, $attr_id) = @_;
     my $site = $c->stash->{site};
 
