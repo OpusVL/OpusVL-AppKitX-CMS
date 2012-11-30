@@ -122,6 +122,7 @@ sub base :Chained('/') :PathPart('site') :CaptureArgs(1) {
         site        => $site,
         elements    => [ $c->model('CMS::Element')->available($site_id)->all ],
         assets      => [ $c->model('CMS::Asset')->available($site_id)->all ],
+        attributes  => [ $site->site_attributes->all ],
         pages       => [ $site->pages->published->all ],
         attachments => [ $site->pages->search_related('attachments', { 'attachments.status' => 'published' })->all ],
     );

@@ -97,7 +97,11 @@ sub portlet_current_site : PortletName('Selected Site') {
     my $sites      = $c->model('CMS::SitesUser')->search({ user_id => $c->user->id });
     
     if ($sites->count > 0) {
-        $c->stash(sites => [ $c->model('CMS::SitesUser')->search({ user_id => $c->user->id })->all ]);
+        my $active_sites = $sites->search_related('site', { status => 'active' });
+        $c->stash(
+            sites        => [ $sites->all ],
+            active_sites => $active_sites->count,
+        );
     }
 }
 

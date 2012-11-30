@@ -1,5 +1,5 @@
-[% IF sites.size > 0 %]
-	<p>You have access to <strong>[% sites.size %]</strong> site[% IF sites.size > 1 %]s[% END %]. <a href="[% c.uri_for(c.controller('Modules::CMS::Sites').action_for('index')) %]">View them now</a></p>
+[% IF active_sites > 0 %]
+	<p>You have access to <strong>[% active_sites %]</strong> site[% IF active_sites > 1 %]s[% END %]. <a href="[% c.uri_for(c.controller('Modules::CMS::Sites').action_for('index')) %]">View them now</a></p>
 [% ELSE %]
 	<p>You have no sites created. <a href="[% c.uri_for(c.controller('Modules::CMS::Sites').action_for('add')) %]">Add one now</a></p>
 [% END %]

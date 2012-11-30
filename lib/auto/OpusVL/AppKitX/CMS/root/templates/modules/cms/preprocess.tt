@@ -24,6 +24,11 @@
         background-position: center;
     }
 
+    body .redactor_toolbar li a.redactor_btn_attributes {
+        background: url([% c.uri_for('/static/js/redactor/img/attributes.png') %]) no-repeat;
+        background-position: center;
+    }
+
     body .redactor_toolbar li a.redactor_btn_html {
         background: url([% c.uri_for('/static/js/redactor/img/redactor-gui-btn.png') %]) no-repeat;
         background-position: center;
@@ -70,24 +75,26 @@
 
 <div id="pages" style="display: none;">
     <div id="redactor_modal_content">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                [% FOREACH p IN pages %]
+        <div style="overflow:scroll; height:400px">
+            <table class="table">
+                <thead>
                     <tr>
-                        <td>[% p.id %]</td>
-                        <td><a rel="[% p.id %]" href="javascript:void(0);" class="insert-page">[% p.title %]</a></td>
-                        <td>[% p.description %]</td>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Description</th>
                     </tr>
-                [% END %]
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    [% FOREACH p IN pages %]
+                        <tr>
+                            <td>[% p.id %]</td>
+                            <td><a rel="[% p.id %]" href="javascript:void(0);" class="insert-page">[% p.title %]</a></td>
+                            <td>[% p.description %]</td>
+                        </tr>
+                    [% END %]
+                </tbody>
+            </table>
+        </div>
     </div>
     <div id="redactor_modal_footer">
         <a href="#" class="redactor_modal_btn redactor_btn_modal_close">Close</a>
@@ -191,6 +198,34 @@
     </div>
 </div>
 
+<div id="attributes" style="display: none;">
+    <div id="redactor_modal_content">
+        <div style="overflow:scroll; height:400px">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    [% FOREACH a IN attributes %]
+                        <tr>
+                            <td>[% a.id %]</td>
+                            <td><a rel="'[% a.code %]'" href="javascript:void(0);" class="insert-attribute">[% a.name %]</a></td>
+                            <td>[% a.value %]</td>
+                        </tr>
+                    [% END %]
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="redactor_modal_footer">
+        <a href="#" class="redactor_modal_btn redactor_btn_modal_close">Close</a>
+    </div>
+</div>
+
 <div id="tt-element-modal" style="display: none;">
     <div id="redactor_modal_content">
         <p><strong>Editing element</strong></p>
@@ -246,7 +281,7 @@
             convertDivs: false,
             source: source,
             focus: true,
-            buttonsAdd: ['|', 'elements', 'pages', 'assets', 'attachments'], 
+            buttonsAdd: ['|', 'elements', 'pages', 'assets', 'attachments', '|', 'attributes'], 
             buttonsCustom: {
                 insert_content: {
                     title: 'Insert Content',
@@ -307,12 +342,12 @@
                                 var id = $(this).attr('rel');
                                 if ($.editorType == 'raw') {
                                     if ($.codeMirror != null)
-                                        insertAtCaret('wysiwyg', '[\% cms.page(' + id + ') \%]');
+                                        insertAtCaret('wysiwyg', '[\% cms.page(' + id + ').url \%]');
                                     else
-                                        insertAtCaret('wysiwyg', '<span class="tt tt-page" rel="' + id + '">[\% cms.page(' + id + ') \%]</span>&nbsp;');
+                                        insertAtCaret('wysiwyg', '<span class="tt tt-page" rel="' + id + '">[\% cms.page(' + id + ').url \%]</span>&nbsp;');
                                 }
                                 else
-                                    $('#wysiwyg').insertHtml('<span class="tt tt-page" rel="' + id + '">[\% cms.page(' + id + ') \%]</span> ');
+                                    $('#wysiwyg').insertHtml('<span class="tt tt-page" rel="' + id + '">[\% cms.page(' + id + ').url \%]</span> ');
                                 obj.modalClose();
                                 obj.observeTT();
                             });
@@ -366,6 +401,29 @@
 
                         obj.modalInit('Choose an attachment...', '#attachments', 500, callback);
                     }
+                },
+
+                attributes: {
+                    title: 'Attributes', 
+                    callback: function(obj) {
+                        var callback = $.proxy(function() {
+                            $('.insert-attribute').click(function() {
+                                var id = $(this).attr('rel');
+                                if ($.editorType == 'raw') {
+                                    if ($.codeMirror != null)
+                                        insertAtCaret('wysiwyg', '[\% cms.site_attr(' + id + ') \%]');
+                                    else
+                                        insertAtCaret('wysiwyg', '<span class="tt tt-attribute" rel="' + id + '">[\% cms.site_attr(' + id + ') \%]</span>&nbsp;');
+                                }
+                                else
+                                    $('#wysiwyg').insertHtml('<span class="tt tt-attribute" rel="' + id + '">[\% cms.site_attr(' + id + ') \%]</span> ');
+                                obj.modalClose();
+                                obj.observeTT();
+                            });
+                        }, this);
+
+                        obj.modalInit('Choose an attribute...', '#attributes', 500, callback);
+                    }
                 }
             }
         };
@@ -394,6 +452,7 @@
                 indentUnit: 4,
                 tabSize: 4,
                 indentWithTabs: false,
+                lineNumbers: true,
             });
         }
 
