@@ -1,4 +1,15 @@
-@import url('http://fonts.googleapis.com/css?family=Muli');
+/*@import url('http://fonts.googleapis.com/css?family=Muli');*/
+@font-face {
+  font-family: 'Muli';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Muli'), url(/static/fonts/muli.woff) format('woff');
+}
+
+a, a:visited                    { color:#0085B0; text-decoration: underline; }
+a:active                        { color:#0085B0; text-decoration: underline; }
+a:hover                         { color:#000000; text-decoration: underline; }
+
 /*!
  * Bootstrap v2.1.1
  *
@@ -5292,10 +5303,6 @@ table.tablesorter thead tr .headerSortDown {
     box-shadow: 3px 5px 10px rgba(0,0,0,0.2);
     background: #fff;
 }
-
-a, a:visited                          { color:#0085B0; text-decoration: underline; }
-a:active                        { color:#0085B0; text-decoration: underline; }
-a:hover                         { color:#000000; text-decoration: underline; }
 
 #tooltip {
     font-size: 11px;

@@ -1,4 +1,4 @@
-package OpusVL::AppKitX::CMS::Controller::CMS::Attributes;
+package OpusVL::AppKitX::CMS::Controller::CMS::PageAttributes;
 
 use 5.14.0;
 use Moose;
@@ -8,13 +8,13 @@ with 'OpusVL::AppKit::RolesFor::Controller::GUI';
  
 __PACKAGE__->config
 (
-    appkit_name                 => 'Attributes',
+    appkit_name                 => 'Page Attributes',
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
     appkit_shared_module        => 'CMS',
     appkit_method_group         => 'Content Management',
     appkit_method_group_order   => 1,
-    #appkit_css                  => ['/static/modules/cms/cms.css'],
+    appkit_css                  => ['/static/css/bootstrap.css'],
 );
 
  
@@ -22,16 +22,11 @@ __PACKAGE__->config
 
 sub auto :Private {
     my ($self, $c) = @_;
-
-    if ($c->req->param('cancel')) {
-        $c->res->redirect($c->uri_for($c->controller->action_for('index')));
-        $c->detach;
-    }
     
-    $c->stash->{section} = 'Attributes';
+    $c->stash->{section} = 'Page Attributes';
     
     $self->add_breadcrumb($c, {
-        name    => 'Attributes',
+        name    => 'Page Attributes',
         url     => $c->uri_for( $c->controller->action_for('index'))
     });
 }
@@ -40,14 +35,15 @@ sub auto :Private {
 #-------------------------------------------------------------------------------
 
 sub index 
-    : Path
+    : Chained('/modules/cms/sites/base')
+    : PathPart('pages/attributes')
     : Args(0)
-    : NavigationName('Attributes')
     : AppKitForm
     : AppKitFeature('Attributes - Read Access')
 {
     my($self, $c) = @_;
-    
+    my $site      = $c->stash->{site};
+
     if ($c->req->param('cancel')) {
         $c->res->redirect($c->req->uri);
         $c->detach;
@@ -194,10 +190,10 @@ sub value_chain
     my $value = do {
         given ($object_type) {
             when ('page') {
-                $c->model('CMS::PageAttributeDetails')->active->find({ code => $code });
+                $c->model('CMS::PageAttributeDetail')->active->find({ code => $code });
             }
             when ('attachment') {
-                $c->model('CMS::AttachmentAttributeDetails')->active->find({ code => $code });
+                $c->model('CMS::AttachmentAttributeDetail')->active->find({ code => $code });
             }
         }
     };
@@ -246,6 +242,11 @@ sub edit_values
             tag     => 'p',
             content => 'No values have been setup.',
         });
+    }
+
+    if ($c->req->param('cancel')) {
+        #$c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $site->id ]));
+        $c->detach;
     }
 
     if($form->submitted_and_valid)

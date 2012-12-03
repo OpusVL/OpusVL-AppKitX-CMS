@@ -24,6 +24,11 @@ sub auto :Private {
         $c->detach;
     }
 
+    push @{$c->stash->{breadcrumbs}}, {
+        name => 'CMS',
+        url  => $c->uri_for($c->controller('Modules::CMS::Sites')->action_for('index')),
+    };
+
     1;
 }
 

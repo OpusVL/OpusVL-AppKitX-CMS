@@ -261,8 +261,8 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
                 $c->detach;
             }
         }
-        my $redirect_page = $c->req->query_params->{type} eq 'blog' ? 'blogs' : 'index';
-        $c->res->redirect($c->uri_for($c->controller->action_for($redirect_page), [ $site->id ]));
+
+        $c->res->redirect($c->uri_for($c->controller->action_for('edit_page'), [ $site->id, $page->id ]));
     }
 }
 
@@ -321,8 +321,9 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm :AppKitFe
         page_users => [ $page->page_users->all ],
     );
 
+    my $templates = $c->model('CMS::Template')->available( $site->id );
     $form->get_all_element({name=>'template'})->options(
-        [map {[$_->id, $_->name . " (" . $_->site->name . ")"]} $site->templates->all]
+        [map {[$_->id, $_->name . " (" . $_->site->name . ")"]} $templates->all ]
     );
     $form->get_all_element({name=>'parent'})->options(
         [map {[$_->id, $_->breadcrumb . " - " . $_->url]} $site->pages->published->all ]
@@ -473,7 +474,9 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm :AppKitFe
         $c->detach;
     }
     
-    $c->stash->{page} = $page;
+    $c->stash(
+        page => $page,
+    );
 }
 
 

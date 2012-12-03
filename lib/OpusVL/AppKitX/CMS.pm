@@ -64,8 +64,8 @@ after 'setup_components' => sub {
 
     CatalystX::InjectComponent->inject(
         into      => $class,
-        component => 'OpusVL::AppKitX::CMS::Controller::CMS::Attributes',
-        as        => 'Controller::Modules::CMS::Attributes'
+        component => 'OpusVL::AppKitX::CMS::Controller::CMS::PageAttributes',
+        as        => 'Controller::Modules::CMS::PageAttributes'
     );
 
     CatalystX::InjectComponent->inject(
