@@ -96,7 +96,8 @@ sub edit_element :Local :Args(1) :AppKitFeature('Ajax calls') {
                                 buildHash += $(this).attr('rel') + ' => "' + $(this).val() + '",';
                         });
                         buildHash += '}';
-                        lastElement.text("[% cms.element(" + lastElement.attr('rel') + ", " + buildHash + ") %]");
+                        lastElement.text("[% cms.element(" + lastElement.attr('rel') + ", " + buildHash + ") | eval %]");
+                        $('#redactor_modal_close').trigger('click');
                     });
                 </script>
             };
