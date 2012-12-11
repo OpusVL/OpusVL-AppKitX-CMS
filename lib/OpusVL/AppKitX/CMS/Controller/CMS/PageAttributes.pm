@@ -190,17 +190,14 @@ sub value_chain
     my $value = do {
         given ($object_type) {
             when ('page') {
-                $c->log->debug("**** CALLING PAGE");
                 $c->model('CMS::PageAttributeDetail')->active->find({ code => $code });
             }
             when ('attachment') {
-                $c->log->debug("**** CALLING ATTACHMENT");
                 $c->model('CMS::AttachmentAttributeDetail')->active->find({ code => $code });
             }
         }
     };
     
-    $c->log->debug("*** VALUE is $value");
     $c->detach('/not_found') unless $value;
     $c->stash->{value} = $value;
 

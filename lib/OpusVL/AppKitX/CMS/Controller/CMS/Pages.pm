@@ -192,12 +192,11 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
     if ($c->req->query_params && $c->req->query_params->{type} eq 'blog') {
         $form->default_values({
             content => q{
-[% USE scalar %]
 [% page = cms.param('page') %]
 [% UNLESS page %][% page = 1 %][% END %]
-[% articles = me.scalar.children({},{'sort' = 'newest', 'rows' = 5, 'page' = page}) %]
+[% articles = me.children({},{'sort' = 'newest', 'rows' = 5, 'page' = page}) %]
 
-[% FOREACH article IN articles.all %]
+[% FOREACH article IN articles %]
     <div class="">
         <h3>[% article.title %]</h3>
         <strong>[% article.description %]</strong>
@@ -894,6 +893,12 @@ sub preview :Chained('page_contents') :Args(0) :AppKitFeature('Pages - Read Acce
             }
             if (my $element = $element_rs->available($site->id)->find({id => $id})) {
                 return $element->content;
+            }
+        },
+        site_attr => sub {
+            my $code = shift;
+            if (my $attr = $site->site_attributes->find({ code => $code })) {
+                return $attr->value;
             }
         },
         page => sub {
