@@ -22,6 +22,10 @@
 
 <script type="text/javascript">
 	$(function() {
+		var orig_page = $('#page_url').val();
+		if (orig_page.charAt(orig_page.length-1) == '/') {
+			orig_page = orig_page.slice(0, -1);
+		}
 		$('#page_title').keyup(function() {
 			var str = $(this).val();
 			$('#page_heading').val( str );
@@ -29,7 +33,7 @@
 
 			str = str.replace(/[^\w\s]|_/g, "")
          		.replace(/\s+/g, "_");
-         	$('#page_url').val( "/" + str.toLowerCase() );
+         	$('#page_url').val(orig_page + "/" + str.toLowerCase() );
 
 		});
 	});

@@ -902,10 +902,10 @@ sub preview :Chained('page_contents') :Args(0) :AppKitFeature('Pages - Read Acce
             }
         },
         page => sub {
-            return $c->model('CMS::Page')->published->find({id => shift});
+            return $site->pages->published->find({id => shift});
         },
         pages => sub {
-            return $c->model('CMS::Page')->published->attribute_search(@_);
+            return $site->pages->published->attribute_search(@_);
         },
         param => sub {
             return $c->req->param(shift);
