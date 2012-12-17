@@ -62,7 +62,7 @@
     <div id="tab_content">
         [% form.get_all_element( 'name' => 'page_content' ).render | none %]
         <p><a href="javascript:void(0);" id="slide-change-note">Leave a reason for update?</a></p>
-        [% form.get_all_element( 'name' => 'note_changes' ).render | none %]
+        [% form.get_all_element( 'name' => 'note_changes_' ).render | none %]
     </div>
 
     <div id="tab_details">

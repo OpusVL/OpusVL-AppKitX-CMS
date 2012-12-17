@@ -50,13 +50,13 @@ elements:
 
       - type: Fieldset
         legend: Update notes
-        name: note_changes
+        name: note_changes_
         attributes:
           id: note_changes
           style: "display:none;"
         elements:
           - type: Textarea
-            name: description
+            name: note_changes
             label: Description
 
       - type: Fieldset

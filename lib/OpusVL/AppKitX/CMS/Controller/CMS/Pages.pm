@@ -402,7 +402,7 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm :AppKitFe
         my $new_content = $page->create_related('page_contents', {
             body => $form->param_value('content')
         });
-
+        #die $form->param_value('description');
         $page->update({
             url         => $url,
             description => $form->param_value('description'),

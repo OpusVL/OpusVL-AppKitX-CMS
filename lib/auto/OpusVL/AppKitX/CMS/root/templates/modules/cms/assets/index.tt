@@ -1,9 +1,14 @@
 [% INCLUDE modules/cms/header.tt title="Assets" %]
-
+<script type="text/javascript">
+    $(function() {
+        $('#asset-table').dataTable();
+    });
+</script>
 <div class="content_block">
+    <a style="font-size:11px; text-decoration:none" href="#bottom">Go to bottom &darr;</a>
     [% IF assets.size > 0 %]
         [% META appkitfeature_tablesorter = 1 %]
-        <table class="tablesorter">
+        <table class="tablesorter" id="asset-table">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -42,5 +47,5 @@
     [% END %]
 </div>
 
-<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('new_asset'), [ site.id ]) %]">New asset</a>
+<a name="bottom" class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('new_asset'), [ site.id ]) %]">New asset</a>
 <a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('upload_asset'), [ site.id ]) %]">Upload asset</a>

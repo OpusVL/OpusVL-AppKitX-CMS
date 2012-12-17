@@ -31,12 +31,12 @@ elements:
                     label: Value
                     constraints:
                       - type: Required
-                      - type: DBIC::Unique
-                        model: CMS
-                        resultset: PageAttributeValues
-                        column: value
-                        id_field: id
-                        message: This value already exists
+                      #- type: DBIC::Unique
+                      #  model: CMS
+                      #  resultset: PageAttributeValues
+                      #  column: value
+                      #  id_field: id
+                      #  message: This value already exists
 
                   - type: Checkbox
                     name: delete
@@ -50,11 +50,11 @@ elements:
           - type: Text
             name: value
             label: Value *
-            constraints:
-              - type: DBIC::Unique
-                model: CMS
-                resultset: PageAttributeValues
-                message: This value is already in use
+            #constraints:
+            #  - type: DBIC::Unique
+            #    model: CMS
+            #    resultset: PageAttributeValues
+            #    message: This value is already in use
 
   - type: Submit
     name: submit
