@@ -1,0 +1,10 @@
+<h1>Delete form</h1>
+
+<div class="content_block">
+	<p>Are you sure you want to <strong>[% form.name %]</strong> from site <strong>[% site.name %]</strong>?
+</div>
+
+<form action="" method="post">
+	<input name="submit_yes" type="submit" class="submit submit_ok" value="Yes" />
+	<input name="submit_no" type="submit" class="submit submit_cancel" value="No" />
+</form>

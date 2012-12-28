@@ -210,11 +210,11 @@
                     </tr>
                 </thead>
                 <tbody>
-                    [% FOREACH a IN attributes %]
+                    [% FOREACH att IN site_attributes %]
                         <tr>
-                            <td>[% a.id %]</td>
-                            <td><a rel="'[% a.code %]'" href="javascript:void(0);" class="insert-attribute">[% a.name %]</a></td>
-                            <td>[% a.value %]</td>
+                            <td>[% att.id %]</td>
+                            <td><a rel="'[% att.code %]'" href="javascript:void(0);" class="insert-attribute">[% att.name %]</a></td>
+                            <td>[% att.value %]</td>
                         </tr>
                     [% END %]
                 </tbody>
@@ -310,7 +310,7 @@
                                         var key = $(this).attr('rel');
                                         var value = $(this).val();
                                         if (key && value) {
-                                            buildHash += "'" + key + "' => '" + value + "', ";
+                                            buildHash += "'" + key + "', '" + value + "', ";
                                         }
                                     });
 

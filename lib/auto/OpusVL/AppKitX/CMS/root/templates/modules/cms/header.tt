@@ -22,8 +22,9 @@
                 <li><a href="[% c.uri_for(c.controller('Modules::CMS::Domains').action_for('manage'), [ site.id ]) %]">Manage Domains</a></li>
                 <li><a href="[% c.uri_for(c.controller('Modules::CMS::Sites').action_for('manage_attributes'), [ site.id ]) %]">Manage Attributes</a></li>
                 [% IF c.can_access(c.controller('Modules::CMS::UserAccess').action_for('page_allow_list')) %]
-                <li><a href="[% c.uri_for(c.controller('UserAccess').action_for('manage_users'), site.id) %]">Manage Users</a></li>
+                <li><a href="[% c.uri_for(c.controller('Modules::CMS::UserAccess').action_for('manage_users'), site.id) %]">Manage Users</a></li>
                 [% END %]
+                <li><a href="[% c.uri_for(c.controller('Modules::CMS::FormBuilder').action_for('index'), [ site.id ]) %]">Form Builder</a></li> 
             </ul>
         </li>
         </ul>

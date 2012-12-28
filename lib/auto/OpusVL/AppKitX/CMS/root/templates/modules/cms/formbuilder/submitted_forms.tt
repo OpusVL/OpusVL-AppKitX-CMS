@@ -1,0 +1,11 @@
+[% IF fields.size > 0 %]
+<ul>
+	[% FOREACH field IN fields %]
+		<li>
+			[% field.form %] submitted [% date_short(field.submitted) %] [% time_short(field.submitted) %]
+		</li>
+	[% END %]
+</ul>
+[% ELSE %]
+	<p>No forms you have created have been submitted recently</p>
+[% END %]

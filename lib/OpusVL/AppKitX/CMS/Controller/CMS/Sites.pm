@@ -112,6 +112,11 @@ sub base :Chained('/') :PathPart('site') :CaptureArgs(1) :AppKitFeature('Site - 
         $c->detach;
     }
 
+    #push @{ $c->stash->{breadcrumbs} }, {
+    #    name    => $site->name,
+    #    url     => $c->uri_for( $c->controller('Modules::CMS::Sites')->action_for('index'), [ $site->id ])
+    #};
+
     if (! $c->model('CMS::SitesUser')->find({ site_id => $site_id, user_id => $c->user->id })) {
         $c->flash(error_msg => "Sorry, but you don't have access to this site");
         $c->res->redirect($c->uri_for($self->action_for('index')));
@@ -122,7 +127,7 @@ sub base :Chained('/') :PathPart('site') :CaptureArgs(1) :AppKitFeature('Site - 
         site        => $site,
         elements    => [ $c->model('CMS::Element')->available($site_id)->all ],
         assets      => [ $c->model('CMS::Asset')->available($site_id)->all ],
-        attributes  => [ $site->site_attributes->all ],
+        site_attributes  => [ $site->site_attributes->all ],
         pages       => [ $site->pages->published->all ],
         attachments => [ $site->pages->search_related('attachments', { 'attachments.status' => 'published' })->all ],
     );

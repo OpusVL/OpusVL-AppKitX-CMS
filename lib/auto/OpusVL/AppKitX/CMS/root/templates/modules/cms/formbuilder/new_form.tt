@@ -1,0 +1,123 @@
+[% INCLUDE modules/cms/header.tt title="New Form" %]
+
+<div class="content_block">
+	<fieldset>
+		<legend>Form Options</legend>
+		<div class="text label">
+			<label>Form Name</label>
+			<input type="text" id="form-name" value="" />
+		</div>
+
+		<div class="select label">
+			<label>Redirect to</label>
+			<select id="form-redirect">
+				<option></option>
+				[% FOREACH page IN pages %]
+					<option name="[% page.id %]">[% page.url %] ([% page.title %])</option>
+				[% END %]
+			</select>
+		</div>
+
+	</fieldset>
+</div>
+
+<div class="content_block">
+
+	<fieldset>
+		<legend>Form Fields</legend>
+		<div class="text label">
+			<label>Label</label>
+			<input type="text" id="field-value" value="" /> as a 
+			<select id="field-type">
+				[% FOREACH type IN types %]
+					<option id="[% type.id %]">[% type.type %]</option>
+				[% END %]
+			</select>
+		</div>
+		<div class="select label">
+			<label>Constraint</label>
+			<select id="constraint-type">
+				<option id="none"></option>
+				[% FOREACH constraint IN constraints %]
+					<option id="[% constraint.id %]">[% constraint.name %] [% IF constraint.value %]([% constraint.value %])[% END %]</option>
+				[% END %]
+			</select>
+		</div>
+		<button class="btn" id="field-add"><i class="icon icon-plus"></i> Add field</button>
+	</fieldset>
+</div>
+
+<form action="" method="post" class="form form-horizontal">
+	<input type="hidden" name="form_name" value="" />
+	<input type="hidden" name="form_redirect" value="" />
+	<div class="content_block my-form">
+		<h2></h2>
+	</div>
+	<input type="submit" class="submit submit_ok" name="save_form" value="Save Form" />
+</form>
+
+<script type="text/javascript">
+    var form    = $('.my-form');
+    var counter = 0;
+
+    $('#form-name').keyup(function() {
+        $('.my-form h2').html( $(this).val() );
+        $('[name="form_name"]').val( $(this).val() );
+    });
+
+    $('#form-redirect').change(function() {
+    	$('[name="form_redirect"]').val(
+    		$('#form-redirect option:selected').attr('name')
+    	);
+    });
+
+    $('#field-add').click(function() {
+    	var type  = $('#field-type').val();
+    	var value = $('#field-value');
+    	if (value.val() != '') {
+	    	switch(type) {
+	    		case 'Text':
+	    			form.append('<div class="form-element-' + counter + '">' +
+	            		'<strong>' + value.val() + '</strong>&nbsp;' +
+	            		'<input type="text" name="field-text-' + counter + '" value="' + value.val() + '" /> <a href="javascript:void(0)" onclick="deleteField(' + counter + ')" rel="' + counter + '">remove</a></div>');
+	        		break;
+
+	        	case 'Textarea':
+	        		form.append('<div class="form-element-' + counter + '">' +
+			            '<strong>' + value.val() + '</strong>&nbsp;' +
+			            '<textarea name="field-textarea-' + counter + '">' + value.val() + '</textarea> <a href="javascript:void(0)" onclick="deleteField(' + counter + ')" rel="' + counter + '">remove</a></div>');
+	        		break;
+
+	        	case 'Checkbox':
+	        		form.append('<div class="form-element-' + counter + '">' +
+	            		'<strong>' + value.val() + '</strong>&nbsp;' +
+	            		'<input type="hidden" name="field-checkbox-' + counter + '" value="' + value.val() + '"/>' +
+	            		'<input type="checkbox" value="' + value.val() + '" /> <a href="javascript:void(0)" onclick="deleteField(' + counter + ')" rel="' + counter + '">remove</a></div>');
+	        		break;
+
+	        	case 'Submit':
+	        		form.append('<div class="form-element-' + counter + '">' +
+	        			'<input type="hidden" name="field-submit-' + counter + '" value="' + value.val() + '" />' +
+	            		'<input type="submit" value="' + value.val() + '" /></div'
+	            	);
+
+	            	break;
+	    	}
+
+	    	if ($('#constraint-type').val() != '') {
+	    		//var constraint = $('#constraint-type');
+	    		var constraint = $('#constraint-type option:selected');
+	    		form.append('<input type="hidden" value="' + constraint.attr('id') + '" name="constraint-id-' + counter + '" />');
+	    	}
+
+	    	counter += 1;
+	    	value.val('');
+	    }
+    });
+
+	function deleteField(cid) {
+		// remove it completely from the DOM so we don't have to deal with it
+        if (cid != null)
+            $('.form-element-' + cid).remove();
+    }
+</script>

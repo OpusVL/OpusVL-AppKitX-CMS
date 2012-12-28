@@ -103,6 +103,12 @@ after 'setup_components' => sub {
         component => 'OpusVL::AppKitX::CMS::Controller::CMS::Plugins',
         as        => 'Controller::Modules::CMS::Plugins',
     );
+    
+    CatalystX::InjectComponent->inject(
+        into      => $class,
+        component => 'OpusVL::AppKitX::CMS::Controller::CMS::FormBuilder',
+        as        => 'Controller::Modules::CMS::FormBuilder',
+    );
 };
 
 1;

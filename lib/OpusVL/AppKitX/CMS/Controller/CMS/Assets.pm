@@ -66,8 +66,9 @@ sub index :Chained('/modules/cms/sites/base') :PathPart('assets/list') :Args(0) 
                 site   => $site->id,
                 global => 1,
             ]
-        })
-        ->published->all];
+        }, {
+        order_by => { -desc => 'id' }
+    })->published->all];
 }
 
 
