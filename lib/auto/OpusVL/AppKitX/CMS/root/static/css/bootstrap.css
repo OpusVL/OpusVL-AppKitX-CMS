@@ -6,9 +6,9 @@
   src: local('Muli'), url(/static/fonts/muli.woff) format('woff');
 }
 
-a, a:visited                    { color:#0085B0; text-decoration: underline; }
-a:active                        { color:#0085B0; text-decoration: underline; }
-a:hover                         { color:#000000; text-decoration: underline; }
+.content_block a, .content_block a:visited                    { color:#0085B0; text-decoration: underline; }
+.content_block a:active                        { color:#0085B0; text-decoration: underline; }
+.content_block a:hover                         { color:#000000; text-decoration: underline; }
 
 /*!
  * Bootstrap v2.1.1
@@ -41,18 +41,19 @@ video {
 audio:not([controls]) {
   display: none;
 }
-html {
+.content_block {
   font-size: 100%;
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
 }
-a:focus {
+
+.content_block a:focus {
   outline: thin dotted #333;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
-a:hover,
-a:active {
+.content_block a:hover,
+.content_block a:active {
   outline: 0;
 }
 sub,
@@ -88,7 +89,7 @@ img {
   max-width: none;
 }
 button,
-input,
+.content_block input,
 select,
 textarea {
   margin: 0;
@@ -96,7 +97,7 @@ textarea {
   vertical-align: middle;
 }
 button,
-input {
+.content_block input {
   *overflow: visible;
   line-height: normal;
 }
@@ -112,7 +113,7 @@ input[type="submit"] {
   cursor: pointer;
   -webkit-appearance: button;
 }
-input[type="search"] {
+.content_block input[type="search"] {
   -webkit-box-sizing: content-box;
   -moz-box-sizing: content-box;
   box-sizing: content-box;
@@ -153,7 +154,7 @@ textarea {
   -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
-body {
+.content_block {
   margin: 0;
   font-family: "Muli", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
@@ -161,11 +162,11 @@ body {
   color: #2d2d2d;
   background-color: #ffffff;
 }
-a {
+.content_block a {
   color: #558bc4;
   text-decoration: none;
 }
-a:hover {
+.content_block a:hover {
   color: #558bc4;
   text-decoration: underline;
 }
@@ -591,18 +592,18 @@ h4 small {
   margin: 21px 0 31.5px;
   border-bottom: 1px solid #eeeeee;
 }
-ul,
+.content_block ul,
 ol {
   padding: 0;
   margin: 0 0 10.5px 25px;
 }
-ul ul,
+.content_block ul ul,
 ul ol,
 ol ol,
 ol ul {
   margin-bottom: 0;
 }
-li {
+.content_block li {
   line-height: 21px;
 }
 ul.unstyled,
@@ -779,7 +780,7 @@ legend small {
   color: #bbbbbb;
 }
 label,
-input,
+.content_block input,
 button,
 select,
 textarea {
@@ -787,7 +788,7 @@ textarea {
   font-weight: normal;
   line-height: 21px;
 }
-input,
+.content_block input,
 button,
 select,
 textarea {
@@ -797,10 +798,10 @@ label {
   display: block;
   margin-bottom: 5px;
 }
-select,
-textarea,
-input[type="text"],
-input[type="password"],
+.content_block select,
+.content_block textarea,
+.content_block input[type="text"],
+.content_block input[type="password"],
 input[type="datetime"],
 input[type="datetime-local"],
 input[type="date"],
@@ -810,10 +811,10 @@ input[type="week"],
 input[type="number"],
 input[type="email"],
 input[type="url"],
-input[type="search"],
+.content_block input[type="search"],
 input[type="tel"],
 input[type="color"],
-.uneditable-input {
+.content_block .uneditable-input {
   display: inline-block;
   height: 21px;
   padding: 4px 6px;
@@ -834,9 +835,10 @@ textarea,
 textarea {
   height: auto;
 }
-textarea,
-input[type="text"],
-input[type="password"],
+
+.content_block textarea,
+.content_block input[type="text"],
+.content_block input[type="password"],
 input[type="datetime"],
 input[type="datetime-local"],
 input[type="date"],
@@ -846,10 +848,10 @@ input[type="week"],
 input[type="number"],
 input[type="email"],
 input[type="url"],
-input[type="search"],
+.content_block input[type="search"],
 input[type="tel"],
 input[type="color"],
-.uneditable-input {
+.content_block .uneditable-input {
   background-color: #ffffff;
   border: 1px solid #cccccc;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
@@ -860,9 +862,10 @@ input[type="color"],
   -o-transition: border linear .2s, box-shadow linear .2s;
   transition: border linear .2s, box-shadow linear .2s;
 }
-textarea:focus,
-input[type="text"]:focus,
-input[type="password"]:focus,
+
+.content_block textarea:focus,
+.content_block input[type="text"]:focus,
+.content_block input[type="password"]:focus,
 input[type="datetime"]:focus,
 input[type="datetime-local"]:focus,
 input[type="date"]:focus,
@@ -872,10 +875,10 @@ input[type="week"]:focus,
 input[type="number"]:focus,
 input[type="email"]:focus,
 input[type="url"]:focus,
-input[type="search"]:focus,
+.content_block input[type="search"]:focus,
 input[type="tel"]:focus,
 input[type="color"]:focus,
-.uneditable-input:focus {
+.content_block .uneditable-input:focus {
   border-color: rgba(82, 168, 236, 0.8);
   outline: 0;
   outline: thin dotted \9;
@@ -5347,7 +5350,10 @@ a.brand {
 a.dropdown-toggle {
     font-size: 12px;
 }
-li a {
+.nav li a {
+    font-size: 12px;
+}
+.content_block li a {
     font-size: 12px;
 }
 
