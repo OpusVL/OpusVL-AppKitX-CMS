@@ -6,6 +6,11 @@
         });
     });
 </script>
+<style type="text/css">
+    .content_block input[type="text"] {
+        width: 100px !important;
+    }
+</style>
 <div class="content_block">
     <a style="font-size:11px; text-decoration:none" href="#bottom">Go to bottom &darr;</a>
     [% IF assets.size > 0 %]
