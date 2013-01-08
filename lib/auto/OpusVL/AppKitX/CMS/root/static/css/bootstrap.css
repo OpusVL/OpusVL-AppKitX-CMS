@@ -4491,3 +4491,19 @@ ul.nav li.dropdown:hover ul.dropdown-menu{
 div.content_block {
   overflow: visible !important;
 }
+
+.CodeMirror {
+    /*font-family: "Courier New", Courier, monospace;*/
+    font-size: 14px;
+    background-color: #fff;
+    /*width: 584px;
+    height: 300px;*/
+}
+
+.CodeMirror-fullscreen {
+    display: block;
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    z-index: 9999;
+}
