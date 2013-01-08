@@ -12,7 +12,7 @@
     }
 </style>
 <div class="content_block">
-    <a style="font-size:11px; text-decoration:none" href="#bottom">Go to bottom &darr;</a>
+    <a style="margin-bottom: 15px;" class="btn" href="[% c.uri_for(c.controller.action_for('attributes'), [ site.id ]) %]"><i class="icon icon-plus"></i> Manage Attributes</a>
     [% IF assets.size > 0 %]
         [% META appkitfeature_tablesorter = 1 %]
         <table class="tablesorter" id="asset-table">

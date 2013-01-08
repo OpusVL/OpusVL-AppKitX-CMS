@@ -1,0 +1,122 @@
+---
+indicator: submit
+auto_fieldset: 0
+form_error_message: Oops, looks like there was a problem - please check below and try again.
+
+elements:
+  - type: Block
+    attributes:
+      class: "content_block"
+    elements:
+      - type: Fieldset
+        legend: "Existing attributes"
+        name: current_asset_attributes
+        elements:
+          - type: Hidden
+            name: asset_element_count
+
+          - type: Repeatable
+            name: asset_rep
+            counter_name: asset_element_count
+            attributes: 
+              class: rep
+            elements:
+              
+              - type: Multi
+                container_attributes:
+                  class: filter
+                elements:
+                  - type: Hidden
+                    name: asset_id
+              
+                  - type: Text
+                    name: asset_name
+                    label: Name
+                    constraints:
+                      - type: Required
+                    attributes:
+                      title: ""
+
+                  - type: Select
+                    name: asset_type
+                    label: Type
+                    force_default: 1
+                    attributes:
+                      readonly: readonly
+                      disabled: disabled
+                      class: type_selection
+                    options: 
+                     - [ 'text', 'Text' ]
+                     - [ 'html', 'HTML' ]
+                     - [ 'number', 'Number' ]
+                     - [ 'boolean', 'Boolean' ]
+                     - [ 'date', 'Date' ]
+                     - [ 'select', 'Select' ]
+                     - [ 'integer', 'Integer' ]
+
+                  - type: Checkbox
+                    name: asset_delete
+                    label: Delete
+
+              - type: Block
+                tag: a
+                content: Edit values
+                name: asset_link
+                attributes:
+                  href: ""
+                  class: edit_values
+
+      - type: Fieldset
+        legend: "New attribute"
+        name: new_asset_attribute
+        elements:
+              
+          - type: Hidden
+            name: asset_active
+            value: 1
+
+          - type: Text
+            name: asset_code
+            label: Code *
+            #constraints:
+              #- type: Regex
+              #  regex: '^[\w_]+$'
+              #  message: Code can only contain letters, numbers and underscores. 
+              #- type: DBIC::Unique
+              # model: CMS
+              # resultset: AssetAttributeDetails
+              # column: code
+              # message: This code is already in use
+
+          - type: Text
+            name: asset_name
+            label: Name *
+
+          - type: Select
+            name: asset_type
+            label: Type
+            options: 
+             - [ 'text', 'Text' ]
+             - [ 'html', 'HTML' ]
+             - [ 'number', 'Number' ]
+             - [ 'boolean', 'Boolean' ]
+             - [ 'date', 'Date' ]
+             - [ 'select', 'Select' ]
+             - [ 'integer', 'Integer' ]
+
+  - type: Submit
+    name: submit
+    value: Save changes
+    attributes:
+      class: "submit submit_ok"
+
+  - type: Submit
+    name: cancel
+    value: Discard changes
+    attributes:
+      class: "submit submit_cancel"
+
+
+
+
+

@@ -24,6 +24,16 @@ elements:
           - type: Checkbox
             name: global
             label: Make this asset global?
+      
+      - type: Fieldset
+        legend: Attributes
+        name: global_fields
+        elements:
+
+          - type: Block
+            tag: p
+            name: no_fields
+            content: No fields defined.
 
   - type: Submit
     name: submit

@@ -24,11 +24,6 @@ sub auto :Private {
     my ($self, $c) = @_;
     
     $c->stash->{section} = 'Page Attributes';
-    
-    $self->add_breadcrumb($c, {
-        name    => 'Page Attributes',
-        url     => $c->uri_for( $c->controller->action_for('index'))
-    });
 }
 
 
@@ -44,15 +39,20 @@ sub index
     my($self, $c) = @_;
     my $site      = $c->stash->{site};
 
+    $self->add_breadcrumb($c, {
+        name    => 'Page Attributes',
+        url     => $c->uri_for( $c->controller->action_for('index'), [ $site->id ]),
+    });
+
     if ($c->req->param('cancel')) {
         $c->res->redirect($c->req->uri);
         $c->detach;
     }
 
     my $form    = $c->stash->{form};
-    
     foreach my $object_type (qw/page attachment/) {
-        my $type_rs  = $c->model('CMS::' . ucfirst($object_type) . 'AttributeDetail');
+        my $type_rs  = ucfirst $object_type eq 'Page' ?
+            $site->page_attribute_details : $site->attachment_attribute_details;
         my @types    = $type_rs->active->all;
         my $fieldset = $form->get_all_element('current_' . $object_type . '_attributes');
         my $repeater = $form->get_all_element($object_type . '_rep');
@@ -76,7 +76,8 @@ sub index
     if($form->submitted_and_valid)
     {
         foreach my $object_type (qw/page attachment/) {
-            my $type_rs = $c->model('CMS::' . ucfirst($object_type) . 'AttributeDetail');
+            my $type_rs = ucfirst $object_type eq 'Page' ?
+                $site->page_attribute_details : $site->attachment_attribute_details;
             my $count   = $type_rs->active->count;
             my $name    = $form->param_value($object_type.'_name');
             my $code    = $form->param_value($object_type.'_code');
@@ -88,6 +89,7 @@ sub index
                     name    => $name,
                     code    => $code,
                     type    => $type,
+                    site_id => $site->id,
                 };
                 
                 if ($object_type eq 'path') {
@@ -126,7 +128,8 @@ sub index
         my $defaults;
         
         foreach my $object_type (qw/page attachment/) {
-            my $type_rs = $c->model('CMS::' . ucfirst($object_type) . 'AttributeDetail');
+            my $type_rs = ucfirst $object_type eq 'Page' ?
+                $site->page_attribute_details : $site->attachment_attribute_details;
             my @types   = $type_rs->active->all;
             my $count   = scalar @types;
             my $i       = 1;
@@ -146,7 +149,7 @@ sub index
                 
                 if($type->type eq 'select')
                 {
-                    $links{$i}->attributes->{href} = $self->value_link($c, $object_type, $type);
+                    $links{$i}->attributes->{href} = $self->value_link($c, $site->id, $object_type, $type);
                     my $text  = $links{$i}->content();
                     my $count = $type->field_values->count;
                     $links{$i}->content($text . " ($count)");
@@ -170,30 +173,35 @@ sub index
 
 sub value_link
 {
-    my ($self, $c, $object_type, $type) = @_;
-    return $c->uri_for($self->action_for('edit_values'), [ $object_type, $type->code ]);
+    my ($self, $c, $site_id, $object_type, $type) = @_;
+    return $c->uri_for($self->action_for('edit_values'), [ $site_id, $object_type, $type->code ]);
 }
 
 
 #-------------------------------------------------------------------------------
 
 sub value_chain
-    : Chained('/')
+    : Chained('/modules/cms/sites/base')
     : PathPart('admin/globalfields')
     : CaptureArgs(2)
     : AppKitFeature('Attributes - Read Access')
 {
     my ($self, $c, $object_type, $code) = @_;
+    my $site = $c->stash->{site};
+    $self->add_breadcrumb($c, {
+        name    => 'Page Attributes',
+        url     => $c->uri_for( $c->controller->action_for('index'), [ $site->id ]),
+    });
     $c->log->debug("**** $object_type **** $code");
     $c->detach('/not_found') unless $code;
     
     my $value = do {
         given ($object_type) {
             when ('page') {
-                $c->model('CMS::PageAttributeDetail')->active->find({ code => $code });
+                $site->page_attribute_details->active->find({ code => $code });
             }
             when ('attachment') {
-                $c->model('CMS::AttachmentAttributeDetail')->active->find({ code => $code });
+                $site->attachment_attribute_details->active->find({ code => $code });
             }
         }
     };
@@ -213,8 +221,8 @@ sub edit_values
     : AppKitFeature('Attributes - Write Access')
 {
     my ($self, $c) = @_;
-
-    my $prev_link = $c->uri_for($self->action_for('index'));
+    my $site       = $c->stash->{site};
+    my $prev_link = $c->uri_for($self->action_for('index'), [ $site->id ]);
     if ($c->req->param('cancel')) {
         $c->res->redirect($prev_link);
         $c->detach;

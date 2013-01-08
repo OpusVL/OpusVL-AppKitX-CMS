@@ -1,0 +1,27 @@
+[% INCLUDE modules/cms/header.tt title="Asset Attributes" %]
+
+<script language="javascript">
+    $(function() {
+        var combo_change = function() {
+            var parent = $(this).closest('.rep');
+            var edit = parent.find('.edit_values');
+            var val = $(this).val();
+            console.log('select');
+            if(val === 'select') {
+                console.log(edit);
+                edit.detach();
+                edit.appendTo(parent.find('.multi'));
+            } else {
+                edit.remove();
+            }
+        };
+        $('.type_selection').each(combo_change);
+    });
+</script>
+
+[% form.start | none %]
+[% form.get_all_element( 'name' => 'current_asset_attributes' ).render | none %]
+[% form.get_all_element( 'name' => 'new_asset_attribute' ).render | none %]
+[% form.get_all_element( 'name' => 'submit' ).render | none %]
+[% form.get_all_element( 'name' => 'cancel' ).render | none %]
+[% form.end | none %]

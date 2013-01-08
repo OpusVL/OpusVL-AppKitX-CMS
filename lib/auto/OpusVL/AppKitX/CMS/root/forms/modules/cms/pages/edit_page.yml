@@ -18,11 +18,19 @@ elements:
         name: breadcrumb
         constraints:
           - type: Required
-          
+      
+      - type: Hidden
+        name: site
+
       - type: Text
         name: url
         constraints:
           - type: Required
+          - type: DBIC::Unique
+            model: CMS
+            resultset: Page
+            message_loc: "URL already exists for this site"
+            others: site
           
       - type: Fieldset
         legend: Page details

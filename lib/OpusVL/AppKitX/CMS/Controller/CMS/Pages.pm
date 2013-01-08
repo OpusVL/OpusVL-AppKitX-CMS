@@ -2,7 +2,7 @@ package OpusVL::AppKitX::CMS::Controller::CMS::Pages;
 
 use 5.010;
 use Moose;
-use Scalar::Util 'looks_like_number';
+use Scalar::Util qw<blessed looks_like_number>;
 use namespace::autoclean;
 BEGIN { extends 'Catalyst::Controller::HTML::FormFu'; };
 with 'OpusVL::AppKit::RolesFor::Controller::GUI';
@@ -174,7 +174,9 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
     $form->get_all_element({name=>'parent'})->options(
         [map {[$_->id, $_->breadcrumb . " - " . $_->url]} $c->model('CMS::Page')->search({ site => $site->id })->published->all]
     );
-
+    $form->default_values({
+        site => $site->id,
+    });
     # This part was throwing out undefined value as a HASH reference errors
     # before validating the $c->req->body_params
     if ($c->req->query_params->{parent_id}) {
@@ -320,7 +322,13 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm :AppKitFe
         page_users => [ $page->page_users->all ],
     );
 
-    my $templates = $c->model('CMS::Template')->available( $site->id );
+    my $templates = $c->model('CMS::Template')->search({
+        -or => [
+            site    => $site->id,
+            global  => 1,
+        ],
+    });
+    
     $form->get_all_element({name=>'template'})->options(
         [map {[$_->id, $_->name . " (" . $_->site->name . ")"]} $templates->all ]
     );
@@ -367,11 +375,12 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm :AppKitFe
         content     => $page->content,
         priority    => $page->priority,
         note_changes => $page->note_changes,
+        site         => $site->id,
     };
     
-    $self->construct_attribute_form($c, 'CMS::PageAttributeDetail');
+    $self->construct_attribute_form($c, { type => 'page', site_id => $site->id });
 
-    my @fields = $c->model('CMS::PageAttributeDetail')->active->all;
+    my @fields = $site->page_attribute_details->active->all;
     for my $field (@fields)
     {
         my $value = $page->page_attribute($field);
@@ -603,9 +612,9 @@ sub edit_attachment :Local :Args(1) :AppKitForm :AppKitFeature('Pages - Write Ac
         priority    => $attachment->priority,
     };
     
-    $self->construct_attribute_form($c, 'CMS::AttachmentAttributeDetail');
+    $self->construct_attribute_form($c, { type => 'attachment', site_id => $page->site->id });
 
-    my @fields = $c->model('CMS::AttachmentAttributeDetail')->active->all;
+    my @fields = $page->site->attachment_attribute_details->active->all;
     for my $field (@fields)
     {
         my $value = $attachment->attribute($field);
@@ -686,69 +695,71 @@ sub restore :Chained('page_contents') :Args(0) :AppKitFeature('Pages - Write Acc
 
 sub construct_attribute_form
 {
-    my ($self, $c, $model) = @_;
+    my ($self, $c, $args) = @_;
+    my $model = $args->{type} eq 'page' ?
+        $c->model('CMS::PageAttributeDetail') : $c->model('CMS::AttachmentAttributeDetail');
 
     my $form = $c->stash->{form};
-    my @fields = $c->model($model)->active->all;
-    if(@fields)
-    {
-        my $global_fields = $form->get_all_element('global_fields');
-        my $no_fields = $form->get_all_element('no_fields');
-        for my $field (@fields)
+        my @fields = $model->search({ site_id => $args->{site_id} })->active->all;
+        if(@fields)
         {
-            my $details;
-            $details = {
-                type => 'Text',
-                label => $field->name,
-                name => "global_fields_".$field->code,
-            };
-            given($field->type)
+            my $global_fields = $form->get_all_element('global_fields');
+            my $no_fields = $form->get_all_element('no_fields');
+            for my $field (@fields)
             {
-                when(/text/) {
+                my $details;
+                $details = {
+                    type => 'Text',
+                    label => $field->name,
+                    name => "global_fields_".$field->code,
+                };
+                given($field->type)
+                {
+                    when(/text/) {
+                    }
+                    when(/html/) {
+                        $details->{type} = 'Textarea';
+                        $details->{attributes} = {
+                            class => 'wysiwyg',
+                        };
+                    }
+                    when(/number/) {
+                        $details->{constraints} = { type => 'Number' };
+                    }
+                    when(/boolean/) {
+                        $details->{type} = 'Checkbox';
+                    }
+                    when(/date/) {
+                        $details->{attributes} = {
+                            autocomplete => 'off',
+                            class => 'date_picker',
+                        };
+                        $details->{size} = 12;
+                        $details->{inflators} = {
+                            type => 'DateTime',
+                            strptime => '%Y-%m-%d 00:00:00',
+                            parser => {
+                                strptime => '%d/%m/%Y',
+                            }
+                        };
+                        $details->{deflator} = {
+                            type => 'Strftime',
+                            strftime => '%d/%m/%Y',
+                        };
+                    }
+                    when(/integer/) {
+                        $details->{constraints} = { type => 'Integer' };
+                    }
+                    when(/select/) {
+                        $details->{type} = 'Select';
+                        $details->{empty_first} = 1;
+                        $details->{options} = $field->form_options;
+                    }
                 }
-                when(/html/) {
-                    $details->{type} = 'Textarea';
-                    $details->{attributes} = {
-                        class => 'wysiwyg',
-                    };
-                }
-                when(/number/) {
-                    $details->{constraints} = { type => 'Number' };
-                }
-                when(/boolean/) {
-                    $details->{type} = 'Checkbox';
-                }
-                when(/date/) {
-                    $details->{attributes} = {
-                        autocomplete => 'off',
-                        class => 'date_picker',
-                    };
-                    $details->{size} = 12;
-                    $details->{inflators} = {
-                        type => 'DateTime',
-                        strptime => '%Y-%m-%d 00:00:00',
-                        parser => {
-                            strptime => '%d/%m/%Y',
-                        }
-                    };
-                    $details->{deflator} = {
-                        type => 'Strftime',
-                        strftime => '%d/%m/%Y',
-                    };
-                }
-                when(/integer/) {
-                    $details->{constraints} = { type => 'Integer' };
-                }
-                when(/select/) {
-                    $details->{type} = 'Select';
-                    $details->{empty_first} = 1;
-                    $details->{options} = $field->form_options;
-                }
+                my $element = $global_fields->element($details);
             }
-            my $element = $global_fields->element($details);
+            $global_fields->remove_element($no_fields);
         }
-        $global_fields->remove_element($no_fields);
-    }
 }
 
 

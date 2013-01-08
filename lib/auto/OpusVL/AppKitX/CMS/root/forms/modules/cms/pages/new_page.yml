@@ -19,7 +19,10 @@ elements:
               id: page_title
             constraints:
               - type: Required
-              
+          
+          - type: Hidden
+            name: site
+
           - type: Text
             name: url
             label: URL *
@@ -27,6 +30,11 @@ elements:
               id: page_url
             constraints:
               - type: Required
+              - type: DBIC::Unique
+                model: CMS
+                resultset: Page
+                message_loc: "URL already exists for this site"
+                others: site
           
           - type: Select
             name: parent
