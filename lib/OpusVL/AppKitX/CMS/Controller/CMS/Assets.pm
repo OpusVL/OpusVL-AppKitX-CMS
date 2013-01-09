@@ -94,6 +94,7 @@ sub new_asset :Chained('/modules/cms/sites/base') :PathPart('assets/new') :Args(
             filename    => $form->param_value('filename'),
             site        => $site->id,
             global      => $form->param_value('global')||0,
+            priority    => 10,
         });
         
         $asset->set_content($form->param_value('content'));
