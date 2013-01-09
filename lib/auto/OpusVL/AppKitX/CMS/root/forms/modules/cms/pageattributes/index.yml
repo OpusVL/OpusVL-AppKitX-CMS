@@ -88,9 +88,10 @@ elements:
                 message: Code can only contain letters, numbers and underscores. 
               - type: DBIC::Unique
                 model: CMS
-                resultset: PageAttributeDetails
+                resultset: PageAttributeDetail
                 column: code
                 message: This code is already in use
+                others: site_id
 
           - type: Text
             name: page_name
@@ -179,6 +180,9 @@ elements:
             name: attachment_active
             value: 1
 
+          - type: Hidden
+            name: site_id
+
           - type: Text
             name: attachment_code
             label: Code *
@@ -188,9 +192,10 @@ elements:
                 message: Code can only contain letters, numbers and underscores. 
               - type: DBIC::Unique
                 model: CMS
-                resultset: AttachmentAttributeDetails
+                resultset: AttachmentAttributeDetail
                 column: code
                 message: This code is already in use
+                others: site_id
 
           - type: Text
             name: attachment_name

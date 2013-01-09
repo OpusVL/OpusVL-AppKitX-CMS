@@ -38,7 +38,6 @@ sub index
 {
     my($self, $c) = @_;
     my $site      = $c->stash->{site};
-
     $self->add_breadcrumb($c, {
         name    => 'Page Attributes',
         url     => $c->uri_for( $c->controller->action_for('index'), [ $site->id ]),
@@ -51,7 +50,7 @@ sub index
 
     my $form    = $c->stash->{form};
     foreach my $object_type (qw/page attachment/) {
-        my $type_rs  = ucfirst $object_type eq 'Page' ?
+        my $type_rs  = $object_type eq 'page' ?
             $site->page_attribute_details : $site->attachment_attribute_details;
         my @types    = $type_rs->active->all;
         my $fieldset = $form->get_all_element('current_' . $object_type . '_attributes');
@@ -61,7 +60,7 @@ sub index
         {
             $count = scalar @types;
             $repeater->repeat($count);
-            $form->process;
+            #$form->process;
         }
         unless(@types)
         {
@@ -76,7 +75,7 @@ sub index
     if($form->submitted_and_valid)
     {
         foreach my $object_type (qw/page attachment/) {
-            my $type_rs = ucfirst $object_type eq 'Page' ?
+            my $type_rs = $object_type eq 'page' ?
                 $site->page_attribute_details : $site->attachment_attribute_details;
             my $count   = $type_rs->active->count;
             my $name    = $form->param_value($object_type.'_name');
@@ -128,7 +127,7 @@ sub index
         my $defaults;
         
         foreach my $object_type (qw/page attachment/) {
-            my $type_rs = ucfirst $object_type eq 'Page' ?
+            my $type_rs = $object_type eq 'page' ?
                 $site->page_attribute_details : $site->attachment_attribute_details;
             my @types   = $type_rs->active->all;
             my $count   = scalar @types;
@@ -163,7 +162,8 @@ sub index
             }
             $defaults->{$object_type. '_element_count'} = $count;
         }
-        
+
+        $defaults->{site_id} = $site->id;
         $form->default_values($defaults);
     }
 }
@@ -182,7 +182,7 @@ sub value_link
 
 sub value_chain
     : Chained('/modules/cms/sites/base')
-    : PathPart('admin/globalfields')
+    : PathPart('page/select/value')
     : CaptureArgs(2)
     : AppKitFeature('Attributes - Read Access')
 {
