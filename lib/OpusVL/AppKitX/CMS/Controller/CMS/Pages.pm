@@ -699,6 +699,7 @@ sub construct_attribute_form
     my $model = $args->{type} eq 'page' ?
         $c->model('CMS::PageAttributeDetail') : $c->model('CMS::AttachmentAttributeDetail');
 
+    # Argh, I need to fix this in the schema!
     my $form = $c->stash->{form};
         my @fields = $model->search({ site_id => $args->{site_id} })->active->all;
         if(@fields)
