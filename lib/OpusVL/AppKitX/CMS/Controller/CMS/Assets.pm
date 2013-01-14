@@ -570,7 +570,8 @@ sub update_asset_attributes
     for my $field (@fields)
     {
         my $value = $form->param_value('global_fields_' . $field->code);
-        $page->update_attribute($field, $value);
+        # FIXME: this is a place holder until brad decides to write the code.
+        $page->update_attribute(-1, $field, $value);
     }
 
 }
