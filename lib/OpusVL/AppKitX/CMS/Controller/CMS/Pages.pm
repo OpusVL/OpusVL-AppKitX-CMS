@@ -460,7 +460,7 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm :AppKitFe
             $page->create_related('aliases', {url => $alias_url});
         }
 
-        $self->update_page_attributes($c, $page);
+        $self->update_page_attributes($c, $page, $site);
 
         if ($c->req->body_params->{allow_users}) {
             my $user_rs = $c->model('CMS::User');
@@ -643,7 +643,7 @@ sub edit_attachment :Local :Args(1) :AppKitForm :AppKitFeature('Pages - Write Ac
             });
         }
         
-        $self->update_attachment_attributes($c, $attachment);
+        $self->update_attachment_attributes($c, $attachment, $page->site);
 
         $c->res->redirect($c->uri_for($c->controller->action_for('edit_page'), [ $page->site->id, $attachment->page_id ]) . '#tab_attachments');
         $c->detach;        
@@ -768,14 +768,14 @@ sub construct_attribute_form
 
 sub update_page_attributes
 {
-    my ($self, $c, $page) = @_;
+    my ($self, $c, $page, $site) = @_;
 
     my $form = $c->stash->{form};
-    my @fields = $c->model('CMS::PageAttributeDetail')->active->all;
+    my @fields = $site->page_attribute_details->active->all;
     for my $field (@fields)
     {
         my $value = $form->param_value('global_fields_' . $field->code);
-        $page->update_attribute($field, $value);
+        $page->update_attribute($site->id, $field, $value);
     }
 
 }
@@ -785,14 +785,14 @@ sub update_page_attributes
 
 sub update_attachment_attributes
 {
-    my ($self, $c, $page) = @_;
+    my ($self, $c, $page, $site) = @_;
 
     my $form = $c->stash->{form};
-    my @fields = $c->model('CMS::AttachmentAttributeDetail')->active->all;
+    my @fields = $site->attachment_attribute_details->active->all;
     for my $field (@fields)
     {
         my $value = $form->param_value('global_fields_' . $field->code);
-        $page->update_attribute($field, $value);
+        $page->update_attribute($site->id, $field, $value);
     }
 
 }
