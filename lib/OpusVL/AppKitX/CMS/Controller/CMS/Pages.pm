@@ -785,14 +785,14 @@ sub update_page_attributes
 
 sub update_attachment_attributes
 {
-    my ($self, $c, $page, $site) = @_;
+    my ($self, $c, $attachment, $site) = @_;
 
     my $form = $c->stash->{form};
     my @fields = $site->attachment_attribute_details->active->all;
     for my $field (@fields)
     {
         my $value = $form->param_value('global_fields_' . $field->code);
-        $page->update_attribute($site->id, $field, $value);
+        $attachment->update_attribute($site->id, $field, $value);
     }
 
 }
