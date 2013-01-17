@@ -17,7 +17,10 @@ function delete_site(site_id, site_name) {
 				[% IF site.site.status == 'active' %]
 				<tr>
 					<td>
-						<a href="[% c.uri_for(c.controller.action_for('edit'), [ site.site.id ]) %]">[% site.site.name %]</a>
+						<a href="[% c.uri_for(c.controller.action_for('edit'), [ site.site.id ]) %]">[% site.site.name %]</a> 
+                        [% IF site.site.master_domain %]
+                            ([% site.site.master_domain.domain %])
+                        [% END %]
 					</td>
 					<td>
 						<div class="dropdown">
