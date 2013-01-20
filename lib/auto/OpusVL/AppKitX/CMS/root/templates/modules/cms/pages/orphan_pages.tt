@@ -9,6 +9,7 @@
 					<th>Parent URL</th>
 					<th>Child URL</th>
 					<th>Status of Parent</th>
+                    <th>Actions</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -17,6 +18,7 @@
 						<td><a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('edit_page'), [ site.id, orphan.parent.id ]) %]">[% orphan.parent.url %]</a></td>
 						<td><a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('edit_page'), [ site.id, orphan.id ]) %]">[% orphan.url %]</td>
 						<td>[% IF orphan.parent.status == 'deleted' %]<font color="red">Deleted</font>[% ELSE %][% orphan.parent.status %][% END %]</td>
+                        <td><a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('delete_page'), [ site.id, orphan.id ]) %]">Delete orphan</a></td>
 					</tr>
 				[% END %]
 			</tbody>

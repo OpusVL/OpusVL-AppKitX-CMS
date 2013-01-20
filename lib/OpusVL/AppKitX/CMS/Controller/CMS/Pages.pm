@@ -377,7 +377,8 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm :AppKitFe
         note_changes => $page->note_changes,
         site         => $site->id,
     };
-    
+ 
+    $DB::single = 1;   
     $self->construct_attribute_form($c, { type => 'page', site_id => $site->id });
 
     my @fields = $site->page_attribute_details->active->all;
@@ -871,63 +872,67 @@ sub preview :Chained('page_contents') :Args(0) :AppKitFeature('Pages - Read Acce
     $c->stash->{me}  = $page;
     $c->stash->{cms} = {
         asset => sub {
-            my $id = shift;
-            if (looks_like_number $id) {
-                if (my $asset = $c->model('CMS::Asset')->available($site->id)->find({id => $id})) {
-                    return $c->uri_for($self->action_for('_asset'), $asset->id, $asset->filename);
-                }
-            }
-            else {
-                # not a number? then we may be looking for a logo!
-                if ($id eq 'logo') {
-                    if (my $logo = $c->model('CMS::Asset')->available($site->id)->find({ description => 'Logo' })) {
-                        return $c->uri_for($self->action_for('_asset'), $logo->id, $logo->filename);
+                my $id = shift;
+                if (looks_like_number $id) {
+                    if (my $asset = $c->model('CMS::Asset')->available($site->id)->find({id => $id})) {
+                        return $c->uri_for($self->action_for('_asset'), $asset->id, $asset->filename);
                     }
-                    else {
-                        if ($logo = $c->model('CMS::Asset')->available($site->id)->find({ global => 1, description => 'Logo' })) {
+                }
+                else {
+                    # not a number? then we may be looking for a logo!
+                    if ($id eq 'logo') {
+                        if (my $logo = $site->assets->available($site->id)->find({ description => 'Logo' })) {
                             return $c->uri_for($self->action_for('_asset'), $logo->id, $logo->filename);
+                        }
+                        else {
+                            if ($logo = $c->model('CMS::Asset')->available($site->id)->find({ global => 1, description => 'Logo' })) {
+                                return $c->uri_for($self->action_for('_asset'), $logo->id, $logo->filename);
+                            }
                         }
                     }
                 }
-            }
-        },
-        attachment => sub {
-            if (my $attachment = $c->model('CMS::Attachment')->find({id => shift})) {
-                return $c->uri_for($self->action_for('_attachment'), $attachment->id, $attachment->filename);
-            }
-        },
-        element => sub {
-            my ($id, $attrs) = @_;
-            if ($attrs) {
-                foreach my $attr (%$attrs) {
-                    $c->stash->{me}->{$attr} = $attrs->{$attr};
+            },
+            attachment => sub {
+                if (my $attachment = $c->model('CMS::Attachment')->find({id => shift})) {
+                    return $c->uri_for($self->action_for('_attachment'), $attachment->id, $attachment->filename);
                 }
-            }
-            if (my $element = $element_rs->available($site->id)->find({id => $id})) {
-                return $element->content;
-            }
-        },
-        site_attr => sub {
-            my $code = shift;
-            if (my $attr = $site->site_attributes->find({ code => $code })) {
-                return $attr->value;
-            }
-        },
-        page => sub {
-            return $site->pages->published->find({id => shift});
-        },
-        pages => sub {
-            return $site->pages->published->attribute_search(@_);
-        },
-        param => sub {
-            return $c->req->param(shift);
-        },
-        toplevel => sub {
-            return $c->model('CMS::Page')->published->toplevel;
-        },
-        thumbnail => sub {
-            return $c->uri_for($self->action_for('_thumbnail'), @_);
-        },
+            },
+            element => sub {
+                my ($id, $attrs) = @_;
+                if ($attrs) {
+                    foreach my $attr (%$attrs) {
+                        $c->stash->{me}->{$attr} = $attrs->{$attr};
+                    }
+                }
+                if (my $element = $c->model('CMS::Element')->available($site->id)->find({id => $id})) {
+                    return $element->content;
+                }
+            },
+            site_attr => sub {
+                my $code = shift;
+                if (my $attr = $site->site_attributes->find({ code => $code })) {
+                    return $attr->value;
+                }
+            },
+            page => sub {
+                return $site->pages->published->find({id => shift});
+            },
+            pages => sub {
+                return $site->pages->published->attribute_search($site->id, @_);
+            },
+            param => sub {
+                return $c->req->param(shift);
+            },
+            toplevel => sub {
+                return $site->pages->published->toplevel;
+            },
+            thumbnail => sub {
+                return $c->uri_for($self->action_for('_thumbnail'), @_);
+            },
+            form      => sub {
+                my $name = shift;
+                return $site->forms->find({ name => $name });
+            },
     };
 
     # load any plugins
