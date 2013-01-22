@@ -20,7 +20,7 @@
 							<td>[% form.name %]</td>
 							<td>[% form.forms_fields.size %]</td>
 							<td>[% form.forms_submit_fields.redirect.url %]</td>
-							<td>View | 
+							<td><a href="[% c.uri_for(c.controller.action_for('edit_form'), [ site.id, form.id ]) %]">Edit</a> | 
 								<a href="[% c.uri_for(c.controller.action_for('delete_form'), [ site.id, form.id ]) %]">Delete</a>
 							</td>
 						</tr>

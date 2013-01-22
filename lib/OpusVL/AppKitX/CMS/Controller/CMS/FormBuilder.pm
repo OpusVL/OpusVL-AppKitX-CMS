@@ -67,6 +67,20 @@ sub index
     $c->stash->{forms} = [$site->forms->all];
 }
 
+sub edit_form
+    : Chained('forms')
+    : PathPart('edit')
+    : Args(0)
+    : AppKitFeature('Forms - Write Access') {
+    my ($self, $c) = @_;
+    my ($site, $form) = (
+        $c->stash->{site},
+        $c->stash->{form},
+    );
+
+    
+}
+
 sub new_form
     : Chained('/modules/cms/sites/base')
     : PathPart('forms/new')
@@ -116,6 +130,7 @@ sub new_form
                             }
                         }
 
+                        # TODO: probably exclude submits from this...
                         $form_opts->{ $params->{$param} } = {
                             type        => $type,
                             priority    => $priority,
@@ -148,6 +163,11 @@ sub new_form
                             priority => $form_opts->{$opt}->{priority},
                             type     => $type->id,
                         });
+
+                        if ($type->type eq 'Select') {
+                            my $opts  = $params->{"select-opts-" . $new_field->priority};
+                            $new_field->update({ fields => $opts });
+                        }
 
                         if ($form_opts->{$opt}->{constraint}) {
                             if ($new_field) {

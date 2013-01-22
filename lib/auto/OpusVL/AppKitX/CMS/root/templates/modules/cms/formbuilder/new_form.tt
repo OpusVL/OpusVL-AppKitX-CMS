@@ -95,6 +95,13 @@
 	            		'<input type="checkbox" value="' + value.val() + '" /> <a href="javascript:void(0)" onclick="deleteField(' + counter + ')" rel="' + counter + '">remove</a></div>');
 	        		break;
 
+	        	case 'Select':
+	        		form.append('<div class="form-element-' + counter + '">' +
+	        			'<input type="hidden" id="select-opts-' + counter + '" name="select-opts-' + counter + '" value="" />' +
+	            		'<strong>' + value.val() + '</strong>&nbsp;' +
+	            		'<input type="hidden" name="field-select-' + counter + '" value="' + value.val() + '"/>' +
+	            		'<select id="select-' + counter + '"><option></option></select> <a href="javascript:void(0)" onclick="deleteField(' + counter + ')" rel="' + counter + '">remove</a> | <a href="javascript:void(0)" onclick="addSelectOption(' + counter + ')" rel="' + counter + '">Add option</a></div>');
+	        		break;
 	        	case 'Submit':
 	        		form.append('<div class="form-element-' + counter + '">' +
 	        			'<input type="hidden" name="field-submit-' + counter + '" value="' + value.val() + '" />' +
@@ -119,5 +126,23 @@
 		// remove it completely from the DOM so we don't have to deal with it
         if (cid != null)
             $('.form-element-' + cid).remove();
+    }
+
+    function addSelectOption(cid) {
+    	if (cid != null) {
+    		var newOption = prompt("Please enter a new option");
+    		var newValue  = prompt("...and now its value")
+    		if (newOption && newValue) {
+    			$('#select-' + cid).append($('<option>', { 
+        			value: newOption,
+        			text : newValue 
+    			}));
+
+    			// update json field
+    			var optsCurr = $('#select-opts-' + cid).val();
+    			optsCurr += '*,*' + newOption + '*!*' + newValue;
+    			$('#select-opts-' + cid).val(optsCurr);
+    		}
+    	}
     }
 </script>
