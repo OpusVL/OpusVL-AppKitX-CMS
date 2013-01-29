@@ -88,14 +88,28 @@ sub add :Local :Args(0) :AppKitForm :AppKitFeature('Site - Write Access'){
                             super   => 1,
                         });
                     }
-                    when ('asset') {
-                        $asset_attr->find_or_create({
-                            site_id => $site->id,
-                            code    => $attr->code,
-                            value   => $attr->value||'',
-                            name    => $attr->name,
-                        });
-                    }
+                    #when ('asset') {
+                    #    my $new_attr = $asset_attr->find_or_create({
+                    #        site_id => $site->id,
+                    #        code    => $attr->code,
+                    #        name    => $attr->name,
+                    #        type    => $attr->field_type,
+                    #    });
+
+                    #    if ($new_attr) {
+                    #        if ($attr->field_type eq 'select') {
+                    #            # the select field has values
+                    #            if ($attr->values->count > 0) {
+                    #                for my $value ($attr->values->all) {
+                    #                    $new_attr->field_values->find_or_create({
+                    #                        field_id => $new_attr->id,
+                    #                        value    => $value->value
+                    #                    });
+                    #                }
+                    #            }
+                    #        }
+                    #    }
+                    #}
                     when ('page') {
                         my $new_attr = $page_attr->find_or_create({
                             site_id => $site->id,
