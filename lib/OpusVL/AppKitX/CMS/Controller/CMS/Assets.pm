@@ -269,6 +269,11 @@ sub attributes
     my ($self, $c) = @_;
     my $site       = $c->stash->{site};
 
+    if ($c->req->body_params->{cancel}) {
+        $c->res->redirect($c->uri_for($self->action_for('index'), [ $site->id ]));
+        $c->detach;
+    }
+
     push @{ $c->stash->{breadcrumbs} }, {
         name    => 'Assets',
         url     => $c->uri_for( $c->controller->action_for('index'), [ $site->id ]),
