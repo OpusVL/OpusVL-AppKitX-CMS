@@ -1,5 +1,6 @@
 package OpusVL::AppKitX::CMS::Controller::CMS::Sites;
 
+use 5.010;
 use Moose;
 use namespace::autoclean;
 BEGIN { extends 'Catalyst::Controller::HTML::FormFu'; };
@@ -72,16 +73,75 @@ sub add :Local :Args(0) :AppKitForm :AppKitFeature('Site - Write Access'){
                 });
             }
 
-            my $site_attr = $c->model('CMS::SiteAttribute');
+            my $site_attr  = $site->site_attributes;
+            my $asset_attr = $site->asset_attributes;
+            my $page_attr  = $site->page_attribute_details;
+            my $att_attr   = $site->attachment_attribute_details;
             for my $attr ($c->model('CMS::DefaultAttribute')->all) {
-                $site_attr->find_or_create({
-                    site_id => $site->id,
-                    code    => $attr->code,
-                    value   => $attr->value,
-                    name    => $attr->name,
-                    super   => 1,
-                });
-            }
+                given ($attr->type) {
+                    when ('site') {
+                        $site_attr->find_or_create({
+                            site_id => $site->id,
+                            code    => $attr->code,
+                            value   => $attr->value||'',
+                            name    => $attr->name,
+                            super   => 1,
+                        });
+                    }
+                    when ('asset') {
+                        $asset_attr->find_or_create({
+                            site_id => $site->id,
+                            code    => $attr->code,
+                            value   => $attr->value||'',
+                            name    => $attr->name,
+                        });
+                    }
+                    when ('page') {
+                        my $new_attr = $page_attr->find_or_create({
+                            site_id => $site->id,
+                            name    => $attr->name,
+                            code    => $attr->code,
+                            type    => $attr->field_type,
+                        });
+
+                        if ($new_attr) {
+                            if ($attr->field_type eq 'select') {
+                                # the select field has values
+                                if ($attr->values->count > 0) {
+                                    for my $value ($attr->values->all) {
+                                        $new_attr->field_values->find_or_create({
+                                            field_id => $new_attr->id,
+                                            value    => $value->value
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    when ('attachment') {
+                        my $new_attr = $att_attr->find_or_create({                                                                                                         
+                            site_id => $site->id,                                                                                                                           
+                            name    => $attr->name,                                                                                                                         
+                            code    => $attr->code,                                                                                                                         
+                            type    => $attr->field_type,                                                                                                                   
+                        });                                                                                                                                                 
+                                                                                                                                                                            
+                        if ($new_attr) {                                                                                                                                    
+                            if ($attr->field_type eq 'select') {                                                                                                            
+                                # the select field has values                                                                                                               
+                                if ($attr->values->count > 0) {                                                                                                             
+                                    for my $value ($attr->values->all) {                                                                                                    
+                                        $new_attr->field_values->find_or_create({                                                                                           
+                                            field_id => $new_attr->id,                                                                                                      
+                                            value    => $value->value                                                                                                       
+                                        });                                                                                                                                 
+                                    }                                                                                                                                       
+                                }                                                                                                                                           
+                            }                                                                                                                                               
+                        }
+                    }
+                } # /given
+            } # /for
             
             my $many = scalar(@{$users_to_add}) > 1 ? 'users' : 'user'; 
             $c->flash->{status_msg} = "Successfully added ${many} to site " . $form->param('name');
