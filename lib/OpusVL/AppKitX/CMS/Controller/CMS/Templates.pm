@@ -146,6 +146,7 @@ sub edit_template :Chained('templates') :PathPart('edit') :Args(0) :AppKitForm :
         }
         
         #$c->res->redirect($c->uri_for($self->action_for('index'), [ $site->id ]));
+        $c->flash(status_msg => 'Successfully updated template');
         $c->res->redirect($c->req->uri);
         $c->detach;
     }
