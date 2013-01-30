@@ -1,0 +1,49 @@
+[% META appkitfeature_tablesorter = 1 %]
+[% INCLUDE modules/cms/header.tt title="Editing Form - $form.name" %]
+
+<div class="content_block">
+	<fieldset>
+		<legend>Form Options</legend>
+		<div class="text label">
+			<label>Form Name</label>
+			<input type="text" id="form-name" value="[% form.name %]" />
+		</div>
+
+		<div class="select label">
+			<label>Redirect to</label>
+			<select id="form-redirect">
+				<option></option>
+				[% FOREACH page IN pages %]
+					<option name="[% page.id %]">[% page.url %] ([% page.title %])</option>
+				[% END %]
+			</select>
+		</div>
+
+	</fieldset>
+</div>
+
+<div class="content_block">
+
+	<fieldset>
+		<legend>Form Fields</legend>
+		<div class="text label">
+			<label>Label</label>
+			<input type="text" id="field-value" value="" /> as a 
+			<select id="field-type">
+				[% FOREACH type IN types %]
+					<option id="[% type.id %]">[% type.type %]</option>
+				[% END %]
+			</select>
+		</div>
+		<div class="select label">
+			<label>Constraint</label>
+			<select id="constraint-type">
+				<option id="none"></option>
+				[% FOREACH constraint IN constraints %]
+					<option id="[% constraint.id %]">[% constraint.name %] [% IF constraint.value %]([% constraint.value %])[% END %]</option>
+				[% END %]
+			</select>
+		</div>
+		<button class="btn" id="field-add"><i class="icon icon-plus"></i> Add field</button>
+	</fieldset>
+</div>
