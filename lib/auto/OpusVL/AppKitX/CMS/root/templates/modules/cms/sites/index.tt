@@ -16,6 +16,9 @@ function delete_site(site_id, site_name) {
 			[% FOREACH site IN sites %]
 				[% IF site.site.status == 'active' %]
 				<tr>
+                    <td>
+                        [% site.site.id %]
+                    </td>
 					<td>
 						<a href="[% c.uri_for(c.controller.action_for('edit'), [ site.site.id ]) %]">[% site.site.name %]</a> 
                         [% IF site.site.master_domain %]
