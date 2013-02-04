@@ -306,7 +306,10 @@ sub delete_form
     if ($c->req->body_params) {
         if ($c->req->body_params->{submit_yes}) {
             $form->forms_submit_fields->delete;
-            $form->forms_content->delete;
+            for my $field ($form->forms_fields->all) {
+                if ($field->content)    { $field->content->delete; }
+                if ($field->constraint) { $field->constraint->delete; }
+            }
             $form->forms_fields->delete;
             $form->delete;
             $c->flash(status_msg => 'Removed form ' . $form->name);
