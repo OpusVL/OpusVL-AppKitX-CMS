@@ -87,6 +87,7 @@ sub edit_form
         my $constraint_rs = $c->model('CMS::FormsConstraint');
         my $params = $c->req->body_params;
 
+        # update the page
         if (my $page_id = $params->{form_redirect}) {
             if ($page_id != $form->redirect_page->id) {
                 $form->forms_submit_fields->first->update({
@@ -119,12 +120,21 @@ sub edit_form
                         # FIXME: For the love of god I need to fix this
                         # ie: DO NOT USE THE PRIORITY BECAUSE THAT IS STUPID
                         if (my $f = $form->forms_fields->search({ priority => $priority })->first) {
-                            $f>forms_fields_constraints->first->update({
+                            $f->forms_fields_constraints->first->update({
                                 constraint_id => $constraint,
                             });
                         }
                     }
                 } # / constraint update
+
+                # update select fields
+                if ($type eq 'select') {
+                    if ($params->{"select-opts-${priority}"}) {
+                        if (my $f = $form->forms_fields->search({ priority => $priority })->first) {
+                            $f->update({ fields => $params->{"select-opts-${priority}"} });
+                        }
+                    }
+                }
             }
         }
 
