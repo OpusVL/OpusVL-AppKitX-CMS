@@ -6,15 +6,15 @@
 		<legend>Form Options</legend>
 		<div class="text label">
 			<label>Form Name</label>
-			<input type="text" id="form-name" value="[% form.name %]" />
+			<input disabled="disabled" type="text" id="form-name" value="[% form.name %]" />
 		</div>
 
 		<div class="select label">
 			<label>Redirect to</label>
-			<select id="form-redirect">
+			<select id="form-redirect" name="form-redirect">
 				<option></option>
 				[% FOREACH page IN pages %]
-					<option name="[% page.id %]">[% page.url %] ([% page.title %])</option>
+					<option name="[% page.id %]" [% IF form.redirect_page.url == page.url %]selected[% END %]>[% page.url %] ([% page.title %])</option>
 				[% END %]
 			</select>
 		</div>
@@ -22,28 +22,170 @@
 	</fieldset>
 </div>
 
-<div class="content_block">
+<form action="" method="post" class="form form-horizontal">
+	<input type="hidden" name="form_name" value="[% form.name %]" />
+	<input type="hidden" name="form_redirect" value="[% form.redirect_page.id %]" />
+	<div class="content_block my-form">
+		<h2>[% form.name %]</h2>
 
-	<fieldset>
-		<legend>Form Fields</legend>
-		<div class="text label">
-			<label>Label</label>
-			<input type="text" id="field-value" value="" /> as a 
-			<select id="field-type">
-				[% FOREACH type IN types %]
-					<option id="[% type.id %]">[% type.type %]</option>
-				[% END %]
-			</select>
+	[% FOREACH field IN form.fields %]
+		[% IF field.constraint %]
+			<input type="hidden" value="[% field.constraint.constraint.id %]" name="constraint-id-[% field.priority %]" />
+		[% END %]
+
+		[% SWITCH field.type.type %]
+			[% CASE 'Text' %]
+				<div class="form-element-[% field.priority %]">
+	            	<strong>[% field.label %]</strong>&nbsp;
+	            		<input type="text" name="field-text-[% field.priority %]" value="[% field.label %]" /> <a href="javascript:void(0)" onclick="renameField([% field.priority %])" rel="[% field.priority %]">rename</a></div>
+	        [% CASE 'Textarea' %]
+				<div class="form-element-[% field.priority %]">
+	            	<strong>[% field.label %]</strong>&nbsp;
+	            		<textarea name="field-text-[% field.priority %]">[% field.label %]</textarea> <a href="javascript:void(0)" onclick="renameField([% field.priority %], 'textarea')" rel="[% field.priority %]">rename</a></div>
+	        [% CASE 'Checkbox' %]
+				<div class="form-element-[% field.priority %]">
+					<input type="hidden" name="field-checkbox-[% field.priority %]" value="[% field.label %]" />
+	            	<strong>[% field.label %]</strong>&nbsp;
+	            		<input type="checkbox" value="[% field.label %]" /> <a href="javascript:void(0)" onclick="renameField([% field.priority %])" rel="[% field.priority %]">rename</a></div>
+	        [% CASE 'Select' %]
+				<div class="form-element-[% field.priority %]">
+					<input type="hidden" id="field-select-[% field.priority %]" name="field-select-[% field.priority %]" value="[% field.label %]" />
+					<input type="hidden" id="select-opts-[% field.priority %]" name="select-opts-[% field.priority %]" value="[% field.fields %]" />
+	            	<strong>[% field.label %]</strong>&nbsp;
+	            		<select id="select-[% field.priority %]">
+	            			[% opts = field.fields.split('\*,\*') %]
+	            			[% FOREACH opt IN opts %]
+	            				[% value = opt.split('\*!\*') %]
+	            				<option value="[% value.1 %]">[% value.0 %]</option>
+	            			[% END %]
+	            		</select>
+
+	            		<a href="javascript:void(0)" onclick="renameField([% field.priority %], 'select')" rel="[% field.priority %]">rename</a> | <a href="javascript:void(0)" onclick="addSelectOption([% field.priority %])" rel="[% field.priority %]">Add option</a></div>
+	    [% END %]
+	[% END %]
 		</div>
-		<div class="select label">
-			<label>Constraint</label>
-			<select id="constraint-type">
-				<option id="none"></option>
-				[% FOREACH constraint IN constraints %]
-					<option id="[% constraint.id %]">[% constraint.name %] [% IF constraint.value %]([% constraint.value %])[% END %]</option>
-				[% END %]
-			</select>
-		</div>
-		<button class="btn" id="field-add"><i class="icon icon-plus"></i> Add field</button>
-	</fieldset>
-</div>
+	<input type="submit" class="submit submit_ok" name="save_form" value="Save Form" />
+</form>
+
+<script type="text/javascript">
+    var form    = $('.my-form');
+    var counter = 0;
+
+    $('#form-name').keyup(function() {
+        $('.my-form h2').html( $(this).val() );
+        $('[name="form_name"]').val( $(this).val() );
+    });
+
+    $('#form-redirect').change(function() {
+    	$('[name="form_redirect"]').val(
+    		$('#form-redirect option:selected').attr('name')
+    	);
+    });
+
+    $('#field-add').click(function() {
+    	var type  = $('#field-type').val();
+    	var value = $('#field-value');
+    	if (value.val() != '') {
+	    	switch(type) {
+	    		case 'Text':
+	    			form.append('<div class="form-element-' + counter + '">' +
+	            		'<strong>' + value.val() + '</strong>&nbsp;' +
+	            		'<input type="text" name="field-text-' + counter + '" value="' + value.val() + '" /> <a href="javascript:void(0)" onclick="deleteField(' + counter + ')" rel="' + counter + '">remove</a></div>');
+	        		break;
+
+	        	case 'Textarea':
+	        		form.append('<div class="form-element-' + counter + '">' +
+			            '<strong>' + value.val() + '</strong>&nbsp;' +
+			            '<textarea name="field-textarea-' + counter + '">' + value.val() + '</textarea> <a href="javascript:void(0)" onclick="deleteField(' + counter + ')" rel="' + counter + '">remove</a></div>');
+	        		break;
+
+	        	case 'Checkbox':
+	        		form.append('<div class="form-element-' + counter + '">' +
+	            		'<strong>' + value.val() + '</strong>&nbsp;' +
+	            		'<input type="hidden" name="field-checkbox-' + counter + '" value="' + value.val() + '"/>' +
+	            		'<input type="checkbox" value="' + value.val() + '" /> <a href="javascript:void(0)" onclick="deleteField(' + counter + ')" rel="' + counter + '">remove</a></div>');
+	        		break;
+
+	        	case 'Select':
+	        		form.append('<div class="form-element-' + counter + '">' +
+	        			'<input type="hidden" id="select-opts-' + counter + '" name="select-opts-' + counter + '" value="" />' +
+	            		'<strong>' + value.val() + '</strong>&nbsp;' +
+	            		'<input type="hidden" name="field-select-' + counter + '" value="' + value.val() + '"/>' +
+	            		'<select id="select-' + counter + '"><option></option></select> <a href="javascript:void(0)" onclick="deleteField(' + counter + ')" rel="' + counter + '">remove</a> | <a href="javascript:void(0)" onclick="addSelectOption(' + counter + ')" rel="' + counter + '">Add option</a></div>');
+	        		break;
+	        	case 'Submit':
+	        		form.append('<div class="form-element-' + counter + '">' +
+	        			'<input type="hidden" name="field-submit-' + counter + '" value="' + value.val() + '" />' +
+	            		'<input type="submit" value="' + value.val() + '" /></div'
+	            	);
+
+	            	break;
+	    	}
+
+	    	if ($('#constraint-type').val() != '') {
+	    		//var constraint = $('#constraint-type');
+	    		var constraint = $('#constraint-type option:selected');
+	    		form.append('<input type="hidden" value="' + constraint.attr('id') + '" name="constraint-id-' + counter + '" />');
+	    	}
+
+	    	counter += 1;
+	    	value.val('');
+	    }
+    });
+
+	function renameField(cid, type) {
+		if (cid != null) {
+			var newName = prompt("Enter a new name for this field");
+			if (newName) {
+				if (type) {
+					switch(type) {
+						case 'textarea':
+							$('.form-element-' + cid + ' textarea').text(newName);
+							break;
+
+						case 'select':
+							$('#field-select-' + cid).val(newName);
+							break;
+
+						case 'checkbox':
+							$('#field-checkbox-' + cid).val(newName);
+							break;
+							
+						default:
+							alert("Unknown type: " + type);
+							break;
+					}
+				}
+				else {
+					$('.form-element-' + cid + ' input').val(newName);
+				}
+				
+				$('.form-element-' + cid + ' strong').text(newName);
+			}
+		}
+	}
+
+	function deleteField(cid) {
+		// remove it completely from the DOM so we don't have to deal with it
+        if (cid != null)
+            $('.form-element-' + cid).remove();
+    }
+
+    function addSelectOption(cid) {
+    	if (cid != null) {
+    		var newOption = prompt("Please enter a new option");
+    		var newValue  = prompt("...and now its value")
+    		if (newOption && newValue) {
+    			$('#select-' + cid).append($('<option>', { 
+        			value: newOption,
+        			text : newValue 
+    			}));
+
+    			// update json field
+    			var optsCurr = $('#select-opts-' + cid).val();
+    			optsCurr += '*,*' + newOption + '*!*' + newValue;
+    			$('#select-opts-' + cid).val(optsCurr);
+    		}
+    	}
+    }
+</script>

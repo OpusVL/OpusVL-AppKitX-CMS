@@ -78,6 +78,60 @@ sub edit_form
         $c->stash->{form},
     );
 
+    $c->stash(
+        types       => [$c->model('CMS::FormsFieldType')->all],
+        constraints => [$c->model('CMS::FormsConstraint')->all],
+    );
+
+    if ($c->req->body_params && $c->req->body_params->{save_form}) {
+        my $constraint_rs = $c->model('CMS::FormsConstraint');
+        my $params = $c->req->body_params;
+
+        if (my $page_id = $params->{form_redirect}) {
+            if ($page_id != $form->redirect_page->id) {
+                $form->forms_submit_fields->first->update({
+                    redirect => $page_id,
+                });
+            }
+        }
+
+        foreach my $param (keys %$params) {
+            my $constraint;
+            if ($param =~ /field-(.+)-(\d+?)/) {
+                my ($type, $priority) = ($1, $2);
+
+                # FIXME: For the love of god I need to fix this
+                # ie: DO NOT USE THE PRIORITY BECAUSE THAT IS STUPID
+                if (my $field = $form->forms_fields->search({ priority => $priority })->first) {
+                    if ($field->label ne $params->{$param}) {
+                        $field->update({ label => $params->{$param} });
+                    }
+                }
+
+                # We may make use of this bit in the future, but for now
+                # let's leave it alone
+                if ($params->{"constraint-id-${priority}"} and 0) {
+                    # This field has a constraint
+                    my $constraint_id = $params->{"constraint-id-${priority}"};
+                    if (my $const = $constraint_rs->find($constraint_id)) {
+                        $constraint = $const->id;
+
+                        # FIXME: For the love of god I need to fix this
+                        # ie: DO NOT USE THE PRIORITY BECAUSE THAT IS STUPID
+                        if (my $f = $form->forms_fields->search({ priority => $priority })->first) {
+                            $f>forms_fields_constraints->first->update({
+                                constraint_id => $constraint,
+                            });
+                        }
+                    }
+                } # / constraint update
+            }
+        }
+
+        $c->flash(status_msg => 'Updated ' . $form->name);
+        $c->res->redirect($c->req->uri);
+        $c->detach;
+    }
     
 }
 
@@ -141,7 +195,7 @@ sub new_form
                         if ($type eq 'submit') {
                             my $submit = $form->create_related('forms_submit_fields', {
                                 value       => ucfirst $params->{$param},
-                                email       => 'brad.haywood@opusvl.com',
+                                email       => 'brad.haywood@opusvl.com', #FIXME: use this as the recipient email?
                                 submitted   => DateTime->now(),
                                 redirect    => $params->{form_redirect},
                             });
