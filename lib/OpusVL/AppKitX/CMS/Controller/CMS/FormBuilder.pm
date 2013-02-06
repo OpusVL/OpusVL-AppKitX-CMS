@@ -127,6 +127,17 @@ sub edit_form
                     }
                 } # / constraint update
 
+                # remove any deleted fields
+                for my $field ($form->forms_fields->all) {
+                    my $type = lc $field->type->type;
+                    my $pri  = $field->priority;
+                    if (not $c->req->body_params->{"field-${type}-${pri}"}) {
+                        # remove constraints
+                        if ($field->constraint) { $field->constraint->delete; }
+                        $field->delete();
+                    }
+                }
+
                 # update select fields
                 if ($type eq 'select') {
                     if ($params->{"select-opts-${priority}"}) {

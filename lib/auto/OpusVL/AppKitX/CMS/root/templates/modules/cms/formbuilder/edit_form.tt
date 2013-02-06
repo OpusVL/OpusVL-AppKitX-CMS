@@ -37,7 +37,7 @@
 			[% CASE 'Text' %]
 				<div class="form-element-[% field.priority %]">
 	            	<strong>[% field.label %]</strong>&nbsp;
-	            		<input type="text" name="field-text-[% field.priority %]" value="[% field.label %]" /> <a href="javascript:void(0)" onclick="renameField([% field.priority %])" rel="[% field.priority %]">rename</a></div>
+	            		<input type="text" name="field-text-[% field.priority %]" value="[% field.label %]" /> <a href="javascript:void(0)" onclick="renameField([% field.priority %])" rel="[% field.priority %]">rename</a> | <a href="javascript:void(0);" onclick="deleteField([% field.priority %])" rel="[% field.priority %]">delete</a></div>
 	        [% CASE 'Textarea' %]
 				<div class="form-element-[% field.priority %]">
 	            	<strong>[% field.label %]</strong>&nbsp;
@@ -60,7 +60,11 @@
 	            			[% END %]
 	            		</select>
 
-	            		<a href="javascript:void(0)" onclick="renameField([% field.priority %], 'select')" rel="[% field.priority %]">rename</a> | <a href="javascript:void(0)" onclick="addSelectOption([% field.priority %])" rel="[% field.priority %]">Add option</a></div>
+	            		<a href="javascript:void(0)" onclick="renameField([% field.priority %], 'select')" rel="[% field.priority %]">rename</a> | <a href="javascript:void(0)" onclick="addSelectOption([% field.priority %])" rel="[% field.priority %]">Add option</a> | <a href="javascript:void(0);" onclick="deleteSelectOption([% field.priority %])">Delete option</a></div>
+	        [% CASE 'Submit' %]
+	        	<div class="form-element-[% loop.max %]">
+	        		<input type="hidden" name="field-submit-[% loop.max %]" value="[% form.submit_button.value %]" />
+	            	<input type="submit" value="[% form.submit_button.value %]" /></div>
 	    [% END %]
 	[% END %]
 		</div>
@@ -111,12 +115,12 @@
 	        			'<input type="hidden" id="select-opts-' + counter + '" name="select-opts-' + counter + '" value="" />' +
 	            		'<strong>' + value.val() + '</strong>&nbsp;' +
 	            		'<input type="hidden" name="field-select-' + counter + '" value="' + value.val() + '"/>' +
-	            		'<select id="select-' + counter + '"><option></option></select> <a href="javascript:void(0)" onclick="deleteField(' + counter + ')" rel="' + counter + '">remove</a> | <a href="javascript:void(0)" onclick="addSelectOption(' + counter + ')" rel="' + counter + '">Add option</a></div>');
+	            		'<select id="select-' + counter + '"><option></option></select> <a href="javascript:void(0)" onclick="deleteField(' + counter + ')" rel="' + counter + '">remove</a> | <a href="javascript:void(0)" onclick="addSelectOption(' + counter + ')" rel="' + counter + '">Add option</a> </div>');
 	        		break;
 	        	case 'Submit':
 	        		form.append('<div class="form-element-' + counter + '">' +
 	        			'<input type="hidden" name="field-submit-' + counter + '" value="' + value.val() + '" />' +
-	            		'<input type="submit" value="' + value.val() + '" /></div'
+	            		'<input type="submit" value="' + value.val() + '" /></div>'
 	            	);
 
 	            	break;
@@ -167,8 +171,11 @@
 
 	function deleteField(cid) {
 		// remove it completely from the DOM so we don't have to deal with it
-        if (cid != null)
-            $('.form-element-' + cid).remove();
+        if (cid != null) {
+        	var r = confirm("Are you sure you want to remove this field?");
+        	if (r)
+            	$('.form-element-' + cid).remove();
+        }
     }
 
     function addSelectOption(cid) {
@@ -184,6 +191,19 @@
     			// update json field
     			var optsCurr = $('#select-opts-' + cid).val();
     			optsCurr += '*,*' + newOption + '*!*' + newValue;
+    			$('#select-opts-' + cid).val(optsCurr);
+    		}
+    	}
+    }
+
+    function deleteSelectOption(cid) {
+    	if (cid != null) {
+    		var field = $('#select-' + cid + ' :selected');
+    		if (field.val()) {
+    			var findAndRemove = "*,*" + field.html() + "*!*" + field.val();
+    			field.remove();
+    			var optsCurr = $('#select-opts-' + cid).val();
+    			optsCurr = optsCurr.replace(findAndRemove, '');
     			$('#select-opts-' + cid).val(optsCurr);
     		}
     	}
