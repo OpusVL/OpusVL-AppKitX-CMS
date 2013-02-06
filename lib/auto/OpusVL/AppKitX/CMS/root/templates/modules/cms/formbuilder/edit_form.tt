@@ -41,12 +41,12 @@
 	        [% CASE 'Textarea' %]
 				<div class="form-element-[% field.priority %]">
 	            	<strong>[% field.label %]</strong>&nbsp;
-	            		<textarea name="field-text-[% field.priority %]">[% field.label %]</textarea> <a href="javascript:void(0)" onclick="renameField([% field.priority %], 'textarea')" rel="[% field.priority %]">rename</a></div>
+	            		<textarea name="field-text-[% field.priority %]">[% field.label %]</textarea> <a href="javascript:void(0)" onclick="renameField([% field.priority %], 'textarea')" rel="[% field.priority %]">rename</a> | <a href="javascript:void(0);" onclick="deleteField([% field.priority %])" rel="[% field.priority %]">delete</a></div>
 	        [% CASE 'Checkbox' %]
 				<div class="form-element-[% field.priority %]">
 					<input type="hidden" name="field-checkbox-[% field.priority %]" value="[% field.label %]" />
 	            	<strong>[% field.label %]</strong>&nbsp;
-	            		<input type="checkbox" value="[% field.label %]" /> <a href="javascript:void(0)" onclick="renameField([% field.priority %])" rel="[% field.priority %]">rename</a></div>
+	            		<input type="checkbox" value="[% field.label %]" /> <a href="javascript:void(0)" onclick="renameField([% field.priority %])" rel="[% field.priority %]">rename</a> | <a href="javascript:void(0);" onclick="deleteField([% field.priority %])" rel="[% field.priority %]">delete</a></div>
 	        [% CASE 'Select' %]
 				<div class="form-element-[% field.priority %]">
 					<input type="hidden" id="field-select-[% field.priority %]" name="field-select-[% field.priority %]" value="[% field.label %]" />
@@ -60,7 +60,7 @@
 	            			[% END %]
 	            		</select>
 
-	            		<a href="javascript:void(0)" onclick="renameField([% field.priority %], 'select')" rel="[% field.priority %]">rename</a> | <a href="javascript:void(0)" onclick="addSelectOption([% field.priority %])" rel="[% field.priority %]">Add option</a> | <a href="javascript:void(0);" onclick="deleteSelectOption([% field.priority %])">Delete option</a></div>
+	            		<a href="javascript:void(0)" onclick="renameField([% field.priority %], 'select')" rel="[% field.priority %]">rename</a> | <a href="javascript:void(0);" onclick="deleteField([% field.priority %])" rel="[% field.priority %]">delete</a> | <a href="javascript:void(0)" onclick="addSelectOption([% field.priority %])" rel="[% field.priority %]">Add option</a> | <a href="javascript:void(0);" onclick="deleteSelectOption([% field.priority %])">Delete option</a></div>
 	        [% CASE 'Submit' %]
 	        	<div class="form-element-[% loop.max %]">
 	        		<input type="hidden" name="field-submit-[% loop.max %]" value="[% form.submit_button.value %]" />
