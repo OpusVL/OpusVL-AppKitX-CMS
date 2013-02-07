@@ -131,7 +131,7 @@
     function addSelectOption(cid) {
     	if (cid != null) {
     		var newOption = prompt("Please enter a new option");
-    		var newValue  = prompt("...and now its value")
+    		var newValue  = newOption;
     		if (newOption && newValue) {
     			$('#select-' + cid).append($('<option>', { 
         			value: newOption,
