@@ -131,10 +131,12 @@ sub edit_form
                 for my $field ($form->forms_fields->all) {
                     my $type = lc $field->type->type;
                     my $pri  = $field->priority;
-                    if (not $c->req->body_params->{"field-${type}-${pri}"}) {
-                        # remove constraints
-                        if ($field->constraint) { $field->constraint->delete; }
-                        $field->delete();
+                    unless ($type eq 'submit') {
+                        if (not $c->req->body_params->{"field-${type}-${pri}"}) {
+                            # remove constraints
+                            if ($field->constraint) { $field->constraint->delete; }
+                            $field->delete();
+                        }
                     }
                 }
 
