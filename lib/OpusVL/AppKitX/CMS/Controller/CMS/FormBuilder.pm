@@ -87,6 +87,13 @@ sub edit_form
         my $constraint_rs = $c->model('CMS::FormsConstraint');
         my $params = $c->req->body_params;
 
+        if ($params->{mail_to} ne $form->mail_to) {
+            $form->update({ mail_to => $params->{mail_to} });
+        }
+        if ($params->{mail_from} ne $form->mail_from) {
+            $form->update({ mail_from => $params->{mail_from} });
+        }
+
         # update the page
         if (my $page_id = $params->{form_redirect}) {
             if ($page_id != $form->redirect_page->id) {
@@ -187,6 +194,8 @@ sub new_form
             my $form = $site->create_related('forms', {
                 owner_id => $c->user->id,
                 name     => $params->{form_name},
+                mail_to  => $params->{mail_to},
+                mail_from => $params->{mail_from},
             });
 
             if ($form) {
@@ -195,6 +204,7 @@ sub new_form
                     $c->res->redirect($c->req->uri);
                     $c->detach;
                 }
+
                 foreach my $param (keys %$params) {
                     my $constraint;
                     if ($param =~ /field-(.+)-(\d+?)/) {
