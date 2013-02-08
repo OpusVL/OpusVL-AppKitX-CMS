@@ -18,6 +18,16 @@
 			</select>
 		</div>
 
+		<div class="text label">
+			<label>Mail from</label>
+			<input type="text" id="mail_from" value="forms@premgroup.com" />
+		</div>
+
+		<div class="text label">
+			<label>Mail to</label>
+			<input type="text" id="mail_to" value="[% c.user.email %]" />
+		</div>
+
 	</fieldset>
 </div>
 
@@ -43,11 +53,14 @@
 				[% END %]
 			</select>
 		</div>
-		<button class="btn" id="field-add"><i class="icon icon-plus"></i> Add field</button>
+		<a class="btn" id="field-add"><i class="icon icon-plus"></i> Add field</a>
 	</fieldset>
 </div>
 
 <form action="" method="post" class="form form-horizontal">
+	<input type="hidden" name="mail_to" value="[% c.user.email %]" />
+	<input type="hidden" name="mail_from" value="forms@premgroup.com" />
+
 	<input type="hidden" name="form_name" value="" />
 	<input type="hidden" name="form_redirect" value="" />
 	<div class="content_block my-form">
@@ -63,6 +76,13 @@
     $('#form-name').keyup(function() {
         $('.my-form h2').html( $(this).val() );
         $('[name="form_name"]').val( $(this).val() );
+    });
+
+    $('#mail_to').keyup(function() {
+    	$('[name="mail_to"]').val( $(this).val() );
+    });
+    $('#mail_from').keyup(function() {
+    	$('[name="mail_from"]').val( $(this).val() );
     });
 
     $('#form-redirect').change(function() {

@@ -2,6 +2,7 @@
 [% INCLUDE modules/cms/header.tt title="Editing Form - $form.name" %]
 
 <div class="content_block">
+	<form action="" method="post" class="form form-horizontal">
 	<fieldset>
 		<legend>Form Options</legend>
 		<div class="text label">
@@ -19,10 +20,20 @@
 			</select>
 		</div>
 
+		<div class="text label">
+			<label>Mail from</label>
+			<input type="text" name="mail_from" value="[% form.mail_from %]" />
+		</div>
+
+		<div class="text label">
+			<label>Mail to</label>
+			<input type="text" name="mail_to" value="[% form.mail_to %]" />
+		</div>
+
 	</fieldset>
 </div>
 
-<form action="" method="post" class="form form-horizontal">
+
 	<input type="hidden" name="form_name" value="[% form.name %]" />
 	<input type="hidden" name="form_redirect" value="[% form.redirect_page.id %]" />
 	<div class="content_block my-form">
