@@ -319,20 +319,20 @@ sub attributes
             };
             
             $type_rs->create($source);
-        
-            for(my $i = 1; $i <= $count; $i++) {
-                my $id          = $form->param_value("asset_id_$i");
-                my $delete_flag = $form->param_value("asset_delete_$i");
-                my $source      = $type_rs->find({ id => $id });
-                
-                if ($delete_flag) {
-                    $source->update({ active => 0 });
-                }
-                else {
-                    # only name editable
-                    $source->name($form->param_value("asset_name_$i"));
-                    $source->update;
-                }
+        }
+
+        for(my $i = 1; $i <= $count; $i++) {
+            my $id          = $form->param_value("asset_id_$i");
+            my $delete_flag = $form->param_value("asset_delete_$i");
+            my $source      = $type_rs->find({ id => $id });
+            
+            if ($delete_flag) {
+                $source->update({ active => 0 });
+            }
+            else {
+                # only name editable
+                $source->name($form->param_value("asset_name_$i"));
+                $source->update;
             }
         }
         
