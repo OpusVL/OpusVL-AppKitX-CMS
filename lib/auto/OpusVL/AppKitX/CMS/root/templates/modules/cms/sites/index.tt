@@ -12,6 +12,14 @@ function delete_site(site_id, site_name) {
 <div class="content_block">
 	[% IF sites.size > 0 %]
 		<table class="tablesorter">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Site Name</th>
+					<th>Master Domain</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
 			<tbody>
 			[% FOREACH site IN sites %]
 				[% IF site.site.status == 'active' %]
@@ -20,9 +28,11 @@ function delete_site(site_id, site_name) {
                         [% site.site.id %]
                     </td>
 					<td>
-						<a href="[% c.uri_for(c.controller.action_for('edit'), [ site.site.id ]) %]">[% site.site.name %]</a> 
+						<a href="[% c.uri_for(c.controller.action_for('edit'), [ site.site.id ]) %]">[% site.site.name %]</a>
+					</td>
+					<td>
                         [% IF site.site.master_domain %]
-                            ([% site.site.master_domain.domain %])
+                            <a href="[% c.uri_for(c.controller('Modules::CMS::Domains').action_for('edit'), [ site.site.id, site.site.master_domain.domain ]) %]">[% site.site.master_domain.domain %]</a>
                         [% END %]
 					</td>
 					<td>
