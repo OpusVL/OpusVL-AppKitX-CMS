@@ -36,10 +36,9 @@ sub auto :Private {
 
 sub index :Path :Args(0) :NavigationName('Sites') :AppKitFeature('Site - Read Access') {
     my ($self, $c) = @_;
-    my $sites = [ $c->model('CMS::SitesUser')
-        ->search({ user_id => $c->user->id })->all ];
 
-    $c->stash->{sites} = $sites;
+    my @sites = $c->model('CMS::SitesUser')->sites($c->user->id);
+    $c->stash->{sites} = \@sites;
 }
 
 #-------------------------------------------------------------------------------
