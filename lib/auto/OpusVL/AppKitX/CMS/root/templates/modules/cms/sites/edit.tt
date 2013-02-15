@@ -27,5 +27,10 @@
 			</tbody>
 		</table>
 	</fieldset>
+	<div class="clear"></div>
 </div>
+
+<form method="post" action="">
+<div style="float:right"><button name="site_clone" value="yes" class="btn btn-large"><i class="icon icon-random"></i> Clone Site</button></div>
+</form>
 

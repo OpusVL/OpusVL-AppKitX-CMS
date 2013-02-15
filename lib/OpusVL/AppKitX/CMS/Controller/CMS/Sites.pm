@@ -271,6 +271,14 @@ sub edit :Chained('base') :PathPart('edit') :Args(0) :AppKitForm :AppKitFeature(
 
     }
 
+    if ($c->req->body_params->{site_clone}) {
+        if (my $new_site = $site->clone) {
+            $c->flash(status_msg => 'Successfully cloned site');
+            $c->res->redirect($c->req->uri);
+            $c->detach;
+        }
+    }
+
     if ($c->req->body_params->{cancel}) {
         $c->res->redirect($c->uri_for($self->action_for('index')));
         $c->detach;
