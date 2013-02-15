@@ -274,7 +274,7 @@ sub edit :Chained('base') :PathPart('edit') :Args(0) :AppKitForm :AppKitFeature(
     if ($c->req->body_params->{site_clone}) {
         if (my $new_site = $site->clone) {
             $c->flash(status_msg => 'Successfully cloned site');
-            $c->res->redirect($c->req->uri);
+            $c->res->redirect($self->action_for('edit'), [ $new_site->id ]);
             $c->detach;
         }
     }
