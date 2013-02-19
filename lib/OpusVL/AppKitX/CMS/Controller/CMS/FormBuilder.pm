@@ -105,7 +105,7 @@ sub edit_form
 
         foreach my $param (keys %$params) {
             my $constraint;
-            if ($param =~ /field-(.+)-(\d+?)/) {
+            if ($param =~ /field-(.+)-(\d+)/) {
                 my ($type, $priority) = ($1, $2);
 
                 # FIXME: For the love of god I need to fix this
@@ -207,7 +207,7 @@ sub new_form
 
                 foreach my $param (keys %$params) {
                     my $constraint;
-                    if ($param =~ /field-(.+)-(\d+?)/) {
+                    if ($param =~ /field-(.+)-(\d+)/) {
                         my ($type, $priority) = ($1, $2);
                         if ($params->{"constraint-id-${priority}"}) {
                             # This field has a constraint
