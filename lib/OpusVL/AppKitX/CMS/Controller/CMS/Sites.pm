@@ -215,6 +215,7 @@ sub delete_site :Local :Args(1) :AppKitFeature('Site - Write Access') {
         if ($c->model('CMS::SitesUser')->find({ user_id => $c->user->id, site_id => $site_id })) {
             $site->update({ status => 'deleted' });
             $site->master_domains->delete;
+
             $c->flash(status_msg => 'Successfully removed ' . $site->name);
         }
         else {
@@ -275,6 +276,11 @@ sub edit :Chained('base') :PathPart('edit') :Args(0) :AppKitForm :AppKitFeature(
         if (my $new_site = $site->clone) {
             $c->flash(status_msg => 'Successfully cloned site');
             $c->res->redirect($c->uri_for($self->action_for('edit'), [ $new_site->id ]));
+            $c->detach;
+        }
+        else {
+            $c->flash(error_msg => 'Ouch. Something went wrong while trying to clone the site');
+            $c->res->redirect($c->req->uri);
             $c->detach;
         }
     }
