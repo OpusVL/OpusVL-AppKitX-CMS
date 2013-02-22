@@ -196,13 +196,13 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
             content => q{
 [% page = cms.param('page') %]
 [% UNLESS page %][% page = 1 %][% END %]
-[% articles = me.children({},{'sort' = 'newest', 'rows' = 5, 'page' = page}) %]
+[% articles = me.children({},{'sort' = 'newest', 'rows' = 5, 'page' = page, 'rs_only' = 1}) %]
 
-[% FOREACH article IN articles %]
-    <div class="">
+[% WHILE (article = articles.next) %]
+    <div style="padding-bottom:10px;" class="">
         <h3>[% article.title %]</h3>
         <strong>[% article.description %]</strong>
-        <p>[% article.content.substr(0, 300) %]...</p>
+        <p>[% article.content.substr(0, 300) | none %]...</p>
 
         <a href="[% article.url %]">Read more</a>
     </div>
@@ -212,12 +212,12 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
 [% pager = articles.pager %]
 [% IF pager.previous_page %]
     <div id="pager_prev">
-        <a href="[% me.url %]?page=[% pager.previous_page %]">Previous page</a>
+        <a href="[% me.url %]?page=[% pager.previous_page %]">&laquo; Previous page</a>
     </div>
 [% END %]
 [% IF pager.next_page %]
     <div id="pager_next">
-        <a href="[% me.url %]?page=[% pager.next_page %]">Next page</a>
+        <a href="[% me.url %]?page=[% pager.next_page %]">Next page &raquo;</a>
     </div>
 [% END %]
 </div>
