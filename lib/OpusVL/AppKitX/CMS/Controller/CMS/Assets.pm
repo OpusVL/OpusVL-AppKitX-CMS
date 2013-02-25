@@ -423,7 +423,7 @@ sub edit_values
     my $value = $c->stash->{value};
 
     $self->add_final_crumb($c, $value->code);
-    my $type_rs = $value->field_values;
+    my $type_rs = $value->field_values->search(undef, { order_by => { -asc => 'value' } });
     my @types = $type_rs->all;
     my $form = $c->stash->{form};
 
