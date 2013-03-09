@@ -199,12 +199,12 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
 [% articles = me.children({},{'sort' = 'newest', 'rows' = 5, 'page' = page, 'rs_only' = 1}) %]
 
 [% WHILE (article = articles.next) %]
-    <div style="padding-bottom:10px;" class="">
+    <div style="padding-bottom:20px;" class="">
         <h3>[% article.title %]</h3>
         <strong>[% article.description %]</strong>
-        <p>[% article.content.substr(0, 300) | none %]...</p>
+        <p>[% article.content.substr(0, 300).replace('\<div\>', '').replace('\<\/div\>', '') | none %]...</p>
 
-        <a href="[% article.url %]">Read more</a>
+        <a style="font-weight:bold" href="[% article.url %]">Read more</a>
     </div>
 [% END %]
 
