@@ -51,6 +51,12 @@ elements:
             default: 50
             constraints:
               - type: Required
+
+          - type: Text
+            name: content_type
+            label: Content type *
+            constraints:
+              - type: Required
           
           - type: Textarea
             name: description
@@ -108,7 +114,21 @@ elements:
           - type: File
             name: new_att_file
             label: Select file
-          
+         
+          - type: Hidden
+            name: id
+
+          - type: Text
+            name: slug
+            label: Slug
+            constraints:
+              - type: DBIC::Unique
+                model: CMS
+                resultset: Attachment
+                column: slug
+                id_field: id
+                message: Slug already in use
+ 
           - type: Text
             name: new_att_desc
             label: Description

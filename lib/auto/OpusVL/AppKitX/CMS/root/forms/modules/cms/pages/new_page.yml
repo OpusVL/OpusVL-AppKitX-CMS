@@ -54,6 +54,12 @@ elements:
               - type: Required
           
           - type: Text
+            name: content_type
+            label: Content type *
+            constraints:
+              - type: Required        
+  
+          - type: Text
             name: h1
             label: H1 Heading
             attributes:
