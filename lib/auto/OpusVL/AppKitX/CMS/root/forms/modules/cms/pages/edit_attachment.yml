@@ -15,7 +15,14 @@ elements:
   - type: Fieldset
     legend: Metadata
     name: metadata
+    
     elements:
+      - type: Text
+        name: slug
+        label: Slug
+        attributes:
+          disabled: disabled
+
       - type: Text
         name: description
         label: Description

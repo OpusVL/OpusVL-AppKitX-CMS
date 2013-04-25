@@ -17,7 +17,13 @@ elements:
             label: Name *
             constraints:
               - type: Required
-          
+         
+          - type: Text
+            name: slug
+            label: Slug
+            attributes:
+                disabled: disabled
+
           - type: Block
             attributes:
                 class: label

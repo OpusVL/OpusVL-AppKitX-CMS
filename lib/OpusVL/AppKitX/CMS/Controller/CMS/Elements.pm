@@ -80,10 +80,12 @@ sub new_element :Chained('/modules/cms/sites/base') :PathPart('element/new') :Ar
     if ($form->submitted_and_valid) {
         my $element = $c->model('CMS::Element')->create({
             name   => $form->param_value('name'),
+            slug   => $form->param_value('slug')||'',
             site   => $site->id,
             global => $form->param_value('global')||0,
         });
         
+        if ($element->slug eq '') { $element->update({ slug => $element->id }); }
         $element->set_content($form->param_value('content'));
         
         $c->res->redirect($c->uri_for($c->controller->action_for('index'), [ $site->id ]));
@@ -116,7 +118,8 @@ sub edit_element :Chained('elements') :PathPart('edit') :Args(0) :AppKitForm :Ap
     $form->default_values({
         name    => $element->name,
         content => $element->content,
-        global  => $element->global
+        global  => $element->global,
+        slug    => $element->slug,
     });
     
     $form->process;

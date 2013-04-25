@@ -95,8 +95,11 @@ sub new_asset :Chained('/modules/cms/sites/base') :PathPart('assets/new') :Args(
             site        => $site->id,
             global      => $form->param_value('global')||0,
             priority    => 10,
+            slug        => $form->param_value('slug')||'',
         });
         
+        if ($asset->slug eq '') { $asset->update({ slug => $asset->id }); }
+
         $asset->set_content($form->param_value('content'));
         
         $c->flash->{status_msg} = 'New asset created';
@@ -143,6 +146,7 @@ sub edit_asset :Chained('assets') :PathPart('edit') :Args(0) :AppKitForm :AppKit
         
         $form->default_values({
             content => $asset->content,
+            slug    => $asset->slug,
         });
     }
 
@@ -151,6 +155,7 @@ sub edit_asset :Chained('assets') :PathPart('edit') :Args(0) :AppKitForm :AppKit
     my $defaults = {
         description => $asset->description,
         global      => $asset->global,
+        slug        => $asset->slug,
     };
 
     my @fields = $c->model('CMS::AssetAttributeDetail')->active->all;
@@ -206,6 +211,16 @@ sub upload_assets :Chained('/modules/cms/sites/base') :Args(0) :AppKitFeature('A
             site        => $site->id,
         });
 
+        if ($asset_rs->search({ filename => $file->basename })->count > 1) {
+            my $aid      = $asset->id;
+            my $basename = $file->basename;
+            $basename =~ s/(\.[^.]+)$/_$aid$1/;
+            $asset->update({ slug => $basename });
+        }
+        else {
+            $asset->update({ slug => $file->basename });
+        }
+
         $asset->set_content($file->slurp);       
     }
 }
@@ -222,6 +237,16 @@ sub upload_assets_global :Chained('/modules/cms/sites/base') :Args(0) :AppKitFea
             site        => $site->id,
             global      => 1,
         });
+
+        if ($asset_rs->search({ filename => $file->basename })->count > 1) {                                                                        
+            my $aid      = $asset->id;                                                                                                              
+            my $basename = $file->basename;                                                                                                         
+            $basename =~ s/(\.[^.]+)$/_$aid$1/;                                                                                                     
+            $asset->update({ slug => $basename });                                                                                                  
+        }                                                                                                                                           
+        else {                                                                                                                                      
+            $asset->update({ slug => $file->basename });                                                                                            
+        }
 
         $asset->set_content($file->slurp);       
     }

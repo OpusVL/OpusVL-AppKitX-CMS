@@ -27,6 +27,20 @@ elements:
               - ['text/plain','text/plain']
               - ['text/html','text/html']
              
+          - type: Hidden
+            name: id
+
+          - type: Text
+            name: slug
+            label: Slug
+            constraints:
+              - type: DBIC::Unique
+                model: CMS
+                resultset: Asset
+                column: slug
+                id_field: id
+                message: Slug already in use
+
           - type: Text
             name: description
             label: Description

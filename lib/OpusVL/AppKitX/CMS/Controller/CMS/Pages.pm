@@ -176,6 +176,7 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
     );
     $form->default_values({
         site => $site->id,
+        content_type => 'text/html',
     });
     # This part was throwing out undefined value as a HASH reference errors
     # before validating the $c->req->body_params
@@ -247,6 +248,7 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
             status      => $status,
             created_by  => $c->user->id,
             blog        => $c->req->query_params && $c->req->param('type') eq 'blog' ? 1 : 0,
+            content_type => $form->param_value('content_type') || 'text/html',
         });
         
         $page->set_content($form->param_value('content'));
@@ -376,6 +378,7 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm :AppKitFe
         priority    => $page->priority,
         note_changes => $page->note_changes,
         site         => $site->id,
+        content_type => $page->content_type,
     };
  
     $DB::single = 1;   
@@ -422,6 +425,7 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm :AppKitFe
             breadcrumb  => $form->param_value('breadcrumb'),
             template_id => $form->param_value('template') || undef,
             parent_id   => $form->param_value('parent') || undef,
+            content_type => $form->param_value('content_type') || 'text/html',
             site        => $site->id,
             note_changes => $form->param_value('note_changes'),
             status      => 'published',
@@ -429,12 +433,14 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm :AppKitFe
         
         if (my $file  = $c->req->upload('new_att_file')) {
             my $attachment = $page->create_related('attachments', {
+                slug        => $form->param_value('slug')||'',
                 filename    => $file->basename,
                 mime_type   => $file->type,
                 description => $form->param_value('new_att_desc'),
                 priority    => $form->param_value('new_att_priority') || undef,
             });
             
+            if ($attachment->slug eq '') { $attachment->update({ slug => $attachment->id }); }
             $attachment->set_content($file->slurp);
         }
         
@@ -609,6 +615,7 @@ sub edit_attachment :Local :Args(1) :AppKitForm :AppKitFeature('Pages - Write Ac
     my $form       = $c->stash->{form};
     my $page       = $c->model('CMS::Page')->find( $attachment->page_id );
     my $defaults = {
+        slug        => $attachment->slug,
         description => $attachment->description,
         priority    => $attachment->priority,
     };

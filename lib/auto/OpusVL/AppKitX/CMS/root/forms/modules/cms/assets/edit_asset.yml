@@ -18,6 +18,12 @@ elements:
             label: Replace file
              
           - type: Text
+            name: slug
+            label: Slug
+            attributes:
+                disabled: disabled
+        
+          - type: Text
             name: description
             label: Description
 

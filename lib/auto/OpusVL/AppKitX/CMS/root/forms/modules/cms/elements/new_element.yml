@@ -17,7 +17,19 @@ elements:
             label: Name *
             constraints:
               - type: Required
+          - type: Hidden
+            name: id
 
+          - type: Text
+            name: slug
+            label: Slug
+            constraints:
+              - type: DBIC::Unique
+                model: CMS
+                resultset: Element
+                column: slug
+                id_field: id
+                message: Slug already in use
           - type: Block
             attributes:
                 id: "editor-controls"
