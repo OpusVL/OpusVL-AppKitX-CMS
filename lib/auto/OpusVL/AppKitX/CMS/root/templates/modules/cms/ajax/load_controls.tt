@@ -28,7 +28,7 @@
                 <tr>
                     <td>[% a.id %]</td>
                     <td>
-                        <a href="javascript:;" rel="[% a.id %]:[% a.mime_type %]:[% a.description %]" class="insert-asset link">[% a.filename %]</a>
+                        <a href="javascript:;" rel="[% a.slug %]:[% a.mime_type %]:[% a.description %]" class="insert-asset link">[% a.filename %]</a>
                         [% IF a.mime_type.match('^image') %]
                             - <a href="javascript:;" rel="[% a.id %]" class="insert-asset-thumbnail link">Thumbnail</a>
                         [% END %]
@@ -56,7 +56,7 @@
                 <tr>
                     <td>[% e.id %]</td>
                     <td>
-                        <a href="javascript:;" rel="[% e.id %]" class="insert-element link">[% e.name %]</a>
+                        <a href="javascript:;" rel="[% e.slug %]" class="insert-element link">[% e.name %]</a>
                         [% IF e.tt_get_attributes.size > 0 %]
                              (<a rel=".attribute-options-[% e.id %]" class="collapse-element-attributes link" href="javascript:void(0);">Show attributes</a>)
                             <div class="attribute-options-[% e.id %]" style="display:none">
