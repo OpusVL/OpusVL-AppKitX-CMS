@@ -6,7 +6,7 @@ use namespace::autoclean;
 
 with 'OpusVL::AppKit::RolesFor::Plugin';
 
-our $VERSION = '0.58';
+our $VERSION = '0.59';
 
 after 'setup_components' => sub {
     my $class = shift;
