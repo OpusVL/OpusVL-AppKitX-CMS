@@ -116,7 +116,7 @@
                     [% FOREACH a IN assets %]
                         <tr>
                             <td>[% a.id %]</td>
-                            <td><a rel="[% a.id %]" href="javascript:void(0);" class="insert-asset">[% a.filename %]</a></td>
+                            <td><a rel="[% a.slug %]" href="javascript:void(0);" class="insert-asset">[% a.filename %]</a></td>
                             <td>[% a.description %]</td>
                         </tr>
                     [% END %]
@@ -144,7 +144,7 @@
                     [% FOREACH a IN attachments %]
                         <tr>
                             <td>[% a.id %]</td>
-                            <td><a rel="[% a.id %]" href="javascript:void(0);" class="insert-attachment">[% a.filename %]</a></td>
+                            <td><a rel="[% a.slug %]" href="javascript:void(0);" class="insert-attachment">[% a.filename %]</a></td>
                             <td>[% a.description %]</td>
                         </tr>
                     [% END %]
@@ -171,7 +171,7 @@
             		[% FOREACH e IN elements %]
             			<tr>
             				<td>[% e.id %]</td>
-            				<td><a rel="[% e.id %]" href="javascript:void(0);" class="insert-element">[% e.name %]</a>
+            				<td><a rel="[% e.slug %]" href="javascript:void(0);" class="insert-element">[% e.name %]</a>
                             [% IF e.tt_get_attributes.size > 0 %]
                              (<a rel=".attribute-options-[% e.id %]" class="collapse-element-attributes link" href="javascript:void(0);">Show attributes</a>)
                             <div class="attribute-options-[% e.id %]" style="display:none">
@@ -319,12 +319,12 @@
 
                                 if ($.editorType == 'raw') {
                                     if ($.codeMirror != null)
-                                        insertAtCaret('wysiwyg', '[\% cms.element(' + id + ', ' + buildHash + ') | eval \%]');
+                                        insertAtCaret('wysiwyg', '[\% cms.element("' + id + '", ' + buildHash + ') | eval \%]');
                                     else
-                                        insertAtCaret('wysiwyg', '<span class="tt tt-element" rel="' + id + '">[\% cms.element(' + id + ', ' + buildHash + ') | eval \%]</span>&nbsp;');
+                                        insertAtCaret('wysiwyg', '<span class="tt tt-element" rel="' + id + '">[\% cms.element("' + id + '", ' + buildHash + ') | eval \%]</span>&nbsp;');
                                 }
                                 else
-                                    $('#wysiwyg').insertHtml('<span class="tt tt-element" rel="' + id + '">[\% cms.element(' + id + ', ' + buildHash + ') | eval \%]</span> ');
+                                    $('#wysiwyg').insertHtml('<span class="tt tt-element" rel="' + id + '">[\% cms.element("' + id + '", ' + buildHash + ') | eval \%]</span> ');
                                 obj.modalClose();
                                 obj.observeTT();
                             });
@@ -365,12 +365,12 @@
                                 var id = $(this).attr('rel');
                                 if ($.editorType == 'raw') {
                                     if ($.codeMirror != null)
-                                        insertAtCaret('wysiwyg', '[\% cms.asset(' + id + ') \%]');
+                                        insertAtCaret('wysiwyg', '[\% cms.asset("' + id + '") \%]');
                                     else
-                                        insertAtCaret('wysiwyg', '<span class="tt tt-asset" rel="' + id + '">[\% cms.asset(' + id + ') \%]</span>&nbsp;');
+                                        insertAtCaret('wysiwyg', '<span class="tt tt-asset" rel="' + id + '">[\% cms.asset("' + id + '") \%]</span>&nbsp;');
                                 }
                                 else
-                                    $('#wysiwyg').insertHtml('<span class="tt tt-asset" rel="' + id + '">[\% cms.asset(' + id + ') \%]</span> ');
+                                    $('#wysiwyg').insertHtml('<span class="tt tt-asset" rel="' + id + '">[\% cms.asset("' + id + '") \%]</span> ');
                                 obj.modalClose();
                                 obj.observeTT();
                             });
@@ -388,12 +388,12 @@
                                 var id = $(this).attr('rel');
                                 if ($.editorType == 'raw') {
                                     if ($.codeMirror != null)
-                                        insertAtCaret('wysiwyg', '[\% cms.attachment(' + id + ') \%]');
+                                        insertAtCaret('wysiwyg', '[\% cms.attachment("' + id + '") \%]');
                                     else
-                                        insertAtCaret('wysiwyg', '<span class="tt tt-attachment" rel="' + id + '">[\% cms.attachment(' + id + ') \%]</span>&nbsp;');
+                                        insertAtCaret('wysiwyg', '<span class="tt tt-attachment" rel="' + id + '">[\% cms.attachment("' + id + '") \%]</span>&nbsp;');
                                 }
                                 else
-                                    $('#wysiwyg').insertHtml('<span class="tt tt-attachment" rel="' + id + '">[\% cms.attachment(' + id + ') \%]</span> ');
+                                    $('#wysiwyg').insertHtml('<span class="tt tt-attachment" rel="' + id + '">[\% cms.attachment("' + id + '") \%]</span> ');
                                 obj.modalClose();
                                 obj.observeTT();
                             });
