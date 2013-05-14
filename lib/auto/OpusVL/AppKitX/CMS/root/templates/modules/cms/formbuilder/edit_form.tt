@@ -65,7 +65,7 @@
 	            	<strong>[% field.label %]</strong>&nbsp;
 	            		<select id="select-[% field.priority %]">
 	            			[% opts = field.fields.split('\*,\*') %]
-	            			[% FOREACH opt IN opts %]
+	            			[% FOREACH opt IN opts.sort %]
 	            				[% value = opt.split('\*!\*') %]
 	            				<option value="[% value.1 %]">[% value.0 %]</option>
 	            			[% END %]
