@@ -92,7 +92,7 @@ sub index :Chained('/modules/cms/sites/base') :PathPart('pages/list') :Args(0) :
     $c->stash( pages => $pages );
 
     if ($c->req->body_params->{edit_page}) {
-        if (my $page = $site->pages->find({ status => 'published', url => $c->req->body_params->{edit_page} })) {
+        if (my $page = $site->pages->search({ -and => [ status => 'published', url => $c->req->body_params->{edit_page} ] })->first) {
             $c->res->redirect($c->uri_for($self->action_for('edit_page'), [ $site->id, $page->id ]));
             $c->detach;
         }
