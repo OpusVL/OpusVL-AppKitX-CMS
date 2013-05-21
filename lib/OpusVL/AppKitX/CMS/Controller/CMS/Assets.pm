@@ -147,6 +147,7 @@ sub edit_asset :Chained('assets') :PathPart('edit') :Args(0) :AppKitForm :AppKit
         $form->default_values({
             content => $asset->content,
             slug    => $asset->slug,
+            priority => $asset->priority
         });
     }
 
@@ -156,6 +157,7 @@ sub edit_asset :Chained('assets') :PathPart('edit') :Args(0) :AppKitForm :AppKit
         description => $asset->description,
         global      => $asset->global,
         slug        => $asset->slug,
+        priority    => $asset->priority,
     };
 
     my @fields = $c->model('CMS::AssetAttributeDetail')->active->all;
@@ -170,7 +172,11 @@ sub edit_asset :Chained('assets') :PathPart('edit') :Args(0) :AppKitForm :AppKit
     
     if ($form->submitted_and_valid) {
         #if ($form->param_value('description') ne $asset->description) {
-            $asset->update({description => $form->param_value('description'), global => $form->param_value('global')||0});
+            $asset->update({ 
+                description => $form->param_value('description'),
+                global => $form->param_value('global')||0,
+                priority => $form->param_value('priority'),
+            });
         #}
         
         if (my $file = $c->req->upload('file')) {

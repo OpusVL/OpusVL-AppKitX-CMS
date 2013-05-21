@@ -22,6 +22,12 @@ elements:
             label: Slug
             attributes:
                 disabled: disabled
+
+          - type: Text
+            name: priority
+            label: Priority
+            constraints:
+              type: Required
         
           - type: Text
             name: description
