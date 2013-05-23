@@ -246,7 +246,6 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
             parent_id   => $form->param_value('parent') || undef,
             site        => $site->id,
             status      => $status,
-            created_by  => $c->user->id,
             blog        => $c->req->query_params && $c->req->param('type') eq 'blog' ? 1 : 0,
             content_type => $form->param_value('content_type') || 'text/html',
         });
@@ -413,7 +412,8 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm :AppKitFe
         }
 
         my $new_content = $page->create_related('page_contents', {
-            body => $form->param_value('content')
+            body => $form->param_value('content'),
+            created_by => $c->user->id,
         });
         #die $form->param_value('description');
         $page->update({
@@ -881,7 +881,7 @@ sub preview :Chained('page_contents') :Args(0) :AppKitFeature('Pages - Read Acce
         asset => sub {
                 my $id = shift;
                 if (looks_like_number $id) {
-                    if (my $asset = $c->model('CMS::Asset')->available($site->id)->find({id => $id})) {
+                    if (my $asset = $c->model('CMS::Asset')->available($site->id)->find({slug => $id})) {
                         return $c->uri_for($self->action_for('_asset'), $asset->id, $asset->filename);
                     }
                 }
@@ -900,7 +900,7 @@ sub preview :Chained('page_contents') :Args(0) :AppKitFeature('Pages - Read Acce
                 }
             },
             attachment => sub {
-                if (my $attachment = $c->model('CMS::Attachment')->find({id => shift})) {
+                if (my $attachment = $c->model('CMS::Attachment')->find({slug => shift})) {
                     return $c->uri_for($self->action_for('_attachment'), $attachment->id, $attachment->filename);
                 }
             },
@@ -911,7 +911,7 @@ sub preview :Chained('page_contents') :Args(0) :AppKitFeature('Pages - Read Acce
                         $c->stash->{me}->{$attr} = $attrs->{$attr};
                     }
                 }
-                if (my $element = $c->model('CMS::Element')->available($site->id)->find({id => $id})) {
+                if (my $element = $c->model('CMS::Element')->available($site->id)->find({slug => $id})) {
                     return $element->content;
                 }
             },

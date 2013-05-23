@@ -18,10 +18,16 @@
 			[% WHILE (currpage = pages.next) %]
 				[% page_content = currpage %]
 				[% currpage = currpage.page %]
+                [% IF (owner = page_content.created_by) %]
+                    [% SET page_author = owner %]
+                [% ELSE %]
+                    [% SET page_author = currpage.created_by %]
+                [% END %]
+
 				[%# SET date_created = draft.page_drafts_contents.created %]
 				<tr>
 					<td>[% date_long(page_content.created) %] @ [% page_content.created.time %][% IF currpage.get_page_content.id == page_content.id %] <strong>(Current Version)</strong>[% END %]</td>
-					<td>[% currpage.created_by.name %] ([% currpage.created_by.username %])</td>
+					<td>[% page_author.name %] ([% page_author.username %])</td>
 					<td>
 						<a target="_blank" href="[% c.uri_for(c.controller.action_for('preview'), [ site.id, page_content.page.id ]) %]?content=[% page_content.id %]">Preview</a>
 						[% IF currpage.get_page_content.id == page_content.id %]
