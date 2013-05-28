@@ -28,6 +28,21 @@
 			<input type="text" id="mail_to" value="[% c.user.email %]" />
 		</div>
 
+        <div class="checkbox label">
+            <label>Enable reCAPTCHA</label>
+            <input type="checkbox" id="recaptcha" value="" name="recaptcha" />
+        </div>
+
+        <div class="text label recaptcha">
+            <label>reCAPTCHA Public Key</label>
+            <input type="text" id="recaptcha_public_key" name="recaptcha_public_key" />
+        </div>
+
+        <div class="text label recaptcha">
+            <label>reCAPTCHA Private Key</label>
+            <input type="text" id="recaptcha_private_key" name="recaptcha_private_key" />
+        </div>
+
 	</fieldset>
 </div>
 

@@ -94,6 +94,14 @@ sub edit_form
             $form->update({ mail_from => $params->{mail_from} });
         }
 
+        if ($params->{recaptcha}) {
+            $form->update({
+                recaptcha => $params->{recaptcha}||0,
+                recaptcha_public_key => $params->{recaptcha_public_key}||undef,
+                recaptcha_private_key => $params->{recaptcha_private_key}||undef,
+            });
+        }
+
         # update the page
         if (my $page_id = $params->{form_redirect}) {
             if ($page_id != $form->redirect_page->id) {
@@ -196,6 +204,9 @@ sub new_form
                 name     => $params->{form_name},
                 mail_to  => $params->{mail_to},
                 mail_from => $params->{mail_from},
+                recaptcha => $params->{recaptcha}||0,
+                recaptcha_public_key => $params->{recaptcha_public_key}||undef,
+                recaptcha_private_key => $params->{recaptcha_private_key}||undef,
             });
 
             if ($form) {
