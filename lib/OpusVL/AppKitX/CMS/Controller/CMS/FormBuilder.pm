@@ -96,12 +96,14 @@ sub edit_form
 
         if ($params->{recaptcha}) {
             $form->update({
-                recaptcha => $params->{recaptcha}||0,
+                recaptcha => 1,
                 recaptcha_public_key => $params->{recaptcha_public_key}||undef,
                 recaptcha_private_key => $params->{recaptcha_private_key}||undef,
             });
         }
-
+        else {
+            if ($form->recaptcha) { $form->update({ recaptcha => 0 }); }
+        }
         # update the page
         if (my $page_id = $params->{form_redirect}) {
             if ($page_id != $form->redirect_page->id) {
