@@ -226,7 +226,7 @@
     	if (cid != null) {
     		var field = $('#select-' + cid + ' :selected');
     		if (field.val()) {
-    			var findAndRemove = "*,*" + field.html() + "*!*" + field.val();
+    			var findAndRemove = "*,*" + field.text() + "*!*" + field.val();
     			field.remove();
     			var optsCurr = $('#select-opts-' + cid).val();
     			optsCurr = optsCurr.replace(findAndRemove, '');
