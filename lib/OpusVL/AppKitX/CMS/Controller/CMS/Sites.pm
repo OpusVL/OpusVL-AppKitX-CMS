@@ -244,6 +244,7 @@ sub edit :Chained('base') :PathPart('edit') :Args(0) :AppKitForm :AppKitFeature(
     $form->get_all_element ({ name => 'user_list' })->options([
         map {[ $_->id => $_->username ]} $c->model('CMS::User')->all
     ]);
+    $form->default_values({ user_list => [ map { $_->user_id } $site->sites_users->all ] });
 
     if ($form->submitted_and_valid) {
         my $sites_users_rs = $c->model('CMS::SitesUser');

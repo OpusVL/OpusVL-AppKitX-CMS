@@ -24,7 +24,8 @@ elements:
             constraints:
               - type: Required
             attributes:
-              multiple: "1"
+              width: 200px
+              multiple: "multiple"
 
   - type: Submit
     name: submit
