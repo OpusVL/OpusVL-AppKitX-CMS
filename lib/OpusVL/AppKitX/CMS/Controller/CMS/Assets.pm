@@ -211,21 +211,30 @@ sub upload_assets :Chained('/modules/cms/sites/base') :Args(0) :AppKitFeature('A
     
     my $asset_rs = $c->model('CMS::Asset');
     if (my $file = $c->req->upload('file')) {
+        my $slug;
+        if ($asset_rs->search({ filename => $file->basename })->count > 1) {
+            my $seq = 'asset_attribute_data_id_seq';
+            my $aid = $asset_rs->result_source->schema->storage->dbh_do(sub {
+                my ($storage, $dbh, @cols) = @_;
+                my $sth = $dbh->prepare_cached("SELECT nextval(?)");
+
+                $sth->execute($seq);
+                return  $sth->fetchrow_arrayref()->[0];
+            });
+            my $basename = $file->basename;
+            $basename =~ s/(\.[^.]+)$/_$aid$1/;
+            $slug = $basename;
+        }
+        else {
+            $slug = $file->basename;
+        }
+
         my $asset = $asset_rs->create({
             mime_type   => $file->type,
             filename    => $file->basename,
             site        => $site->id,
+            slug        => $slug,
         });
-
-        if ($asset_rs->search({ filename => $file->basename })->count > 1) {
-            my $aid      = $asset->id;
-            my $basename = $file->basename;
-            $basename =~ s/(\.[^.]+)$/_$aid$1/;
-            $asset->update({ slug => $basename });
-        }
-        else {
-            $asset->update({ slug => $file->basename });
-        }
 
         $asset->set_content($file->slurp);       
     }
