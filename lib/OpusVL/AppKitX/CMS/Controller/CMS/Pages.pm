@@ -897,6 +897,12 @@ sub preview :Chained('page_contents') :Args(0) :AppKitFeature('Pages - Read Acce
                             }
                         }
                     }
+                    # normal
+                    else {
+                        if (my $asset = $c->model('CMS::Asset')->available($site->id)->find({ slug => $id })) {
+                            return $c->uri_for($self->action_for('_asset'), $asset->id, $asset->filename);
+                        }
+                    }
                 }
             },
             attachment => sub {
@@ -983,13 +989,14 @@ sub preview :Chained('page_contents') :Args(0) :AppKitFeature('Pages - Read Acce
 
 sub _asset :Path('/_asset') :Args(2) {
     my ($self, $c, $asset_id, $filename) = @_;
-    
-    if (my $asset = $c->model('CMS::Asset')->published->find({id => $asset_id})) {
-        $c->response->content_type($asset->mime_type);
-        $c->response->body($asset->content);
-    } else {
-        $c->response->status(404);
-        $c->response->body("Not found");
+    if ($filename) {
+         if (my $asset = $c->model('CMS::Asset')->published->find({id => $asset_id})) {
+             $c->response->content_type($asset->mime_type);
+             $c->response->body($asset->content);
+         } else {
+             $c->response->status(404);
+             $c->response->body("Not found");
+         }
     }
 }
 
