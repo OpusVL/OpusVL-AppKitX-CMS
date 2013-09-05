@@ -151,8 +151,10 @@ sub edit_form
                     unless ($type eq 'submit') {
                         if (not $c->req->body_params->{"field-${type}-${pri}"}) {
                             # remove constraints
-                            if ($field->constraint) { $field->constraint->delete; }
-                            $field->delete();
+                            unless ($field->forms_contents->count > 0) {
+                                if ($field->constraint) { $field->constraint->delete; }
+                                $field->delete();
+                            }
                         }
                     }
                 }
