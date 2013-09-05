@@ -42,7 +42,7 @@
     
         <div class="text label recaptcha">
             <label>reCAPTCHA Private Key</label>
-            <input type="text" id="recaptcha_private_key" name="recaptcha_private_key" />
+            <input type="text" id="recaptcha_private_key" name="recaptcha_private_key" value="[% form.recaptcha_private_key %]" />
         </div>
 
 	</fieldset>
