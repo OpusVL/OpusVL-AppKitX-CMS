@@ -96,6 +96,7 @@ sub edit_form
 
         if ($params->{recaptcha}) {
             $form->update({
+                ssl       => $params->{ssl}||0,
                 recaptcha => 1,
                 recaptcha_public_key => $params->{recaptcha_public_key}||undef,
                 recaptcha_private_key => $params->{recaptcha_private_key}||undef,
@@ -211,6 +212,7 @@ sub new_form
                 recaptcha => $params->{recaptcha}||0,
                 recaptcha_public_key => $params->{recaptcha_public_key}||undef,
                 recaptcha_private_key => $params->{recaptcha_private_key}||undef,
+                ssl       => $params->{ssl}||0,
             });
 
             if ($form) {

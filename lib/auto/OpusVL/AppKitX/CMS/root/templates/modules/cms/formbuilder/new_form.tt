@@ -27,6 +27,11 @@
 			<label>Mail to</label>
 			<input type="text" id="mail_to" value="[% c.user.email %]" />
 		</div>
+		
+        <div class="checkbox label">
+			<label>Requires SSL?</label>
+			<input type="checkbox" name="ssl" id="ssl" value="" />
+		</div>
 
         <div class="checkbox label">
             <label>Enable reCAPTCHA</label>

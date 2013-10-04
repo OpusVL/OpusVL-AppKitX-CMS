@@ -31,6 +31,11 @@
 		</div>
 
         <div class="checkbox label">
+            <label>Requires SSL?</label>
+            <input type="checkbox" name="ssl" id="ssl" [% IF form.ssl %]checked[% END %]>
+        </div>
+
+        <div class="checkbox label">
             <label>Enable reCAPTCHA</label>
             <input type="checkbox" id="recaptcha" name="recaptcha" [% IF form.recaptcha %]checked[% END %]>
         </div>
