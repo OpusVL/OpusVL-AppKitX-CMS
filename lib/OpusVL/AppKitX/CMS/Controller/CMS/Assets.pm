@@ -229,6 +229,9 @@ sub upload_assets :Chained('/modules/cms/sites/base') :Args(0) :AppKitFeature('A
             $slug = $file->basename;
         }
 
+        my $type = $file->type;
+        if ($type eq 'application/javascript') { $type = 'text/javascript'; }
+
         my $asset = $asset_rs->create({
             mime_type   => $file->type,
             filename    => $file->basename,
