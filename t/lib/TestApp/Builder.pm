@@ -27,7 +27,13 @@ override _build_config => sub {
     {
         schema_class => 'OpusVL::AppKit::Schema::AppKitAuthDB',
         connect_info => [
-          'dbi:SQLite:' . TestApp->path_to('root','appkit-auth.db'),
+          'dbi:SQLite:' . TestApp->path_to('root','test.db'),
+        ],
+    };
+    $config->{'Model::CMS'} = 
+    {
+        connect_info => [
+          'dbi:SQLite:' . TestApp->path_to('root','test.db'),
         ],
     };
 
