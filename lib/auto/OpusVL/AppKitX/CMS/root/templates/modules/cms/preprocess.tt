@@ -598,9 +598,15 @@
             });
             $('.insert-attribute').click(function() {
                 var code = $(this).attr('rel');
-                insertEditor("[" + "% cms.site_attr('" + code + "') %" + "]");
+                insertEditor("[" + "% cms.site_attr(" + code + ") %" + "]");
                 $('#attributes').dialog('close');
             });
+            $('.insert-page').click(function() {
+                var code = $(this).attr('rel');
+                insertEditor("[" + "% cms.page('" + code + "').url %" + "]");
+                $('#pages').dialog('close');
+            });
+
             $('.insert-asset').click(function() {
                 var code = $(this).attr('rel');
                 insertEditor("[" + "% cms.asset('" + code + "') %" + "]");
