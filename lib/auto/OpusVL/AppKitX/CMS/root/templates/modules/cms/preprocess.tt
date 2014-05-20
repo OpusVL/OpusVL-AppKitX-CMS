@@ -455,15 +455,15 @@
         };
 
         if ($('#wysiwyg').length > 0) {
-            redactorSettings.buttons = [];
+            //redactorSettings.buttons = [];
             redactorSettings.buttonsAdd.push( 'insert_content' );
             $('#wysiwyg').redactor(redactorSettings);
-            if (source === false) {
+            /*if (source === false) {
                 var wys = $('#wysiwyg');
                 wys.getObject().opts.visual = false;
                 wys.getObject().editor.hide();
                 wys.getObject().$el.height(300).val(wys.val()).show().focus();
-            }
+            }*/
         }
 
 
@@ -499,7 +499,6 @@
                 editor.getSession().setMode("ace/mode/css");
                 if ($('#wysiwyg-content').length > 0) {
                     var type_a = '[% asset.mime_type %]';
-                    alert(type_a.split('/')[1]);
                     editor.getSession().setMode("ace/mode/" + type_a.split('/')[1]);
                 }
             } else {
@@ -583,6 +582,8 @@
             var capitalise = function(string) {
                 return string.charAt(0).toUpperCase() + string.slice(1);
             };
+
+            $('#redactor_modal_footer a').remove();
 
             $('.btn-toolbar > .btn-group > a').click(function() {
                 $('#' + $(this).attr('rel')).dialog({
