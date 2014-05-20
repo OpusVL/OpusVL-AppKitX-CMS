@@ -1,3 +1,4 @@
 [% INCLUDE modules/cms/header.tt title="New asset" %]
+[% PROCESS modules/cms/preprocess.tt %]
 
 [% form.render | none %]

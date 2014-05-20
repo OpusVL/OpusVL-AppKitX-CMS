@@ -63,6 +63,28 @@
         font-weight: bold;
         filter:alpha(opacity=70); /* For IE8 and earlier */
     }
+
+    .fullScreen .fullScreen-editor{
+       height: auto!important;
+       width: auto!important;
+       border: 0;
+        margin: 0;
+        position: fixed !important;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 9998
+    }
+
+    .fullScreen {
+        overflow: hidden
+    }
+
+    .ace_editor textarea { z-index: 9999; }
+    .hidden { display: none; }
+
+    #editor { font-weight: normal !important; }
 </style>
 
 <div style="display:none" class="centered" id="redactor-toggle-gui">
@@ -236,40 +258,44 @@
 </div>
 
 <script type="text/javascript">
+    var editor;
     var the = {
         use_codemirror: false,
         beautify_in_progress: false,
-        editor: null,
+        editor: null
     };
 
     if (typeof CodeMirror != 'undefined')
         the.use_codemirror = true;
 
     $(function() {
-        $('#wysiwyg').keydown(function (e) {
-            if (e.keyCode == 9) {
-                var myValue = "    ";
-                var startPos = this.selectionStart;
-                var endPos = this.selectionEnd;
-                var scrollTop = this.scrollTop;
-                this.value = this.value.substring(0, startPos) + myValue + this.value.substring(endPos,this.value.length);
-                this.focus();
-                this.selectionStart = startPos + myValue.length;
-                this.selectionEnd = startPos + myValue.length;
-                this.scrollTop = scrollTop;
+        var is_asset = $('.asset').length > 0;
+        if (the.use_codemirror) {
+            $('#wysiwyg').keydown(function (e) {
+                if (e.keyCode == 9) {
+                    var myValue = "    ";
+                    var startPos = this.selectionStart;
+                    var endPos = this.selectionEnd;
+                    var scrollTop = this.scrollTop;
+                    this.value = this.value.substring(0, startPos) + myValue + this.value.substring(endPos,this.value.length);
+                    this.focus();
+                    this.selectionStart = startPos + myValue.length;
+                    this.selectionEnd = startPos + myValue.length;
+                    this.scrollTop = scrollTop;
 
-                e.preventDefault();
-            }
-        });
+                    e.preventDefault();
+                }
+            });
+        }
 
-        $(window).bind('keydown', function (e) {
+        /*$(window).bind('keydown', function (e) {
             if (e.ctrlKey && e.keyCode == 13) {
                 beautify();
             }
-        });
+        });*/
 
         var source = true;
-        if ($('#wysiwyg')) {
+        if ($('#wysiwyg').length > 0) {
             if ($('#wysiwyg').hasClass('no-gui')) {
                 source = false;
                 $.editorType = 'raw';
@@ -281,7 +307,7 @@
             convertDivs: false,
             source: source,
             focus: true,
-            buttonsAdd: ['|', 'elements', 'pages', 'assets', 'attachments', '|', 'attributes'], 
+            buttonsAdd: ['|', 'elements', 'pages', 'assets', 'attachments', '|', 'attributes'],
             buttonsCustom: {
                 insert_content: {
                     title: 'Insert Content',
@@ -291,7 +317,7 @@
                 },
 
                 elements: {
-                    title: 'Elements', 
+                    title: 'Elements',
                     callback: function(obj) {
                         var callback = $.proxy(function() {
                             $('.collapse-element-attributes').click(function() {
@@ -335,7 +361,7 @@
                 },
 
                 pages: {
-                    title: 'Pages', 
+                    title: 'Pages',
                     callback: function(obj) {
                         var callback = $.proxy(function() {
                             $('.insert-page').click(function() {
@@ -358,7 +384,7 @@
                 },
 
                 assets: {
-                    title: 'Assets', 
+                    title: 'Assets',
                     callback: function(obj) {
                         var callback = $.proxy(function() {
                             $('.insert-asset').click(function() {
@@ -381,7 +407,7 @@
                 },
 
                 attachments: {
-                    title: 'Attachments', 
+                    title: 'Attachments',
                     callback: function(obj) {
                         var callback = $.proxy(function() {
                             $('.insert-attachment').click(function() {
@@ -404,7 +430,7 @@
                 },
 
                 attributes: {
-                    title: 'Attributes', 
+                    title: 'Attributes',
                     callback: function(obj) {
                         var callback = $.proxy(function() {
                             $('.insert-attribute').click(function() {
@@ -428,19 +454,21 @@
             }
         };
 
-        if (the.use_codemirror) {
+        if ($('#wysiwyg').length > 0) {
             redactorSettings.buttons = [];
             redactorSettings.buttonsAdd.push( 'insert_content' );
+            $('#wysiwyg').redactor(redactorSettings);
+            if (source === false) {
+                var wys = $('#wysiwyg');
+                wys.getObject().opts.visual = false;
+                wys.getObject().editor.hide();
+                wys.getObject().$el.height(300).val(wys.val()).show().focus();
+            }
         }
 
-        $('#wysiwyg').redactor(redactorSettings);
 
-        if (source === false) {
-            var wys = $('#wysiwyg');
-            wys.getObject().opts.visual = false;
-            wys.getObject().$editor.hide();
-            wys.getObject().$el.height(300).val(wys.val()).show().focus();
-        }
+
+
 
         if ($('#wysiwyg-content').length > 0) {
             $('#wysiwyg').val( $('#wysiwyg-content').val() );
@@ -456,15 +484,149 @@
             });
         }
 
+        // ace editor
+        if ($('#editor').length > 0) {
+                $('.ace_editor textarea').css('z-index','2000');
+                editor   = ace.edit("editor"),
+                editor_div = document.getElementById('editor'),
+                doc        = editor.getSession().getDocument(),
+
+                codeInput  = $('#content'),
+                //fullScreenMenu = $('#fullscreen-menu'),
+                $fullScreen = false;
+
+            if (is_asset) {
+                editor.getSession().setMode("ace/mode/css");
+                if ($('#wysiwyg-content').length > 0) {
+                    var type_a = '[% asset.mime_type %]';
+                    alert(type_a.split('/')[1]);
+                    editor.getSession().setMode("ace/mode/" + type_a.split('/')[1]);
+                }
+            } else {
+                editor.getSession().setMode("ace/mode/html");
+            }
+
+            editor.setTheme("ace/theme/monokai");
+            editor.setAutoScrollEditorIntoView();
+            editor.setShowPrintMargin(false);
+            editor.focus();
+
+            // populate textarea for form submission
+            if ($('#wysiwyg-content').length > 0) codeInput = $('#wysiwyg-content');
+            editor.on('change', function () {
+                // assuming a line height of 16 pixels...
+                editor_div.style.height = 16 * doc.getLength() + 'px';
+                editor.resize();
+                codeInput.text(editor.getSession().getValue());
+            });
+
+            if (is_asset) {
+                $('.asset-mime-type').change(function() {
+                    switch($(this).val()) {
+                        case "text/css":
+                            editor.getSession().setMode("ace/mode/css");
+                            break;
+                        case "text/javascript":
+                            editor.getSession().setMode("ace/mode/javascript");
+                            break;
+                        case "text/plain":
+                            editor.getSession().setMode("ace/mode/plain_text");
+                            break;
+                        case "text/html":
+                            editor.getSession().setMode("ace/mode/html");
+                            break;
+
+                    }
+                });
+            }
+
+            // fullscreen
+            editor.commands.addCommand({
+                name: "fullscreen",
+                bindKey: {win: "Ctrl-M", mac: "Command-Option-M"},
+                exec: function(editor) {
+                    var dom = ace.require("ace/lib/dom");
+                    var commands = ace.require("ace/commands/default_commands").commands;
+
+                    // add command for all new editors
+                    if ($fullScreen) {
+                        dom.removeCssClass(document.body, "fullScreen");
+                        dom.removeCssClass(editor.container, "fullScreen-editor");
+                        editor.resize();
+                        fullScreenMenu.css('display', 'none');
+                        $fullScreen = false;
+                    }
+                    else {
+                        dom.toggleCssClass(document.body, "fullScreen");
+                        dom.toggleCssClass(editor.container, "fullScreen-editor");
+                        editor.resize();
+                        fullScreenMenu.css('display', 'block');
+                        $fullScreen = true;
+                    }
+                }
+            });
+
+            var addBtn = function(name, icon, does) {
+                return '<a class="btn" href="javascript:;" title="' + name + '" rel="' + does + '">'
+                + '<i class="icon icon-' + icon + '"></i></a>';
+            };
+
+            $('#editor').before(
+                '<div class="btn-toolbar"><div class="btn-group">' + addBtn('Elements', 'tint', 'elements')
+                + addBtn('Pages', 'file', 'pages')
+                + addBtn('Assets', 'briefcase', 'assets')
+                + addBtn('Attachments', 'tag', 'attachments')
+                + addBtn('Attributes', 'list', 'attributes')
+                + "</div></div>"
+            );
+
+            var capitalise = function(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            };
+
+            $('.btn-toolbar > .btn-group > a').click(function() {
+                $('#' + $(this).attr('rel')).dialog({
+                    title: capitalise($(this).attr('rel'))
+                });
+            });
+            $('.insert-element').click(function(e) {
+                var code = $(this).attr('rel'),
+                    ins  = '[' + '% cms.element("' + code + '", {}) | eval %' + ']';
+
+                insertEditor(ins);
+                $('#elements').dialog('close');
+            });
+            $('.insert-attribute').click(function() {
+                var code = $(this).attr('rel');
+                insertEditor("[" + "% cms.site_attr('" + code + "') %" + "]");
+                $('#attributes').dialog('close');
+            });
+            $('.insert-asset').click(function() {
+                var code = $(this).attr('rel');
+                insertEditor("[" + "% cms.asset('" + code + "') %" + "]");
+                $('#assets').dialog('close');
+            });
+            $('.insert-attachment').click(function() {
+                var code = $(this).attr('rel');
+                insertEditor("[" + "% cms.attachment('" + code + "') %" + "]");
+                $('#attachments').dialog('close');
+            });
+
+            // editing?
+            if ($('#wysiwyg-content').length > 0) {
+                editor.getSession().setValue($('#wysiwyg-content').text());
+            }
+        } // end ace
     });
 
+    function insertEditor(str) { window.editor.insert(str); }
     function insertAtCaret(areaId,text) {
         var txtarea = document.getElementById(areaId);
         var scrollPos = txtarea.scrollTop;
         var strPos = 0;
-        var br = ((txtarea.selectionStart || txtarea.selectionStart == '0') ? 
+        var br = ((txtarea.selectionStart || txtarea.selectionStart == '0') ?
             "ff" : (document.selection ? "ie" : false ) );
-        if (br == "ie") { 
+        if (br == "ie") {
             txtarea.focus();
             var range = document.selection.createRange();
             range.moveStart ('character', -txtarea.value.length);
@@ -472,11 +634,11 @@
         }
         else if (br == "ff") strPos = txtarea.selectionStart;
 
-        var front = (txtarea.value).substring(0,strPos);  
-        var back = (txtarea.value).substring(strPos,txtarea.value.length); 
+        var front = (txtarea.value).substring(0,strPos);
+        var back = (txtarea.value).substring(strPos,txtarea.value.length);
         txtarea.value=front+text+back;
         strPos = strPos + text.length;
-        if (br == "ie") { 
+        if (br == "ie") {
             txtarea.focus();
             var range = document.selection.createRange();
             range.moveStart ('character', -txtarea.value.length);
@@ -542,4 +704,5 @@
         var comment_mark = '<' + '!-' + '-';
         return (trimmed && (trimmed.substring(0, 1) === '<' && trimmed.substring(0, 4) !== comment_mark));
     }
+
 </script>

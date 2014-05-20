@@ -17,16 +17,18 @@ elements:
             label: Filename *
             constraints:
               - type: Required
-          
+
           - type: Select
             name: mime_type
             label: MIME type *
+            attributes:
+              class: asset-mime-type
             options:
               - ['text/css','text/css']
               - ['text/javascript','text/javascript']
               - ['text/plain','text/plain']
               - ['text/html','text/html']
-             
+
           - type: Hidden
             name: id
 
@@ -44,13 +46,21 @@ elements:
           - type: Text
             name: description
             label: Description
-            
+
           - type: Textarea
             name: content
-            id: wysiwyg
-            label: Content *
-            constraints:
-              - type: Required
+            attributes:
+              id: content
+              class: hidden
+            #label: Content *
+            #constraints:
+            #  - type: Required
+
+          - type: Block
+            tag: pre
+            attributes:
+              id: editor
+              class: asset
 
           - type: Checkbox
             name: global

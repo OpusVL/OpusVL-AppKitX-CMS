@@ -17,25 +17,24 @@ elements:
             label: Name *
             constraints:
               - type: Required
-            
+
           - type: Block
             attributes:
                 id: "editor-controls"
-    
+
           - type: Textarea
             name: content
             attributes:
               id: wysiwyg-content
               style: "display:none"
-              
-          - type: Textarea
+
+          - type: Block
+            tag: pre
             name: content_edit
             #label: Content *
             attributes:
-                id: wysiwyg
+                id: editor
                 class: "no-gui"
-            constraints:
-              - type: Required
 
           - type: Checkbox
             name: global

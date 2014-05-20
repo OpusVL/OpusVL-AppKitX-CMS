@@ -33,16 +33,23 @@ elements:
           - type: Block
             attributes:
                 id: "editor-controls"
-            
+
           - type: Textarea
             name: content
+            attributes:
+              id: content
+              class: hidden
+
+          - type: Block
+            tag: pre
+            #name: content
             #label: Content *
             attributes:
                 class: no-gui
-                id: wysiwyg
+                id: editor
                 style: "width: 584px;"
-            constraints:
-              - type: Required
+            #constraints:
+            #  - type: Required
 
           - type: Checkbox
             name: global

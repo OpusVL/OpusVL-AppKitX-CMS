@@ -17,7 +17,7 @@ elements:
             label: Name *
             constraints:
               - type: Required
-            
+
           - type: Block
             attributes:
                 id: "editor-controls"
@@ -26,10 +26,13 @@ elements:
             name: content
             #label: Content *
             attributes:
-                id: wysiwyg
-                class: no-gui
-            constraints:
-              - type: Required
+                id: content
+                class: hidden
+
+          - type: Block
+            tag: pre
+            attributes:
+              id: editor
 
           - type: Checkbox
             name: global
