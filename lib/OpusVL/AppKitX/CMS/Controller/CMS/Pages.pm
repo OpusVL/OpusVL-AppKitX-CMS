@@ -955,7 +955,7 @@ sub preview :Chained('page_contents') :Args(0) :AppKitFeature('Pages - Read Acce
         no strict 'refs';
         foreach my $plugin (@plugins) {
           my $code = $plugin->code;
-          $code !~ s/[^[:ascii:]]//g;
+          $code =~ s/[^[:ascii:]]//g;
           $c->stash->{cms}->{plugin}->{ $plugin->action } = sub { eval($code) };
         }
       }
