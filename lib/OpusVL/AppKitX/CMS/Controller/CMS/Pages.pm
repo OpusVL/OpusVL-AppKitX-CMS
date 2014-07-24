@@ -989,10 +989,9 @@ sub preview :Chained('page_contents') :Args(0) :AppKitFeature('Pages - Read Acce
 
 sub _asset :Local :Args(2) {
     my ($self, $c, $asset_id, $filename) = @_;
-    my $site = $self->_get_site($c);
     if ($filename) {
         if ($asset_id eq 'use') {
-            if (my $asset = $c->model('CMS::Asset')->available($site->id)->search({ slug => $filename })->first) {
+            if (my $asset = $c->model('CMS::Asset')->published->search({ slug => $filename })->first) {
                 $asset_id = $asset->id;
             }
             else {
@@ -1001,12 +1000,12 @@ sub _asset :Local :Args(2) {
             }
         }
 
-        if (my $asset = $c->model('CMS::Asset')->available($site->id)->search({ slug => $asset_id })->first) {
+        if (my $asset = $c->model('CMS::Asset')->published->search({ slug => $asset_id })->first) {
             $c->response->content_type($asset->mime_type);
             $c->response->body($asset->content);
             $c->detach;
         }
-        elsif ($asset = $c->model('CMS::Asset')->available($site->id)->search({id => $asset_id})->first) {
+        elsif ($asset = $c->model('CMS::Asset')->published->search({id => $asset_id})->first) {
             $c->response->content_type($asset->mime_type);
             $c->response->body($asset->content);
             $c->detach;
