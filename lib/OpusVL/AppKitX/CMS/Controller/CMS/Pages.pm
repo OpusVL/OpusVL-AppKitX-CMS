@@ -987,16 +987,33 @@ sub preview :Chained('page_contents') :Args(0) :AppKitFeature('Pages - Read Acce
     $c->view('CMS::Preview');
 }
 
-sub _asset :Path('/_asset') :Args(2) {
+sub _asset :Local :Args(2) {
     my ($self, $c, $asset_id, $filename) = @_;
+    my $site = $self->_get_site($c);
     if ($filename) {
-         if (my $asset = $c->model('CMS::Asset')->published->find({id => $asset_id})) {
-             $c->response->content_type($asset->mime_type);
-             $c->response->body($asset->content);
-         } else {
-             $c->response->status(404);
-             $c->response->body("Not found");
-         }
+        if ($asset_id eq 'use') {
+            if (my $asset = $c->model('CMS::Asset')->available($site->id)->search({ slug => $filename })->first) {
+                $asset_id = $asset->id;
+            }
+            else {
+                $c->res->status(404);
+                $c->res->body("Not found");
+            }
+        }
+
+        if (my $asset = $c->model('CMS::Asset')->available($site->id)->search({ slug => $asset_id })->first) {
+            $c->response->content_type($asset->mime_type);
+            $c->response->body($asset->content);
+            $c->detach;
+        }
+        elsif ($asset = $c->model('CMS::Asset')->available($site->id)->search({id => $asset_id})->first) {
+            $c->response->content_type($asset->mime_type);
+            $c->response->body($asset->content);
+            $c->detach;
+        } else {
+            $c->response->status(404);
+            $c->response->body("Not found");
+        }
     }
 }
 
