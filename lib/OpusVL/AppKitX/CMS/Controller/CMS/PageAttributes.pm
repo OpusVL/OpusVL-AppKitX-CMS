@@ -293,18 +293,16 @@ sub edit_values
     }
     else
     {
-        for my $obj_type (qw/attachment page/) {
             my $defaults;
             my $i = 1;
             for my $type (@types)
             {
                 $defaults->{"id_$i"} = $type->id;
                 $defaults->{"value_$i"} = $type->value;
-                if ($obj_type eq 'attachment') { $defaults->{"priority_${i}"} = $type->priority }
+                if ($type->can('priority')) { $defaults->{"priority_${i}"} = $type->priority }
                 $i++;
             }
             $form->default_values($defaults);
-        }
     }
 }
 
