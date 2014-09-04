@@ -262,9 +262,11 @@ sub edit_values
         my $value = $form->param_value('value');
         if($value)
         {
-            my $source = $type_rs->create({ 
-                value => $value,
-            });
+            my $create = { value => $value };
+            if (my $pri = $form->param_value("priority")) {
+                $create->{priority} = $pri;
+            }
+            my $source = $type_rs->create($create);
         }
         for(my $i = 1; $i <= $count; $i++)
         {
@@ -278,9 +280,10 @@ sub edit_values
             else
             {
                 my $value = $form->param_value("value_$i");
-                $source->update({ 
-                    value => $value,
-                });
+                my $pri   = $form->param_value("priority_$i");
+                my $update = { value => $value };
+                if ($pri) { $update->{priority} = $pri; }
+                $source->update($update);
             }
         }
 
@@ -290,15 +293,18 @@ sub edit_values
     }
     else
     {
-        my $defaults;
-        my $i = 1;
-        for my $type (@types)
-        {
-            $defaults->{"id_$i"} = $type->id;
-            $defaults->{"value_$i"} = $type->value;
-            $i++;
+        for my $obj_type (qw/attachment page/) {
+            my $defaults;
+            my $i = 1;
+            for my $type (@types)
+            {
+                $defaults->{"id_$i"} = $type->id;
+                $defaults->{"value_$i"} = $type->value;
+                if ($obj_type eq 'attachment') { $defaults->{"priority_${i}"} = $type->priority }
+                $i++;
+            }
+            $form->default_values($defaults);
         }
-        $form->default_values($defaults);
     }
 }
 
