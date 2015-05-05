@@ -39,7 +39,10 @@ body .redactor_box_fullscreen {
 	outline: none;
 	border: none;
 	width: 100%;
-	white-space: normal;
+	/**
+     * Removed because of an issue with FF 36.0.1 and above
+     white-space: normal;
+     */
 }
 
 .redactor_editor, .redactor_editor:focus {
