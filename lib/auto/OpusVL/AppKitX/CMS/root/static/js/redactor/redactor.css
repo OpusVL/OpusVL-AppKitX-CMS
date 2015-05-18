@@ -58,6 +58,7 @@ body .redactor_box_fullscreen {
 	font-size: 15px !important;
 	line-height: 1.45em !important;
 	white-space: normal;
+    font-weight: normal;
 }
 .redactor_editor a {
 	color: #15c !important;
