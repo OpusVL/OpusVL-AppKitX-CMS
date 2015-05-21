@@ -13,7 +13,7 @@ __PACKAGE__->config
     appkit_icon                 => '/static/modules/cms/cms-icon-small.png',
     appkit_myclass              => 'OpusVL::AppKitX::CMS',
     appkit_css                  => [qw< /static/js/redactor/redactor.css /static/css/bootstrap.css >],
-    appkit_js                   => [qw< /static/js/bootstrap.js /static/js/redactor/redactor.js /static/js/beautify/beautify.js /static/js/beautify/beautify-html.js /static/js/beautify/beautify-css.js >],
+    appkit_js                   => [qw< /static/js/bootstrap.js /static/js/redactor/redactor.js /static/js/beautify/beautify.js /static/js/beautify/beautify-html.js /static/js/beautify/beautify-css.js /static/js/ace/ace.js>],
     appkit_method_group         => 'Content Management',
     appkit_method_group_order   => 1,
     appkit_shared_module        => 'CMS',
@@ -174,6 +174,10 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
     $form->get_all_element({name=>'parent'})->options(
         [map {[$_->id, $_->breadcrumb . " - " . $_->url]} $c->model('CMS::Page')->search({ site => $site->id })->published->all]
     );
+    $form->get_all_element({ name => 'markup_type' })->options(
+        [['Standard', 'Standard'], ['Markdown', 'Markdown']]
+    );
+
     $form->default_values({
         site => $site->id,
         content_type => 'text/html',
@@ -192,7 +196,8 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
         }
     }
 
-    if ($c->req->query_params && $c->req->query_params->{type} eq 'blog') {
+    if ($c->req->query_params and $c->req->query_params->{type} eq 'blog') {
+        $c->stash->{type} = 'Blog';
         $form->default_values({
             content => q{
 [% page = cms.param('page') %]
@@ -219,7 +224,7 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
 [% IF pager.next_page %]
     <div id="pager_next">
         <a href="[% me.url %]?page=[% pager.next_page %]">Next page &raquo;</a>
-    </div>
+   </div>
 [% END %]
 </div>
             },
@@ -244,6 +249,7 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
             breadcrumb  => $form->param_value('breadcrumb'),
             template_id => $form->param_value('template') || undef,
             parent_id   => $form->param_value('parent') || undef,
+            markup_type => $form->param_value('markup_type') || 'Standard',
             site        => $site->id,
             status      => $status,
             blog        => $c->req->query_params && $c->req->param('type') eq 'blog' ? 1 : 0,
@@ -378,6 +384,7 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm :AppKitFe
         note_changes => $page->note_changes,
         site         => $site->id,
         content_type => $page->content_type,
+        markup_type  => $page->markup_type,
     };
  
     $DB::single = 1;   
@@ -429,6 +436,7 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm :AppKitFe
             site        => $site->id,
             note_changes => $form->param_value('note_changes'),
             status      => 'published',
+            markup_type => $defaults->{markup_type},
         });
         
         if (my $file  = $c->req->upload('new_att_file')) {

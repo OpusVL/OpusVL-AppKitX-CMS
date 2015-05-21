@@ -98,7 +98,7 @@ elements:
               - type: Block
                 attributes:
                     id: "editor-controls"
-    
+
               - type: Textarea
                 name: content
                 cols: 71
@@ -106,6 +106,15 @@ elements:
                     id: wysiwyg
                 constraints:
                   - type: Required
+
+              - type: Block
+                tag: pre
+                #name: content
+                #label: Content *
+                attributes:
+                    class: no-gui
+                    id: editor
+                    style: "width: 584px;"
 
       - type: Fieldset
         legend: New attachment
