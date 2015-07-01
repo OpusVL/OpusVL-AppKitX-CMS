@@ -182,20 +182,20 @@
             toolbar = $('.editor-toolbar'),
             selectM = capitalizeFirstLetter('[% page.markup_type %]');
         
-        if (selectM == 'Standard') {
-            ace.hide();
-            toolbar.hide();
-            wysiwyg.show();
-            window.markupType = 'Standard';
-            editor.getSession().setMode("ace/mode/html");
-        }
-        else if (selectM == 'Markdown') {
+        if (selectM == 'Markdown') {
             wysiwyg.hide();
             toolbar.show();
             ace.show();
             window.markupType = 'Markdown';
             editor.getSession().setMode("ace/mode/markdown");
             editor.getSession().setValue($('#wysiwyg').val());
+        }
+        else {
+            ace.hide();
+            toolbar.hide();
+            wysiwyg.show();
+            window.markupType = 'Standard';
+            editor.getSession().setMode("ace/mode/html");
         }
     });
 </script>
