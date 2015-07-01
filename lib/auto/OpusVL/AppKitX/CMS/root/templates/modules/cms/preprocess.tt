@@ -485,6 +485,7 @@
         }
 
         // ace editor
+        window.markupType = 'Standard';
         if ($('#editor').length > 0) {
                 $('.ace_editor textarea').css('z-index','2000');
                 editor   = ace.edit("editor"),
@@ -501,6 +502,8 @@
                     var type_a = '[% asset.mime_type %]';
                     editor.getSession().setMode("ace/mode/" + type_a.split('/')[1]);
                 }
+            } else if (window.markupType == 'Markdown') {
+                editor.getSession().setMode("ace/mode/markdown");
             } else {
                 editor.getSession().setMode("ace/mode/html");
             }
@@ -511,12 +514,16 @@
             editor.focus();
 
             // populate textarea for form submission
+            var markdownContent = $('#wysiwyg');
             if ($('#wysiwyg-content').length > 0) codeInput = $('#wysiwyg-content');
             editor.on('change', function () {
                 // assuming a line height of 16 pixels...
                 editor_div.style.height = 16 * doc.getLength() + 'px';
                 editor.resize();
-                codeInput.text(editor.getSession().getValue());
+                if (window.markupType == 'Markdown')
+                    markdownContent.text(editor.getSession().getValue());
+                else
+                    codeInput.text(editor.getSession().getValue());
             });
 
             if (is_asset) {
@@ -571,7 +578,7 @@
             };
 
             $('#editor').before(
-                '<div class="btn-toolbar"><div class="btn-group">' + addBtn('Elements', 'tint', 'elements')
+                '<div class="btn-toolbar editor-toolbar"><div class="btn-group">' + addBtn('Elements', 'tint', 'elements')
                 + addBtn('Pages', 'file', 'pages')
                 + addBtn('Assets', 'briefcase', 'assets')
                 + addBtn('Attachments', 'tag', 'attachments')

@@ -45,6 +45,10 @@ elements:
             name: template
             label: Template
           
+          - type: Select
+            name: markup_type
+            label: Markup Type
+            
           - type: Text
             name: breadcrumb
             label: Breadcrumb *
@@ -58,7 +62,7 @@ elements:
             label: Content type *
             constraints:
               - type: Required        
-  
+
           - type: Text
             name: h1
             label: H1 Heading
@@ -89,6 +93,14 @@ elements:
             constraints:
               - type: Required
 
+          - type: Block
+            tag: pre
+            #name: content
+            #label: Content *
+            attributes:
+                class: no-gui
+                id: editor
+                style: "width: 584px;"
   - type: Submit
     name: submit
     value: Create page

@@ -165,6 +165,10 @@
     });
 
     $(function() {
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
         $('#preview').click(function() {
             $('#preview_content').load('/modules/cms/ajax/preview_page', {
                 page_id : '[% page.id %]',
@@ -172,6 +176,27 @@
             });
             $('#preview_content').show('fast');
         });
+        
+        var wysiwyg = $('.redactor_box'),
+            ace     = $('#editor'),
+            toolbar = $('.editor-toolbar'),
+            selectM = capitalizeFirstLetter('[% page.markup_type %]');
+        
+        if (selectM == 'Markdown') {
+            wysiwyg.hide();
+            toolbar.show();
+            ace.show();
+            window.markupType = 'Markdown';
+            editor.getSession().setMode("ace/mode/markdown");
+            editor.getSession().setValue($('#wysiwyg').val());
+        }
+        else {
+            ace.hide();
+            toolbar.hide();
+            wysiwyg.show();
+            window.markupType = 'Standard';
+            editor.getSession().setMode("ace/mode/html");
+        }
     });
 </script>
 
