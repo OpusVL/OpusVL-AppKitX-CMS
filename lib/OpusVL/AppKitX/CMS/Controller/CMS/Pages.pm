@@ -231,8 +231,20 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
         });
     }
 
+    $form->get_all_element({ name => 'url' })->get_constraint({ type => 'Callback' })->callback(sub {
+        my $res = $c->model('CMS::Page')
+            ->search({
+                site => $site->id,
+                url => $c->req->body_params->{url},
+                status => 'published' });
+            
+        $DB::single = 1; 
+        return 1 unless $res->count; 
+        return 0;
+    });
+   
     $form->process;
-    
+
     if ($form->submitted_and_valid) {
         my $url = $form->param_value('url');
         unless ($url =~ m!^/!) {$url = "/$url"}
@@ -387,7 +399,6 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm :AppKitFe
         markup_type  => $page->markup_type,
     };
  
-    $DB::single = 1;   
     $self->construct_attribute_form($c, { type => 'page', site_id => $site->id });
 
     my @fields = $site->page_attribute_details->active->all;

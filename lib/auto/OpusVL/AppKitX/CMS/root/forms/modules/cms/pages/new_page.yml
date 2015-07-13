@@ -30,11 +30,8 @@ elements:
               id: page_url
             constraints:
               - type: Required
-              - type: DBIC::Unique
-                model: CMS
-                resultset: Page
-                message_loc: "URL already exists for this site"
-                others: site
+              - type: Callback
+                message: "URL already exists"
           
           - type: Select
             name: parent
