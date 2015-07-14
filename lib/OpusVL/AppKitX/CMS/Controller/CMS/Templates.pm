@@ -141,7 +141,7 @@ sub edit_template :Chained('templates') :PathPart('edit') :Args(0) :AppKitForm :
             });
         #}
 
-        if ($form->param_value('content_edit') ne $template->content) {
+        if ($form->param_value('content') ne $template->content) {
             $template->set_content($form->param_value('content'));
         }
 
