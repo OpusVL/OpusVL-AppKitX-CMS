@@ -238,7 +238,6 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
                 url => $c->req->body_params->{url},
                 status => 'published' });
             
-        $DB::single = 1; 
         return 1 unless $res->count; 
         return 0;
     });
