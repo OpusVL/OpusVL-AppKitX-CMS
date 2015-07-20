@@ -45,6 +45,10 @@ elements:
             name: template
             label: Template
           
+          - type: Select
+            name: markup_type
+            label: Markup Type
+
           - type: Text
             name: priority
             label: Priority *

@@ -354,6 +354,10 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm :AppKitFe
         [map {[$_->id, $_->breadcrumb . " - " . $_->url]} $site->pages->published->all ]
     );
     
+    $form->get_all_element({ name => 'markup_type' })->options(
+        [['Standard', 'Standard'], ['Markdown', 'Markdown']]
+    );
+
     my $aliases_fieldset = $form->get_all_element({name=>'page_aliases'});
     if (my @aliases = $page->search_related('aliases')) {
         foreach my $alias (@aliases) {
@@ -446,7 +450,7 @@ sub edit_page :Chained('pages') :PathPart('edit') :Args(0) :AppKitForm :AppKitFe
             site        => $site->id,
             note_changes => $form->param_value('note_changes'),
             status      => 'published',
-            markup_type => $defaults->{markup_type},
+            markup_type => $form->param_value('markup_type') 
         });
         
         if (my $file  = $c->req->upload('new_att_file')) {
