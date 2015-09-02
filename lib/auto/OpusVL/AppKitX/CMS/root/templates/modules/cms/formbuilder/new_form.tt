@@ -20,7 +20,7 @@
 
 		<div class="text label">
 			<label>Mail from</label>
-			<input type="text" id="mail_from" value="forms@premgroup.com" />
+			<input type="text" id="mail_from" value="forms@example.com" />
 		</div>
 
 		<div class="text label">
@@ -79,7 +79,7 @@
 
 <form action="" method="post" class="form form-horizontal">
 	<input type="hidden" name="mail_to" value="[% c.user.email %]" />
-	<input type="hidden" name="mail_from" value="forms@premgroup.com" />
+	<input type="hidden" name="mail_from" value="forms@example.com" />
 
 	<input type="hidden" name="form_name" value="" />
 	<input type="hidden" name="form_redirect" value="" />
