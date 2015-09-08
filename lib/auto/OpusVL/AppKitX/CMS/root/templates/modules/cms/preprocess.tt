@@ -504,6 +504,7 @@
                 }
             } else if (window.markupType == 'Markdown') {
                 editor.getSession().setMode("ace/mode/markdown");
+                editor.getSession().setUseWrapMode(true);
             } else {
                 editor.getSession().setMode("ace/mode/html");
             }
@@ -520,10 +521,14 @@
                 // assuming a line height of 16 pixels...
                 editor_div.style.height = 16 * doc.getLength() + 'px';
                 editor.resize();
-                if (window.markupType == 'Markdown')
+                if (window.markupType == 'Markdown') {
+                    editor.getSession().setUseWrapMode(true);
                     markdownContent.text(editor.getSession().getValue());
-                else
+                }
+                else {
                     codeInput.text(editor.getSession().getValue());
+                    editor.getSession().setUseWrapMode(false);
+                }
             });
 
             if (is_asset) {
