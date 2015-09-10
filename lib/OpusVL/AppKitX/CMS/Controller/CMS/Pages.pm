@@ -1040,10 +1040,16 @@ sub _asset :Local :Args(2) {
 
 sub _attachment :Path('/_attachment') :Args(2) {
     my ($self, $c, $attachment_id, $filename) = @_;
-    
-    if (my $attachment = $c->model('CMS::Attachment')->find({id => $attachment_id})) {
+
+    if (my $attachment = $c->model('CMS::Attachment')->search({ slug => $attachment_id })->first) {
+        $c->res->content_type($attachment->mime_type);
+        $c->res->body($attachment->content);
+        $c->detach;
+    }
+    elsif ($attachment_id =~ /^\d+$/ && ($attachment = $c->model('CMS::Attachment')->search({id => $attachment_id})->first)) {
         $c->response->content_type($attachment->mime_type);
         $c->response->body($attachment->content);
+        $c->detach;
     } else {
         $c->response->status(404);
         $c->response->body("Not found");
