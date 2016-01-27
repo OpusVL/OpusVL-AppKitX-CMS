@@ -3,6 +3,7 @@ package OpusVL::AppKitX::CMS::Controller::CMS::Sites;
 use 5.010;
 use Moose;
 use namespace::autoclean;
+use IO::Socket::INET;
 BEGIN { extends 'Catalyst::Controller::HTML::FormFu'; };
 with 'OpusVL::AppKit::RolesFor::Controller::GUI';
  
@@ -354,6 +355,57 @@ sub delete_attribute :Chained('base') :PathPart('attribute/delete') :Args(1) :Ap
         $attr->delete;
         $c->flash(status_msg => "Successfully removed attribute $attr_name");
         $c->res->redirect($c->uri_for($self->action_for('manage_attributes'), [ $site->id ]));
+        $c->detach;
+    }
+}
+
+sub clear_cache
+    : PortletName('Clear Cache')
+    : AppKitFeature('Portlets')
+{
+    my ($self, $c) = @_;
+}
+
+sub clear_cache_ajax
+    : Local 
+    : AppKitFeature('Clear Cache') {
+
+    my ($self, $c) = @_;
+    $c->stash->{no_wrapper} = 1;
+    if ($c->config->{cache_host} and $c->config->{cache_port}) {
+        my ($host, $port) = (
+            $c->config->{cache_host},
+            $c->config->{cache_port}
+        );
+
+        $| = 1;
+ 
+        my $socket = new IO::Socket::INET (
+            PeerHost => $c->config->{cache_host},
+            PeerPort => $c->config->{cache_port},
+            Proto => 'tcp',
+        );
+
+        unless ($socket) {
+            $c->res->body("Could not connect to cache server (${host}:${port})");
+            $c->detach;
+        }
+
+        my $response = "";
+        $socket->recv($response, 1024);
+        chomp $response;
+        if ($response eq 'OK') {
+            $response = "The cache was successfully cleared";
+        }
+        elsif ($response eq 'ERROR') {
+            $response = "There was a problem flushing the cache";
+        }
+        else {
+            $response = "Received an unknown response: $response";
+        }
+
+        $c->res->body($response); 
+        $socket->close();
         $c->detach;
     }
 }
