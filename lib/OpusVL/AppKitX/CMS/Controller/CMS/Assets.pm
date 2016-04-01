@@ -261,6 +261,7 @@ sub upload_assets_global :Chained('/modules/cms/sites/base') :Args(0) :AppKitFea
             mime_type   => $file->type,
             filename    => $file->basename,
             site        => $site->id,
+            slug        => $file->basename,
             global      => 1,
         });
 

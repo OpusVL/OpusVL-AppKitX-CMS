@@ -32,8 +32,8 @@
 			$('#page_heading').val( str );
 			$('#page_breadcrumb').val( str );
 
-			str = str.replace(/[^\w\s]|_/g, "")
-         		.replace(/\s+/g, "_");
+			str = str.replace(/[^\w\s]|-/g, "")
+         		.replace(/\s+/g, "-");
          	$('#page_url').val(orig_page + "/" + str.toLowerCase() );
 
 		});

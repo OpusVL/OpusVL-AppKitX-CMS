@@ -6,6 +6,7 @@ use Module::Install::AuthorTests;
 
 name 'OpusVL-AppKitX-CMS';
 all_from 'lib/OpusVL/AppKitX/CMS.pm';
+license 'perl';
 
 requires 'OpusVL::AppKit';
 requires 'OpusVL::CMS';

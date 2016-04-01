@@ -265,6 +265,7 @@ sub new_page :Chained('/modules/cms/sites/base') :PathPart('page/new') :Args(0) 
             status      => $status,
             blog        => $c->req->query_params && $c->req->param('type') eq 'blog' ? 1 : 0,
             content_type => $form->param_value('content_type') || 'text/html',
+            created_by  => $c->user->id,
         });
         
         $page->set_content($form->param_value('content'));

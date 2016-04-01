@@ -1,0 +1,21 @@
+<style type="text/css">
+    #server-response {
+        font-weight: bold;
+    }
+</style>
+
+<p id="server-response"></p>
+    <a id="clear-cache" href="javascript:;" class="link_button link_button_delete">Clear Cache</a>
+
+<script type="text/javascript">
+(function(d) {
+    var resp        = d.querySelector('#server-response'),
+        clearCache  = d.querySelector('#clear-cache');
+
+    clearCache.addEventListener('click', function() {
+        $.get('/modules/cms/sites/clear_cache_ajax', {}, function(data) {
+            resp.innerHTML = data;
+        });
+    });
+})(document);
+</script>
