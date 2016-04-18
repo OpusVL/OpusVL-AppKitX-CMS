@@ -220,17 +220,10 @@ sub upload_assets :Chained('/modules/cms/sites/base') :Args(0) :AppKitFeature('A
     my $asset_rs = $c->model('CMS::Asset');
     if (my $file = $c->req->upload('file')) {
         my $slug;
-        if ($asset_rs->search({ filename => $file->basename })->count > 1) {
-            my $seq = 'asset_attribute_data_id_seq';
-            my $aid = $asset_rs->result_source->schema->storage->dbh_do(sub {
-                my ($storage, $dbh, @cols) = @_;
-                my $sth = $dbh->prepare_cached("SELECT nextval(?)");
-
-                $sth->execute($seq);
-                return  $sth->fetchrow_arrayref()->[0];
-            });
+        my $count = $asset_rs->search({ filename => $file->basename })->count;
+        if ($count > 0) {
             my $basename = $file->basename;
-            $basename =~ s/(\.[^.]+)$/_$aid$1/;
+            $basename =~ s/(\.[^.]+)$/_$count$1/;
             $slug = $basename;
         }
         else {
