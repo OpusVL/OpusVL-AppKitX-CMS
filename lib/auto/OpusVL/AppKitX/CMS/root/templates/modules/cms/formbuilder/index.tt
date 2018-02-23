@@ -1,0 +1,35 @@
+[% META appkitfeature_tablesorter = 1 %]
+[% INCLUDE modules/cms/header.tt title="Form Builder" %]
+
+<div class="content_block">
+	<fieldset>
+		<legend>Site Forms</legend>
+		[% IF forms.size > 0 %]
+			<table class="tablesorter">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Fields</th>
+						<th>Redirects to</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					[% FOREACH form IN forms %]
+						<tr>
+							<td>[% form.name %]</td>
+							<td>[% form.forms_fields.size %]</td>
+							<td>[% form.forms_submit_fields.redirect.url %]</td>
+							<td><a href="[% c.uri_for(c.controller.action_for('edit_form'), [ site.id, form.id ]) %]">Edit</a> | 
+								<a href="[% c.uri_for(c.controller.action_for('delete_form'), [ site.id, form.id ]) %]">Delete</a>
+							</td>
+						</tr>
+					[% END %]
+				</tbody>
+			</table>
+		[% ELSE %]
+			<p>You have no forms created for this site</p>
+		[% END %]
+	</fieldset>
+</div>
+<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('new_form'), [ site.id ]) %]">Create new Form</a>

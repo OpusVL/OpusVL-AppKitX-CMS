@@ -1,0 +1,5 @@
+[% INCLUDE modules/cms/header.tt title="Managing domain $domain.domain" %]
+
+<a class="link_button link_button_back" href="[% c.uri_for(c.controller('Sites').action_for('edit'), [ site.id ]) %]">Back to site</a>
+<div class="clear" style="height: 15px"></div>
+[% form.render | none %]

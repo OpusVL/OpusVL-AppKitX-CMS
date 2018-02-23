@@ -1,0 +1,90 @@
+/* @override http://localhost:3000/static/css/cms.css */
+
+.hidden { display: none; }
+
+.form_error_message {
+    /* width: 350px;*/
+    font-weight:bold;
+    color:red;
+    padding:5px;
+    border: 1px solid red;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    -webkit-box-shadow: 3px 5px 10px rgba(0,0,0,0.2);
+    -moz-box-shadow: 3px 5px 10px rgba(0,0,0,0.2);
+    box-shadow: 3px 5px 10px rgba(0,0,0,0.2);
+    background: #fff;
+    margin: 5px;
+    font-size: 12px;
+}
+
+a.link { font-size: 12px; }
+a.link:link                          { color:#0085B0; text-decoration: underline; }
+a.link:visited                       { color:#0085B0; text-decoration: underline; }
+a.link:active                        { color:#0085B0; text-decoration: underline; }
+a.link:hover                         { color:#000000; text-decoration: underline; }
+
+.tipbox {
+    font-size: 10pt;
+    border: 2px solid #08c/*#2A9ABB*/;
+    -webkit-box-shadow: 2px 5px 15px rgba(0,0,0,0.3);
+    -moz-box-shadow: 2px 5px 15px rgba(0,0,0,0.3);
+    box-shadow: 2px 5px 15px rgba(0,0,0,0.3);
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    background-repeat: no-repeat;
+    background-position: 10px center;
+    background-color: #fff;
+    padding: 10px 10px 10px 10px;
+    width:450px;
+    margin-bottom: 10px;
+}
+
+label.box-title {
+  display: block;
+  width: 100%;
+  padding: 2px;
+  margin-bottom: 10px;
+  font-size: 13.5px;
+  line-height: 14px;
+  color: #333333;
+  border: 0;
+  font-weight: bold;
+  border-bottom: 2px solid #999/*#08c*/;
+}
+
+.tipbox td {
+    padding-right: 10px;
+}
+
+#ajax-slide { margin-top: 15px; }
+
+/*textarea#wysiwyg {
+    color: #333;
+    font-weight: bold;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 12px;
+    width: 584px;
+    height: 300px;
+}*/
+
+div.content_block.tab_header {
+	padding-bottom: 0;
+}
+
+div.column {
+	float: left;
+	margin-right: 30px;
+	margin-top: 5px;
+	margin-bottom: 13px;
+}
+
+div.tab_header input {
+	font-size: 0.9em;
+}
+
+div.tab_header th {
+	padding-top: 5px;
+}

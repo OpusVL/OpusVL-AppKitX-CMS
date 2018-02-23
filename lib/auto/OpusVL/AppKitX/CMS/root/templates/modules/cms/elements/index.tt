@@ -1,0 +1,34 @@
+[% INCLUDE modules/cms/header.tt title="Elements" %]
+
+<div class="content_block">
+    [% IF elements.size > 0 %]
+        [% META appkitfeature_tablesorter = 1 %]
+        <table class="tablesorter">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Global</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                [% FOREACH element IN elements %]
+                    <tr>
+                        <td>[% element.id %]</td>
+                        <td>[% element.name %]</td>
+                        <td>[% IF element.global %] <font color="green">Yes</font> [% ELSE %] <font color="red">No</font> [% END %]</td>
+                        <td>
+                            <a href="[% c.uri_for(c.controller.action_for('edit_element'), [ site.id, element.id ]) %]">Edit</a>
+                            <a href="[% c.uri_for(c.controller.action_for('delete_element'), [ site.id, element.id ]) %]">Delete</a>
+                        </td>
+                    </tr>
+                [% END %]
+            </tbody>
+        </table>
+    [% ELSE %]
+        <p>No elements have been created</p>
+    [% END %]
+</div>
+
+<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('new_element'), [ site.id ]) %]">New element</a>

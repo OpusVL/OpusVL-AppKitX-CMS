@@ -1,0 +1,3 @@
+<h1>Delete element "[% element.name %]"</h1>
+
+[% form.render | none %]

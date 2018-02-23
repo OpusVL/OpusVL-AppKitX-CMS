@@ -1,0 +1,68 @@
+---
+indicator: submit
+auto_fieldset: 0
+form_error_message: Oops, looks like there was a problem - please check below and try again.
+
+elements:
+  - type: Block
+    id: controls
+    attributes:
+      class: "content_block"
+    elements:
+      - type: Fieldset
+        legend: Element details
+        elements:
+          - type: Text
+            name: name
+            label: Name *
+            constraints:
+              - type: Required
+          - type: Hidden
+            name: id
+
+          - type: Text
+            name: slug
+            label: Slug
+            constraints:
+              - type: DBIC::Unique
+                model: CMS
+                resultset: Element
+                column: slug
+                id_field: id
+                message: Slug already in use
+          - type: Block
+            attributes:
+                id: "editor-controls"
+
+          - type: Textarea
+            name: content
+            attributes:
+              id: content
+              class: hidden
+
+          - type: Block
+            tag: pre
+            #name: content
+            #label: Content *
+            attributes:
+                class: no-gui
+                id: editor
+                style: "width: 584px;"
+            #constraints:
+            #  - type: Required
+
+          - type: Checkbox
+            name: global
+            label: Make this element global?
+
+  - type: Submit
+    name: submit
+    value: Create element
+    attributes:
+      class: "submit submit_add"
+
+  - type: Submit
+    name: cancel
+    value: Cancel
+    attributes:
+      class: "submit submit_cancel"

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>[% title %]</title>
+        <link rel="stylesheet" href="/static/css/layout.css" type="text/css" media="all" />
+        <link rel="stylesheet" href="/static/css/skin.css" type="text/css" media="all" />
+        <link rel="stylesheet" href="/static/css/appnav.css" type="text/css" media="all" />
+        <link rel="stylesheet" href="/static/css/overrides.css" type="text/css" media="all" />
+        <link rel="stylesheet" href="/static/css/vader/jquery-ui-1.8.custom.css" type="text/css" media="all" />
+        <link rel="stylesheet" href="/static/css/print.css" type="text/css" media="print" />
+    
+        <script type="text/javascript" src="[% c.uri_for('/static/js/jquery.js')"></script>
+        <script type="text/javascript" src="/static/js/jquery-ui-1.8.custom.min.js"></script>
+        <script type="text/javascript" src="/static/js/appkit.js"></script>
+        <script type="text/javascript" src="/static/js/cms.js"></script>
+    </head>
+    <body>
+        <div class="content_block">
+            [% content | none %]
+        </div>
+    </body>
+</html>

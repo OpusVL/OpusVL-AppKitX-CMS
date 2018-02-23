@@ -1,0 +1,117 @@
+---
+#indicator: submit
+auto_fieldset: 0
+form_error_message: Oops, looks like there was a problem - please check below and try again.
+
+elements:
+  - type: Block
+    id: controls
+    attributes:
+      class: "content_block"
+    elements:
+      - type: Fieldset
+        legend: Page details
+        elements:
+          - type: Text
+            name: title
+            label: Title *
+            attributes:
+              id: page_title
+            constraints:
+              - type: Required
+          
+          - type: Hidden
+            name: site
+
+          - type: Text
+            name: url
+            label: URL *
+            attributes:
+              id: page_url
+            constraints:
+              - type: Required
+              - type: Callback
+                message: "URL already exists"
+          
+          - type: Select
+            name: parent
+            label: Parent
+            empty_first: true
+
+          - type: Select
+            name: template
+            label: Template
+          
+          - type: Select
+            name: markup_type
+            label: Markup Type
+            
+          - type: Text
+            name: breadcrumb
+            label: Breadcrumb *
+            attributes:
+              id: page_breadcrumb
+            constraints:
+              - type: Required
+          
+          - type: Text
+            name: content_type
+            label: Content type *
+            constraints:
+              - type: Required        
+
+          - type: Text
+            name: h1
+            label: H1 Heading
+            attributes:
+              id: page_heading
+          
+          - type: Text
+            name: priority
+            label: Priority *
+            default: 50
+            constraints:
+              - type: Required
+          
+          - type: Textarea
+            name: description
+            label: Description
+
+          - type: Block
+            attributes:
+                id: "editor-controls"
+
+          - type: Textarea
+            name: content
+            #label: Content *
+            attributes:
+                id: wysiwyg
+                style: "width: 584px;"
+            constraints:
+              - type: Required
+
+          - type: Block
+            tag: pre
+            #name: content
+            #label: Content *
+            attributes:
+                class: no-gui
+                id: editor
+                style: "width: 584px;"
+  - type: Submit
+    name: submit
+    value: Create page
+    attributes:
+      class: "submit submit_add"
+
+  - type: Submit
+    name: preview
+    value: Preview
+    attributes:
+      class: "submit submit_search"
+
+  - type: Submit
+    name: cancel
+    value: Cancel
+    attributes:
+      class: "submit submit_cancel"

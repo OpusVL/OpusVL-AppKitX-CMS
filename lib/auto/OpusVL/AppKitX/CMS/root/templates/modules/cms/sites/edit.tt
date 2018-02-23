@@ -1,0 +1,62 @@
+[% META appkitfeature_tablesorter = 1 %]
+[% INCLUDE modules/cms/header.tt title="Editing $site.name" %]
+
+[% form.render | none %]
+
+<div style="height:15px" class="clear"></div>
+
+<div class="content_block">
+	<fieldset>
+		<legend>Current Site Editors</legend>
+		<table class="tablesorter">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Username</th>
+					<th>Email</th>
+				</tr>
+			</thead>
+			<tbody>
+				[% FOREACH user IN sites_users %]
+					<tr>
+						<td>[% user.user.name %]</td>
+						<td>[% user.user.username %]</td>
+						<td>[% user.user.email %]</td>
+					</tr>
+				[% END %]
+			</tbody>
+		</table>
+	</fieldset>
+	<div class="clear"></div>
+</div>
+
+<form method="post" action="">
+<div style="float:right"><button name="site_clone" value="yes" class="btn btn-large"><i class="icon icon-random"></i> Clone Site</button></div>
+</form>
+
+<script type="text/javascript">
+var multiSelect = {};
+function init() {      
+  var s = document.getElementsByTagName('select');
+  for (var i = 0; i < s.length; i++) {
+    if (s[i].multiple) {
+      var n = s[i].name;
+      multiSelect[n] = [];
+      for (var j = 0; j < s[i].options.length; j++) {
+        multiSelect[n][j] = s[i].options[j].selected;
+      }
+      s[i].onclick = changeMultiSelect;
+    }
+  }
+}
+function changeMultiSelect() {
+  var n = this.name;
+  for (var i=0; i < this.options.length; i++) {
+    if (this.options[i].selected) {
+      multiSelect[n][i] = !multiSelect[n][i];
+    }
+    this.options[i].selected = multiSelect[n][i];
+  }
+}
+window.onload = init;
+</script>

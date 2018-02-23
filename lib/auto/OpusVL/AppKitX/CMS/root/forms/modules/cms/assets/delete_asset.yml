@@ -1,0 +1,26 @@
+---
+indicator: submit
+auto_fieldset: 0
+form_error_message: Oops, looks like there was a problem - please check below and try again.
+
+elements:
+  - type: Block
+    id: controls
+    attributes:
+      class: "content_block"
+    elements:
+      - type: Block
+        tag: p
+        content: "Are you sure you want to delete this asset?"
+        
+  - type: Submit
+    name: submit
+    value: Delete
+    attributes:
+      class: "submit submit_delete"
+
+  - type: Submit
+    name: cancel
+    value: Cancel
+    attributes:
+      class: "submit submit_cancel"

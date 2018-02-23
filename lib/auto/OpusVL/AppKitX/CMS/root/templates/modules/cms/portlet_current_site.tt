@@ -1,0 +1,5 @@
+[% IF active_sites > 0 %]
+	<p>You have access to <strong>[% active_sites %]</strong> site[% IF active_sites > 1 %]s[% END %]. <a href="[% c.uri_for(c.controller('Modules::CMS::Sites').action_for('index')) %]">View [% IF active_sites > 1 %]them[% ELSE %]it[% END %] now</a></p>
+[% ELSE %]
+	<p>You have access to <strong>no</strong> sites. <a href="[% c.uri_for(c.controller('Modules::CMS::Sites').action_for('add')) %]">Add one now</a></p>
+[% END %]

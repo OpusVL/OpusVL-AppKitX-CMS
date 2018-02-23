@@ -1,0 +1,3 @@
+[% INCLUDE modules/cms/header.tt title="Delete page $asset.filename" %]
+
+[% form.render | none %]

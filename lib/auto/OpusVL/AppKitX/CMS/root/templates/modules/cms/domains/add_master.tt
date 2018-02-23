@@ -1,0 +1,2 @@
+[% INCLUDE modules/cms/header.tt title="Add Master Domain for $site.name" %]
+[% form.render | none %]

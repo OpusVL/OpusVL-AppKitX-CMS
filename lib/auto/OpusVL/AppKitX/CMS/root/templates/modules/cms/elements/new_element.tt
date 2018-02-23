@@ -1,0 +1,5 @@
+[% INCLUDE modules/cms/header.tt title="New element" %]
+[% META appkitfeature_tablesorter = 1 %]
+[% PROCESS modules/cms/preprocess.tt %]
+
+[% form.render | none %]

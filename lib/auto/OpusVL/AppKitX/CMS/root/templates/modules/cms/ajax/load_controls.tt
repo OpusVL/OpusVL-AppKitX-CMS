@@ -1,0 +1,331 @@
+<span class="btn-group" data-toggle="buttons-radio">
+    <button type="button" class="btn active" onclick="wysiwygDestroy()" id="wysiwyg-destroy">Raw</button>
+    <button type="button" class="btn" onclick="wysiwygCreate()" id="wysiwyg-create">GUI</button>
+</span>
+<button type="button" class="btn" href="javascript:;" id="show-assets">Assets</button>
+<button type="button" class="btn" href="javascript:;" id="show-elements">Elements</button>
+
+[% IF page %]
+    <button type="button" class="btn" href="javascript:;" id="show-attachments">Attachments</button>
+[% END %]
+
+<button type="button" class="btn" href="javascript:;" id="show-pages">Pages</button>
+<div style="margin-bottom:5px !important" class="clear"></div>
+
+<div id="assets" style="display:none" title="Available Assets">
+    <h3>Select an Asset</h3>
+    <p>
+    <table class="tablesorter">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Filename</th>
+                <th>Mime Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            [% FOREACH a IN assets %]
+                <tr>
+                    <td>[% a.id %]</td>
+                    <td>
+                        <a href="javascript:;" rel="[% a.slug %]:[% a.mime_type %]:[% a.description %]" class="insert-asset link">[% a.filename %]</a>
+                        [% IF a.mime_type.match('^image') %]
+                            - <a href="javascript:;" rel="[% a.id %]" class="insert-asset-thumbnail link">Thumbnail</a>
+                        [% END %]
+                    </td>
+                    <td>[% a.mime_type %]</td>
+                </tr>
+            [% END %]
+        </tbody>
+    </table>
+    </p>
+</div>
+
+<div id="elements" style="display:none" title="Available Elements">
+    <h3>Select an Element</h3>
+    <p>
+    <table class="tablesorter">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            [% FOREACH e IN elements %]
+                <tr>
+                    <td>[% e.id %]</td>
+                    <td>
+                        <a href="javascript:;" rel="[% e.slug %]" class="insert-element link">[% e.name %]</a>
+                        [% IF e.tt_get_attributes.size > 0 %]
+                             (<a rel=".attribute-options-[% e.id %]" class="collapse-element-attributes link" href="javascript:void(0);">Show attributes</a>)
+                            <div class="attribute-options-[% e.id %]" style="display:none">
+                                <br />
+                                <form>
+                                [% FOREACH el_attr IN e.tt_get_attributes %]
+                                        <div class="text label">
+                                            <label>[% el_attr.code %]</label>
+                                            <input type="text" class="element-attribute-[% e.id %]" rel="[% el_attr.code %]" value="">
+                                        </div>
+                                [% END %]
+                                </form>
+                            </div>
+                        [% END %]
+                    </td>
+                </tr>
+            [% END %]
+        </tbody>
+    </table>
+    </p>
+</div>
+
+[% IF page %]
+    <div id="attachments" style="display:none" title="Available Attachments">
+        <h3>Select an Attachment</h3>
+        <p>
+        <table class="tablesorter">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Filename</th>
+                    <th>Mime Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                [% FOREACH a IN page.attachments_rs.published %]
+                    <tr>
+                        <td>[% a.id %]</td>
+                        <td>
+                            <a href="javascript:;" rel="[% a.slug %]" class="insert-attachment link">[% a.filename %]</a>
+                            [% IF a.mime_type.match('^image') %]
+                                - <a href="javascript:;" rel="[% a.slug %]" class="insert-attachment-thumbnail link">Thumbnail</a>
+                            [% END %]
+                        </td>
+                        <td>[% a.mime_type %]</td>
+                    </tr>
+                [% END %]
+            </tbody>
+        </table>
+        </p>
+    </div>
+[% END %]
+
+<div id="pages" style="display:none" title="Available Pages">
+    <h3>Select a Page</h3>
+    <p>
+    <table class="tablesorter">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>URL</th>
+            </tr>
+        </thead>
+        <tbody>
+            [% FOREACH p IN pages %]
+                <tr>
+                    <td>[% p.id %]</td>
+                    <td><a href="javascript:;" rel="[% p.id %]" class="insert-page link">[% p.breadcrumb %]</a></td>
+                    <td>[% p.url %]</td>
+                </tr>
+            [% END %]
+        </tbody>
+    </table>
+    </p>
+</div>
+
+<script type="text/javascript">
+    
+    var wobi, editorState;
+    editorState = 'Raw';
+    function wysiwygDestroy() { editorState = 'Raw'; wob.wysiwyg("destroy"); }
+    function wysiwygCreate() { editorState = 'GUI'; wob.wysiwyg(); }
+    
+    $(function() {
+        $('.collapse-element-attributes').click(function() {
+            var _attr = $(this).attr('rel');
+            $(_attr).slideToggle('fast');
+        });
+
+        function insertAtCaret(areaId,text) {
+            var txtarea = document.getElementById(areaId);
+            var scrollPos = txtarea.scrollTop;
+            var strPos = 0;
+            var br = ((txtarea.selectionStart || txtarea.selectionStart == '0') ? 
+                "ff" : (document.selection ? "ie" : false ) );
+            if (br == "ie") { 
+                txtarea.focus();
+                var range = document.selection.createRange();
+                range.moveStart ('character', -txtarea.value.length);
+                strPos = range.text.length;
+            }
+            else if (br == "ff") strPos = txtarea.selectionStart;
+
+            var front = (txtarea.value).substring(0,strPos);  
+            var back = (txtarea.value).substring(strPos,txtarea.value.length); 
+            txtarea.value=front+text+back;
+            strPos = strPos + text.length;
+            if (br == "ie") { 
+                txtarea.focus();
+                var range = document.selection.createRange();
+                range.moveStart ('character', -txtarea.value.length);
+                range.moveStart ('character', strPos);
+                range.moveEnd ('character', 0);
+                range.select();
+            }
+            else if (br == "ff") {
+                txtarea.selectionStart = strPos;
+                txtarea.selectionEnd = strPos;
+                txtarea.focus();
+            }
+            txtarea.scrollTop = scrollPos;
+        }
+        
+        $('#assets').dialog({
+            autoOpen : false,
+            modal    : true,
+            width    : 700,
+            buttons  : {
+                Close : function() { $(this).dialog('close'); },
+            },
+        });
+
+        $('#elements').dialog({
+            autoOpen : false,
+            modal    : true,
+            width    : 700,
+            buttons  : {
+                Close : function() { $(this).dialog('close'); },
+            },
+        });
+
+        $('#attachments').dialog({
+            autoOpen : false,
+            modal    : true,
+            width    : 700,
+            buttons  : {
+                Close : function() { $(this).dialog('close'); },
+            },
+        });
+        
+        $('#pages').dialog({
+            autoOpen : false,
+            modal    : true,
+            width    : 700,
+            buttons  : {
+                Close : function() { $(this).dialog('close'); },
+            },
+        });
+
+        $('.insert-asset').click(function() {
+            var rel   = $(this).attr('rel');
+            var attrs = rel.split(':');
+            var asset_id  = "'" + attrs[0] + "'";
+            var mime_type = attrs[1];
+            var description = attrs[2];
+            if (editorState == 'GUI')
+                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% cms.asset(" +  asset_id + ") %&#93");
+            else {
+                if (mime_type.indexOf('image') != -1) {
+                    insertAtCaret('wysiwyg', "<img src=\"[" + "%" + " cms.asset(" +  asset_id + ") %" + "]\" alt=\"" + description + "\">");
+                }
+                else {
+                    insertAtCaret('wysiwyg', "[" + "%" + " cms.asset(" +  asset_id + ") %" + "]");
+                }
+            }
+    
+            $('#assets').dialog('close');
+        });
+
+        $('.insert-asset-thumbnail').click(function() {
+            var asset_id = $(this).attr('rel');
+            if (editorState == 'GUI')
+                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% cms.thumbnail('asset', " +  asset_id + ") %&#93");
+            else
+                insertAtCaret('wysiwyg', "[" + "%" + " cms.thumbnail('asset', " +  asset_id + ") %" + "]");
+    
+            $('#assets').dialog('close');
+        });
+
+        $('.insert-attachment').click(function() {
+            var attachment_id = "'" + $(this).attr('rel') + "'";
+            if (editorState == 'GUI')
+                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% cms.attachment(" +  attachment_id + ") %&#93");
+            else
+                insertAtCaret('wysiwyg', "[" + "%" + " cms.attachment(" +  attachment_id + ") %" + "]");
+    
+            $('#attachments').dialog('close');
+        });
+
+        $('.insert-attachment-thumbnail').click(function() {
+            var attachment_id = $(this).attr('rel');
+            if (editorState == 'GUI')
+                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% cms.thumbnail('attachment', " +  attachment_id + ") %&#93");
+            else
+                insertAtCaret('wysiwyg', "[" + "%" + " cms.thumbnail('attachment', " +  attachment_id + ") %" + "]");
+    
+            $('#attachments').dialog('close');
+        });
+
+        $('.insert-element').click(function() {
+            var element_id = "'" + $(this).attr('rel') + "'";
+            if (editorState == 'GUI')
+                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% cms.element(" +  element_id + ") | eval %&#93");
+            else {
+                // if element has attribute class
+                // loop through and use the rel of the input field as the key
+                // the value will be the value
+                // generate a hash from this, ie: { height => 50, width => 120 }
+                if ($(".element-attribute-" + element_id)[0]) {
+                    var buildHash = "{ ";
+                    $('.element-attribute-' + element_id).each(function() {
+                        console.log($(this));
+                        var key = $(this).attr('rel');
+                        var value = $(this).val();
+                        if (key && value) {
+                            buildHash += "'" + key + "' => '" + value + "', ";
+                        }
+                    });
+
+                    buildHash += " }";
+                    insertAtCaret('wysiwyg', "[" + "%" + " cms.element(" +  element_id + ", " + buildHash + ") | eval %" + "]");
+                }
+                else {
+                    insertAtCaret('wysiwyg', "[" + "%" + " cms.element(" +  element_id + ") | eval %" + "]");
+                }
+            }
+    
+            $('#elements').dialog('close');
+        });
+
+        $('.insert-page').click(function() {
+            var page_id = $(this).attr('rel');
+            if (editorState == 'GUI')
+                $('#wysiwyg').wysiwyg("insertHtml", "&#91;% cms.page(" +  page_id + ").url %&#93");
+            else
+                insertAtCaret('wysiwyg', "[" + "%" + " cms.page(" +  page_id + ").url %" + "]");
+    
+            $('#pages').dialog('close');
+        });
+        
+        wob = $('#wysiwyg');
+        //wob.wysiwyg();
+        $('button#show-assets').click(function() {
+            $('#assets').dialog('open');
+        });
+        
+        $('button#show-elements').click(function() {
+            $('#elements').dialog('open');
+        });
+
+        [% IF page %]
+            $('button#show-attachments').click(function() {
+                $('#attachments').dialog('open');
+            });
+        [% END %]
+
+        $('button#show-pages').click(function() {
+            $('#pages').dialog('open');
+        });
+    });
+</script>

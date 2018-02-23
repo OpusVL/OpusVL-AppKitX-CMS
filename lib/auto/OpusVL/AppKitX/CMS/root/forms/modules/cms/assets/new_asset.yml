@@ -1,0 +1,79 @@
+---
+indicator: submit
+auto_fieldset: 0
+form_error_message: Oops, looks like there was a problem - please check below and try again.
+
+elements:
+  - type: Block
+    id: controls
+    attributes:
+      class: "content_block"
+    elements:
+      - type: Fieldset
+        legend: Asset details
+        elements:
+          - type: Text
+            name: filename
+            label: Filename *
+            constraints:
+              - type: Required
+
+          - type: Select
+            name: mime_type
+            label: MIME type *
+            attributes:
+              class: asset-mime-type
+            options:
+              - ['text/css','text/css']
+              - ['text/javascript','text/javascript']
+              - ['text/plain','text/plain']
+              - ['text/html','text/html']
+
+          - type: Hidden
+            name: id
+
+          - type: Text
+            name: slug
+            label: Slug
+            constraints:
+              - type: DBIC::Unique
+                model: CMS
+                resultset: Asset
+                column: slug
+                id_field: id
+                message: Slug already in use
+
+          - type: Text
+            name: description
+            label: Description
+
+          - type: Textarea
+            name: content
+            attributes:
+              id: content
+              class: hidden
+            #label: Content *
+            #constraints:
+            #  - type: Required
+
+          - type: Block
+            tag: pre
+            attributes:
+              id: editor
+              class: asset
+
+          - type: Checkbox
+            name: global
+            label: Make this asset global?
+
+  - type: Submit
+    name: submit
+    value: Create asset
+    attributes:
+      class: "submit submit_add"
+
+  - type: Submit
+    name: cancel
+    value: Cancel
+    attributes:
+      class: "submit submit_cancel"

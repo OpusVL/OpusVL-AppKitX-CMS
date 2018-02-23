@@ -1,0 +1,3 @@
+<h1>Delete attachment '[% attachment.filename %]'</h1>
+
+[% form.render | none %]

@@ -1,0 +1,66 @@
+[% INCLUDE modules/cms/header.tt title="Pages" %]
+
+<ul class="breadcrumb">
+  <li><a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('index'), [ site.id ]) %]">[% site.name %]</a>
+
+  [% IF page.get_parents.size > 0 %]
+      [% FOREACH p IN page.get_parents %]
+             <span class="divider">/</span></li> <li><a href="[% c.uri_for(c.controller.action_for('page_list'), [ site.id, p.id ]) %]">[% p.title %]</a>
+      [% END %]
+  [% END %]
+</ul>
+
+[% PROCESS modules/cms/pages/search.tt %]
+
+<div class="content_block slidey" style="display:none">
+    [% IF kids.size > 0 %]
+        [% META appkitfeature_tablesorter = 1 %]
+        <table class="tablesorter">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>URL</th>
+                    <th>Title</th>
+                    <th>Priority</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                [% FOREACH kid IN kids %]
+                    [% IF kid.parent.blog %]
+                    [% ELSE %]
+                        [% IF kid.title %]
+                        <tr>
+                            <td>[% kid.id %]</td>
+                            <td><strong>[% kid.url %]</strong></td>
+                            <td>[% kid.title %]</td>
+                            <td>[% kid.priority %]</td>
+                            <td>
+                                <a href="[% c.uri_for(c.controller.action_for('edit_page'), [ site.id, kid.id ]) %]">Edit</a> | 
+                                <a href="[% c.uri_for(c.controller.action_for('delete_page'), [ site.id, kid.id ]) %]">Delete</a> | 
+                                <a href="[% c.uri_for(c.controller.action_for('preview'), [ site.id, kid.id ]) %]" target="__blank">View</a> | 
+                                <a href="[% c.uri_for(c.controller.action_for('new_page'), [ site.id ]) %]?parent_id=[% kid.id %]">Create child</a> | 
+                                <a href="[% c.uri_for(c.controller.action_for('revisions'), [ site.id, kid.id ]) %]">Revisions</a>
+                                [% IF kid.children.size > 0 %] | <a href="[% c.uri_for(c.controller.action_for('page_list'), [ site.id, kid.id ]) %]"><strong>View Children &rarr;</strong></a>
+                                [% END %]
+                            </td>
+                        </tr>
+                        [% END %]
+                    [% END %]
+                [% END %]
+            </tbody>
+        </table>
+    [% ELSE %]
+        <p>No pages have been created</p>
+    [% END %]
+</div>
+
+
+
+<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('new_page'), [ site.id ]) %]">New page</a>
+
+<script type="text/javascript">
+    $(function() {
+        $('.slidey').show("slide", { direction: "[% slidey_direction %]" }, 500)
+    });
+</script>

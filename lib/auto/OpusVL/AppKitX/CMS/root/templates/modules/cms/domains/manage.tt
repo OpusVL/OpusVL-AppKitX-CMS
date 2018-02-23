@@ -1,0 +1,41 @@
+[% META appkitfeature_tablesorter = 1 %]
+[% INCLUDE modules/cms/header.tt title="Manage Domains for $site.name" %]
+
+<div class="clear" style="height: 15px"></div>
+<div class="content_block">
+	<fieldset>
+		<legend>Master Domains</legend>
+		[% IF master_domains %]
+			<div class="text label">
+				<table class="tablesorter">
+					<thead>
+						<tr>
+							<th>Domain</th>
+							<th>Alternates</th>
+							<th>Redirects to</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						[% FOREACH domain IN master_domains %]
+						<tr>
+							<td><a  href="[% c.uri_for(c.controller.action_for('edit'), [ site.id, domain.domain ]) %]">[% domain.domain %]</a></td>
+							<td>[% domain.alternates.count %]</td>
+							<td>[% IF domain.redirect.domain %] [% domain.redirect.domain %] [% ELSE %] None [% END %]</td>
+							<td>
+								<a href="[% c.uri_for(c.controller.action_for('delete_domain'), [ site.id, domain.domain ]) %]">Delete</a>
+							</td>
+						</tr>
+						[% END %]
+					</tbody>
+				</table>
+			</div>
+		[% ELSE %]
+			<p>
+				There's no master domain setup for this site. <strong><a href="[% c.uri_for(c.controller.action_for('add_master'), [ site.id ]) %]">Add one now</a></strong>
+			</p>
+		[% END %]
+	</fieldset>
+</div>
+
+<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('add_master'), [ site.id ]) %]">Add New Master Domain</a>

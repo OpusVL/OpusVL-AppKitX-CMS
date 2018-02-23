@@ -1,0 +1,31 @@
+[% META appkitfeature_tablesorter = 1 %]
+[% INCLUDE modules/cms/header.tt title="Orphan Pages" %]
+
+<div class="content_block">
+	[% IF orphans.size > 0 %]
+		<table class="tablesorter">
+			<thead>
+				<tr>
+					<th>Parent URL</th>
+					<th>Child URL</th>
+					<th>Status of Parent</th>
+                    <th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				[% FOREACH orphan IN orphans %]
+					<tr>
+						<td><a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('edit_page'), [ site.id, orphan.parent.id ]) %]">[% orphan.parent.url %]</a></td>
+						<td><a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('edit_page'), [ site.id, orphan.id ]) %]">[% orphan.url %]</td>
+						<td>[% IF orphan.parent.status == 'deleted' %]<font color="red">Deleted</font>[% ELSE %][% orphan.parent.status %][% END %]</td>
+                        <td><a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('delete_page'), [ site.id, orphan.id ]) %]">Delete orphan</a></td>
+					</tr>
+				[% END %]
+			</tbody>
+		</table>
+	[% ELSE %]
+		<p>No orphan pages found in [% site.name %]</p>
+	[% END %]
+</div>
+
+<a href="[% c.uri_for(c.controller.action_for('index'), [ site.id ]) %]" class="link_button link_button_back">Back to pages</a>

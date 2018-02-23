@@ -1,0 +1,43 @@
+<div id="navbar-example" class="navbar navbar-static">
+    <div class="navbar-inner">
+      <div class="container" style="width: auto;">
+        <a class="brand" href="[% c.uri_for(c.controller('Modules::CMS::Sites').action_for('edit'), [ site.id ]) %]">[% site.name %]</a>
+        <ul class="nav">
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-black icon-edit"></i> Manage Content <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+                <li><a href="[% c.uri_for(c.controller('Modules::CMS::Templates').action_for('index'), [ site.id ]) %]">Templates</a></li>
+                <li><a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('index'), [ site.id ]) %]">Pages</a></li>
+                <li><a href="[% c.uri_for(c.controller('Modules::CMS::Elements').action_for('index'), [ site.id ]) %]">Elements</a></li>
+                <li><a href="[% c.uri_for(c.controller('Modules::CMS::Assets').action_for('index'), [ site.id ]) %]">Assets</a></li>
+                <li class="divider"></li>
+                <li><a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('blogs'), [ site.id ]) %]">Blogs</a></li>
+                <li><a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('orphan_pages'), [ site.id ]) %]">Orphan Pages</a></li>
+            </ul>
+          </li>
+
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-black icon-cog"></i> Site Configuration <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+                <li><a href="[% c.uri_for(c.controller('Modules::CMS::Domains').action_for('manage'), [ site.id ]) %]">Manage Domains</a></li>
+                <li><a href="[% c.uri_for(c.controller('Modules::CMS::Sites').action_for('manage_attributes'), [ site.id ]) %]">Manage Attributes</a></li>
+                [% IF c.can_access(c.controller('Modules::CMS::UserAccess').action_for('page_allow_list')) %]
+                <li><a href="[% c.uri_for(c.controller('Modules::CMS::UserAccess').action_for('manage_users'), site.id) %]">Manage Users</a></li>
+                [% END %]
+                <li><a href="[% c.uri_for(c.controller('Modules::CMS::FormBuilder').action_for('index'), [ site.id ]) %]">Form Builder</a></li> 
+            </ul>
+        </li>
+        </ul>
+            <ul class="nav pull-right">
+                <li><a href="[% c.uri_for(c.controller('Modules::CMS::Sites').action_for('index')) %]"><i class="icon-black icon-eject"></i> Different site</a></li>
+            </ul>
+      </div>
+    </div>
+</div>
+
+<h1>[% title %]</h1>
+<script type="text/javascript">
+    $('.alert').click(function() {
+        $(this).fadeOut(200);
+    });
+</script>

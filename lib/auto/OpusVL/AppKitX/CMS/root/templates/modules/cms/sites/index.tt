@@ -1,0 +1,65 @@
+[% META appkitfeature_tablesorter = 1 %]
+<h1>Sites</h1>
+
+<script type="text/javascript">
+function delete_site(site_id, site_name) {
+	var ans = confirm("Do you really want to delete " + site_name + "?");
+	if (ans === true) {
+		window.location.replace("[% c.uri_for(c.controller.action_for('delete_site')) %]/" + site_id);
+	}
+}
+</script>
+<div class="content_block">
+	[% IF sites.size > 0 %]
+		<table class="tablesorter">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Site Name</th>
+					<th>Master Domain</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+			[% FOREACH site IN sites.sort('name') %]
+				[% IF site.status == 'active' %]
+				<tr>
+                    <td>
+                        [% site.id %]
+                    </td>
+					<td>
+						<a href="[% c.uri_for(c.controller.action_for('edit'), [ site.id ]) %]">[% site.name %]</a>
+					</td>
+					<td>
+                        [% IF site.master_domain %]
+                            <a href="[% c.uri_for(c.controller('Modules::CMS::Domains').action_for('edit'), [ site.id, site.master_domain.domain ]) %]">[% site.master_domain.domain %]</a>
+                        [% END %]
+					</td>
+					<td>
+						<div class="dropdown">
+						  <a class="dropdown-toggle" id="dLabel" role="button" data-toggle="dropdown" data-target="#" href="#">
+						    Actions
+						    <b class="caret"></b>
+						  </a>
+						  <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+						  	<li><span style="font-weight:bold; color:#c0c0c0; padding-left: 20px">[% site.name %]</span></li>
+						  	<li class="divider"></li>
+						    <li><a href="[% c.uri_for(c.controller.action_for('edit'), [ site.id ]) %]"><i class="icon icon-pencil"></i> Edit</a></li>
+						    <li><a onclick="delete_site([% site.id %], '[% site.name %]');" href="javascript:void(0);"><i class="icon icon-remove"></i> Delete</a></li>
+						    <li class="divider"></li>
+						    <li><a href="[% c.uri_for(c.controller('Modules::CMS::Templates').action_for('index'), [ site.id ]) %]"><i class="icon icon-book"></i> View Templates</a></li>
+						    <li><a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('index'), [ site.id ]) %]"><i class="icon icon-file"></i> View Pages</a></li>
+						    <li><a href="[% c.uri_for(c.controller('Modules::CMS::Elements').action_for('index'), [ site.id ]) %]"><i class="icon icon-tint"></i> View Elements</a></li>
+						    <li><a href="[% c.uri_for(c.controller('Modules::CMS::Assets').action_for('index'), [ site.id ]) %]"><i class="icon icon-briefcase"></i> View Assets</a></li>
+						  </ul>
+						</div>
+					</td>
+				</tr>
+				[% END %]
+			[% END %]
+		</table>
+	[% ELSE %]
+		<p>There are no available sites. <a href="[% c.uri_for(c.controller.action_for('add')) %]">Add one now</a></p>
+	[% END %]
+</div>
+<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('add')) %]">New Site</a>

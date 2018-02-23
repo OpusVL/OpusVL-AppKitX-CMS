@@ -1,0 +1,19 @@
+<form action="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('index'), [ site.id ]) %]" method="post" class="form-search" autocomplete="off">
+  <input type="text" name="edit_page" class="input-medium search-query">
+  <button type="submit" class="btn"><i class="icon-pencil"></i> Edit page</button>
+</form>
+<a class="btn" href="[% c.uri_for(c.controller('Modules::CMS::PageAttributes').action_for('index'), [ site.id ]) %]" style="text-decoration:none"><i class="icon icon-plus-sign"></i> Manage Attributes</a>
+
+<div class="clear" style="height:10px"></div>
+
+<script type="text/javascript">
+    // Autocomplete
+    var items = [];
+    $.getJSON("[% c.uri_for(c.controller('Modules::CMS::Ajax').action_for('pages_typeahead'), site.id) %]", function(data) {
+
+        $.each(data, function(key, val) {
+            items.push(val);
+        });
+    });
+    $('.search-query').typeahead({ source : items });
+ </script>

@@ -1,0 +1,29 @@
+[% INCLUDE modules/cms/header.tt title="Templates" %]
+
+<div class="content_block">
+    [% IF templates.size > 0 %]
+        [% META appkitfeature_tablesorter = 1 %]
+        <table class="tablesorter">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Global?</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                [% FOREACH template IN templates %]
+                    <tr>
+                        <td>[% template.name %]</td>
+                        <td>[% IF template.global %]<font color="green">Yes</font>[% ELSE %]<font color="red">No</font>[% END %]</td>
+                        <td><a href="[% c.uri_for(c.controller('Modules::CMS::Templates').action_for('edit_template'), [ site.id, template.id ]) %]">Edit</a></td>
+                    </tr>
+                [% END %]
+            </tbody>
+        </table>
+    [% ELSE %]
+        <p>No templates have been created</p>
+    [% END %]
+</div>
+
+<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('new_template'), [ site.id ]) %]">New template</a>

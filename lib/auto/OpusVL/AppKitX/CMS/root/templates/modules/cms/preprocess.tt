@@ -1,0 +1,727 @@
+<style type="text/css">
+    body .redactor_toolbar li a.redactor_btn_elements {
+        background: url([% c.uri_for('/static/js/redactor/img/elements.png') %]) no-repeat;
+        background-position: center;
+    }
+
+    body .redactor_toolbar li a.redactor_btn_pages {
+        background: url([% c.uri_for('/static/js/redactor/img/pages.png') %]) no-repeat;
+        background-position: center;
+    }
+
+    body .redactor_toolbar li a.redactor_btn_assets {
+        background: url([% c.uri_for('/static/js/redactor/img/assets.png') %]) no-repeat;
+        background-position: center;
+    }
+
+    body .redactor_toolbar li a.redactor_btn_attachments {
+        background: url([% c.uri_for('/static/js/redactor/img/attachments.png') %]) no-repeat;
+        background-position: center;
+    }
+
+    body .redactor_toolbar li a.redactor_btn_insert_content {
+        background: url([% c.uri_for('/static/js/redactor/img/insert_content.png') %]) no-repeat;
+        background-position: center;
+    }
+
+    body .redactor_toolbar li a.redactor_btn_attributes {
+        background: url([% c.uri_for('/static/js/redactor/img/attributes.png') %]) no-repeat;
+        background-position: center;
+    }
+
+    body .redactor_toolbar li a.redactor_btn_html {
+        background: url([% c.uri_for('/static/js/redactor/img/redactor-gui-btn.png') %]) no-repeat;
+        background-position: center;
+    }
+
+    body .redactor_toolbar li a.redactor_btn_html.redactor_act {
+        background: url([% c.uri_for('/static/js/redactor/img/redactor-source-btn.png') %]) no-repeat;
+        background-position: center;
+    }
+
+    .tt {
+        background-color: #ccccff;
+    }
+
+    .save_indicator.unsaved {
+        display: none;
+    }
+
+    div.centered {
+        display:block;
+
+        z-index: 9999;
+        position:fixed;
+        top:50%;
+        left:35%;
+        width:350px;
+        color: #fff;
+        background: #000;
+        opacity:0.7;
+        padding: 10px;
+        text-align: center;
+        font-weight: bold;
+        filter:alpha(opacity=70); /* For IE8 and earlier */
+    }
+
+    .fullScreen .fullScreen-editor{
+       height: auto!important;
+       width: auto!important;
+       border: 0;
+        margin: 0;
+        position: fixed !important;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 9998
+    }
+
+    .fullScreen {
+        overflow: hidden
+    }
+
+    .ace_editor textarea { z-index: 9999; }
+    .hidden { display: none; }
+
+    #editor { font-weight: normal !important; }
+</style>
+
+<div style="display:none" class="centered" id="redactor-toggle-gui">
+    GUI mode toggled
+</div>
+
+<div style="display:none" class="centered" id="redactor-toggle-source">
+    Source mode toggled
+</div>
+
+<div id="pages" style="display: none;">
+    <div id="redactor_modal_content">
+        <div style="overflow:scroll; height:400px">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    [% FOREACH p IN pages %]
+                        <tr>
+                            <td>[% p.id %]</td>
+                            <td><a rel="[% p.id %]" href="javascript:void(0);" class="insert-page">[% p.title %]</a></td>
+                            <td>[% p.description %]</td>
+                        </tr>
+                    [% END %]
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="redactor_modal_footer">
+        <a href="#" class="redactor_modal_btn redactor_btn_modal_close">Close</a>
+    </div>
+</div>
+
+<div id="assets" style="display: none;">
+    <div id="redactor_modal_content">
+        <div style="overflow:scroll; height:400px">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    [% FOREACH a IN assets %]
+                        <tr>
+                            <td>[% a.id %]</td>
+                            <td><a rel="[% a.slug %]" href="javascript:void(0);" class="insert-asset">[% a.filename %]</a></td>
+                            <td>[% a.description %]</td>
+                        </tr>
+                    [% END %]
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="redactor_modal_footer">
+        <a href="#" class="redactor_modal_btn redactor_btn_modal_close">Close</a>
+    </div>
+</div>
+
+<div id="attachments" style="display: none;">
+    <div id="redactor_modal_content">
+        <div style="overflow:scroll; height:400px">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    [% FOREACH a IN attachments %]
+                        <tr>
+                            <td>[% a.id %]</td>
+                            <td><a rel="[% a.slug %]" href="javascript:void(0);" class="insert-attachment">[% a.filename %]</a></td>
+                            <td>[% a.description %]</td>
+                        </tr>
+                    [% END %]
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="redactor_modal_footer">
+        <a href="#" class="redactor_modal_btn redactor_btn_modal_close">Close</a>
+    </div>
+</div>
+
+<div id="elements" style="display: none;">
+    <div id="redactor_modal_content">
+        <div style="overflow:scroll; height:400px">
+            <table class="table">
+            	<thead>
+            		<tr>
+            			<th>ID</th>
+            			<th>Name</th>
+            		</tr>
+            	</thead>
+            	<tbody>
+            		[% FOREACH e IN elements %]
+            			<tr>
+            				<td>[% e.id %]</td>
+            				<td><a rel="[% e.slug %]" href="javascript:void(0);" class="insert-element">[% e.name %]</a>
+                            [% IF e.tt_get_attributes.size > 0 %]
+                             (<a rel=".attribute-options-[% e.id %]" class="collapse-element-attributes link" href="javascript:void(0);">Show attributes</a>)
+                            <div class="attribute-options-[% e.id %]" style="display:none">
+                                <br />
+                                <form>
+                                [% FOREACH el_attr IN e.tt_get_attributes %]
+                                        <div class="text label">
+                                            <label>[% el_attr.code %]</label>
+                                            <input type="text" class="element-attribute-[% e.id %]" rel="[% el_attr.code %]" value="">
+                                        </div>
+                                [% END %]
+                                </form>
+                            </div>
+                        [% END %]
+                            </td>
+            			</tr>
+            		[% END %]
+            	</tbody>
+            </table>
+        </div>
+    </div>
+    <div id="redactor_modal_footer">
+        <a href="#" class="redactor_modal_btn redactor_btn_modal_close">Close</a>
+    </div>
+</div>
+
+<div id="attributes" style="display: none;">
+    <div id="redactor_modal_content">
+        <div style="overflow:scroll; height:400px">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    [% FOREACH att IN site_attributes %]
+                        <tr>
+                            <td>[% att.id %]</td>
+                            <td><a rel="'[% att.code %]'" href="javascript:void(0);" class="insert-attribute">[% att.name %]</a></td>
+                            <td>[% att.value %]</td>
+                        </tr>
+                    [% END %]
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="redactor_modal_footer">
+        <a href="#" class="redactor_modal_btn redactor_btn_modal_close">Close</a>
+    </div>
+</div>
+
+<div id="tt-element-modal" style="display: none;">
+    <div id="redactor_modal_content">
+        <p><strong>Editing element</strong></p>
+    </div>
+    <div id="redactor_modal_footer">
+        <a href="#" class="redactor_modal_btn redactor_btn_modal_close">Close</a>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var editor;
+    var the = {
+        use_codemirror: false,
+        beautify_in_progress: false,
+        editor: null
+    };
+
+    if (typeof CodeMirror != 'undefined')
+        the.use_codemirror = true;
+
+    $(function() {
+        var is_asset = $('.asset').length > 0;
+        if (the.use_codemirror) {
+            $('#wysiwyg').keydown(function (e) {
+                if (e.keyCode == 9) {
+                    var myValue = "    ";
+                    var startPos = this.selectionStart;
+                    var endPos = this.selectionEnd;
+                    var scrollTop = this.scrollTop;
+                    this.value = this.value.substring(0, startPos) + myValue + this.value.substring(endPos,this.value.length);
+                    this.focus();
+                    this.selectionStart = startPos + myValue.length;
+                    this.selectionEnd = startPos + myValue.length;
+                    this.scrollTop = scrollTop;
+
+                    e.preventDefault();
+                }
+            });
+        }
+
+        /*$(window).bind('keydown', function (e) {
+            if (e.ctrlKey && e.keyCode == 13) {
+                beautify();
+            }
+        });*/
+
+        var source = true;
+        if ($('#wysiwyg').length > 0) {
+            if ($('#wysiwyg').hasClass('no-gui')) {
+                source = false;
+                $.editorType = 'raw';
+            }
+        }
+
+        var redactorSettings = {
+            autoresize: false,
+            convertDivs: false,
+            source: source,
+            focus: true,
+            buttonsAdd: ['|', 'elements', 'pages', 'assets', 'attachments', '|', 'attributes'],
+            buttonsCustom: {
+                insert_content: {
+                    title: 'Insert Content',
+                    callback: function(obj) {
+                        insertAtCaret('wysiwyg', "\[\% PROCESS content \%\]");
+                    },
+                },
+
+                elements: {
+                    title: 'Elements',
+                    callback: function(obj) {
+                        var callback = $.proxy(function() {
+                            $('.collapse-element-attributes').click(function() {
+                                var _attr = $(this).attr('rel');
+                                $(_attr).slideToggle('fast');
+                            });
+
+                            $('.insert-element').click(function() {
+                                var id = $(this).attr('rel');
+
+                                var buildHash = "{";
+                                if ($(".element-attribute-" + id)[0]) {
+                                    var buildHash = "{ ";
+                                    $('.element-attribute-' + id).each(function() {
+                                        console.log($(this));
+                                        var key = $(this).attr('rel');
+                                        var value = $(this).val();
+                                        if (key && value) {
+                                            buildHash += "'" + key + "', '" + value + "', ";
+                                        }
+                                    });
+
+                                }
+                                buildHash += " }";
+
+                                if ($.editorType == 'raw') {
+                                    if ($.codeMirror != null)
+                                        insertAtCaret('wysiwyg', '[\% cms.element("' + id + '", ' + buildHash + ') | eval \%]');
+                                    else
+                                        insertAtCaret('wysiwyg', '<span class="tt tt-element" rel="' + id + '">[\% cms.element("' + id + '", ' + buildHash + ') | eval \%]</span>&nbsp;');
+                                }
+                                else
+                                    $('#wysiwyg').insertHtml('<span class="tt tt-element" rel="' + id + '">[\% cms.element("' + id + '", ' + buildHash + ') | eval \%]</span> ');
+                                obj.modalClose();
+                                obj.observeTT();
+                            });
+                        }, this);
+
+                        obj.modalInit('Choose an element...', '#elements', 500, callback);
+                    }
+                },
+
+                pages: {
+                    title: 'Pages',
+                    callback: function(obj) {
+                        var callback = $.proxy(function() {
+                            $('.insert-page').click(function() {
+                                var id = $(this).attr('rel');
+                                if ($.editorType == 'raw') {
+                                    if ($.codeMirror != null)
+                                        insertAtCaret('wysiwyg', '[\% cms.page(' + id + ').url \%]');
+                                    else
+                                        insertAtCaret('wysiwyg', '<span class="tt tt-page" rel="' + id + '">[\% cms.page(' + id + ').url \%]</span>&nbsp;');
+                                }
+                                else
+                                    $('#wysiwyg').insertHtml('<span class="tt tt-page" rel="' + id + '">[\% cms.page(' + id + ').url \%]</span> ');
+                                obj.modalClose();
+                                obj.observeTT();
+                            });
+                        }, this);
+
+                        obj.modalInit('Choose a page...', '#pages', 500, callback);
+                    }
+                },
+
+                assets: {
+                    title: 'Assets',
+                    callback: function(obj) {
+                        var callback = $.proxy(function() {
+                            $('.insert-asset').click(function() {
+                                var id = $(this).attr('rel');
+                                if ($.editorType == 'raw') {
+                                    if ($.codeMirror != null)
+                                        insertAtCaret('wysiwyg', '[\% cms.asset("' + id + '") \%]');
+                                    else
+                                        insertAtCaret('wysiwyg', '<span class="tt tt-asset" rel="' + id + '">[\% cms.asset("' + id + '") \%]</span>&nbsp;');
+                                }
+                                else
+                                    $('#wysiwyg').insertHtml('<span class="tt tt-asset" rel="' + id + '">[\% cms.asset("' + id + '") \%]</span> ');
+                                obj.modalClose();
+                                obj.observeTT();
+                            });
+                        }, this);
+
+                        obj.modalInit('Choose an asset...', '#assets', 500, callback);
+                    }
+                },
+
+                attachments: {
+                    title: 'Attachments',
+                    callback: function(obj) {
+                        var callback = $.proxy(function() {
+                            $('.insert-attachment').click(function() {
+                                var id = $(this).attr('rel');
+                                if ($.editorType == 'raw') {
+                                    if ($.codeMirror != null)
+                                        insertAtCaret('wysiwyg', '[\% cms.attachment("' + id + '") \%]');
+                                    else
+                                        insertAtCaret('wysiwyg', '<span class="tt tt-attachment" rel="' + id + '">[\% cms.attachment("' + id + '") \%]</span>&nbsp;');
+                                }
+                                else
+                                    $('#wysiwyg').insertHtml('<span class="tt tt-attachment" rel="' + id + '">[\% cms.attachment("' + id + '") \%]</span> ');
+                                obj.modalClose();
+                                obj.observeTT();
+                            });
+                        }, this);
+
+                        obj.modalInit('Choose an attachment...', '#attachments', 500, callback);
+                    }
+                },
+
+                attributes: {
+                    title: 'Attributes',
+                    callback: function(obj) {
+                        var callback = $.proxy(function() {
+                            $('.insert-attribute').click(function() {
+                                var id = $(this).attr('rel');
+                                if ($.editorType == 'raw') {
+                                    if ($.codeMirror != null)
+                                        insertAtCaret('wysiwyg', '[\% cms.site_attr(' + id + ') \%]');
+                                    else
+                                        insertAtCaret('wysiwyg', '<span class="tt tt-attribute" rel="' + id + '">[\% cms.site_attr(' + id + ') \%]</span>&nbsp;');
+                                }
+                                else
+                                    $('#wysiwyg').insertHtml('<span class="tt tt-attribute" rel="' + id + '">[\% cms.site_attr(' + id + ') \%]</span> ');
+                                obj.modalClose();
+                                obj.observeTT();
+                            });
+                        }, this);
+
+                        obj.modalInit('Choose an attribute...', '#attributes', 500, callback);
+                    }
+                }
+            }
+        };
+
+        if ($('#wysiwyg').length > 0) {
+            //redactorSettings.buttons = [];
+            redactorSettings.buttonsAdd.push( 'insert_content' );
+            $('#wysiwyg').redactor(redactorSettings);
+            /*if (source === false) {
+                var wys = $('#wysiwyg');
+                wys.getObject().opts.visual = false;
+                wys.getObject().editor.hide();
+                wys.getObject().$el.height(300).val(wys.val()).show().focus();
+            }*/
+        }
+
+
+
+
+
+        if ($('#wysiwyg-content').length > 0) {
+            $('#wysiwyg').val( $('#wysiwyg-content').val() );
+        }
+
+        if (the.use_codemirror) {
+            $.codeMirror = CodeMirror.fromTextArea($('#wysiwyg').get(0), {
+                lineWrapping: true,
+                indentUnit: 4,
+                tabSize: 4,
+                indentWithTabs: false,
+                lineNumbers: true,
+            });
+        }
+
+        // ace editor
+        window.markupType = 'Standard';
+        if ($('#editor').length > 0) {
+                $('.ace_editor textarea').css('z-index','2000');
+                editor   = ace.edit("editor"),
+                editor_div = document.getElementById('editor'),
+                doc        = editor.getSession().getDocument(),
+
+                codeInput  = $('#content'),
+                //fullScreenMenu = $('#fullscreen-menu'),
+                $fullScreen = false;
+
+            if (is_asset) {
+                editor.getSession().setMode("ace/mode/css");
+                if ($('#wysiwyg-content').length > 0) {
+                    var type_a = '[% asset.mime_type %]';
+                    editor.getSession().setMode("ace/mode/" + type_a.split('/')[1]);
+                }
+            } else if (window.markupType == 'Markdown') {
+                editor.getSession().setMode("ace/mode/markdown");
+                editor.getSession().setUseWrapMode(true);
+            } else {
+                editor.getSession().setMode("ace/mode/html");
+            }
+
+            editor.setTheme("ace/theme/dreamweaver");
+            editor.setAutoScrollEditorIntoView();
+            editor.setShowPrintMargin(false);
+            editor.focus();
+
+            // populate textarea for form submission
+            var markdownContent = $('#wysiwyg');
+            if ($('#wysiwyg-content').length > 0) codeInput = $('#wysiwyg-content');
+            editor.on('change', function () {
+                // assuming a line height of 16 pixels...
+                editor_div.style.height = 16 * doc.getLength() + 'px';
+                editor.resize();
+                if (window.markupType == 'Markdown') {
+                    editor.getSession().setUseWrapMode(true);
+                    markdownContent.text(editor.getSession().getValue());
+                }
+                else {
+                    codeInput.text(editor.getSession().getValue());
+                    editor.getSession().setUseWrapMode(false);
+                }
+            });
+
+            if (is_asset) {
+                $('.asset-mime-type').change(function() {
+                    switch($(this).val()) {
+                        case "text/css":
+                            editor.getSession().setMode("ace/mode/css");
+                            break;
+                        case "text/javascript":
+                            editor.getSession().setMode("ace/mode/javascript");
+                            break;
+                        case "text/plain":
+                            editor.getSession().setMode("ace/mode/plain_text");
+                            break;
+                        case "text/html":
+                            editor.getSession().setMode("ace/mode/html");
+                            break;
+
+                    }
+                });
+            }
+
+            // fullscreen
+            editor.commands.addCommand({
+                name: "fullscreen",
+                bindKey: {win: "Ctrl-M", mac: "Command-Option-M"},
+                exec: function(editor) {
+                    var dom = ace.require("ace/lib/dom");
+                    var commands = ace.require("ace/commands/default_commands").commands;
+
+                    // add command for all new editors
+                    if ($fullScreen) {
+                        dom.removeCssClass(document.body, "fullScreen");
+                        dom.removeCssClass(editor.container, "fullScreen-editor");
+                        editor.resize();
+                        fullScreenMenu.css('display', 'none');
+                        $fullScreen = false;
+                    }
+                    else {
+                        dom.toggleCssClass(document.body, "fullScreen");
+                        dom.toggleCssClass(editor.container, "fullScreen-editor");
+                        editor.resize();
+                        fullScreenMenu.css('display', 'block');
+                        $fullScreen = true;
+                    }
+                }
+            });
+
+            var addBtn = function(name, icon, does) {
+                return '<a class="btn" href="javascript:;" title="' + name + '" rel="' + does + '">'
+                + '<i class="icon icon-' + icon + '"></i></a>';
+            };
+
+            $('#editor').before(
+                '<div class="btn-toolbar editor-toolbar"><div class="btn-group">' + addBtn('Elements', 'tint', 'elements')
+                + addBtn('Pages', 'file', 'pages')
+                + addBtn('Assets', 'briefcase', 'assets')
+                + addBtn('Attachments', 'tag', 'attachments')
+                + addBtn('Attributes', 'list', 'attributes')
+                + "</div></div>"
+            );
+
+            var capitalise = function(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            };
+
+            $('#redactor_modal_footer a').remove();
+
+            $('.btn-toolbar > .btn-group > a').click(function() {
+                $('#' + $(this).attr('rel')).dialog({
+                    title: capitalise($(this).attr('rel'))
+                });
+            });
+            $('.insert-element').click(function(e) {
+                var code = $(this).attr('rel'),
+                    ins  = '[' + '% cms.element("' + code + '", {}) | eval %' + ']';
+
+                insertEditor(ins);
+                $('#elements').dialog('close');
+            });
+            $('.insert-attribute').click(function() {
+                var code = $(this).attr('rel');
+                insertEditor("[" + "% cms.site_attr(" + code + ") %" + "]");
+                $('#attributes').dialog('close');
+            });
+            $('.insert-page').click(function() {
+                var code = $(this).attr('rel');
+                insertEditor("[" + "% cms.page('" + code + "').url %" + "]");
+                $('#pages').dialog('close');
+            });
+
+            $('.insert-asset').click(function() {
+                var code = $(this).attr('rel');
+                insertEditor("[" + "% cms.asset('" + code + "') %" + "]");
+                $('#assets').dialog('close');
+            });
+            $('.insert-attachment').click(function() {
+                var code = $(this).attr('rel');
+                insertEditor("[" + "% cms.attachment('" + code + "') %" + "]");
+                $('#attachments').dialog('close');
+            });
+
+            // editing?
+            if ($('#wysiwyg-content').length > 0) {
+                editor.getSession().setValue($('#wysiwyg-content').text());
+            }
+        } // end ace
+    });
+
+    function insertEditor(str) { window.editor.insert(str); }
+    function insertAtCaret(areaId,text) {
+        var txtarea = document.getElementById(areaId);
+        var scrollPos = txtarea.scrollTop;
+        var strPos = 0;
+        var br = ((txtarea.selectionStart || txtarea.selectionStart == '0') ?
+            "ff" : (document.selection ? "ie" : false ) );
+        if (br == "ie") {
+            txtarea.focus();
+            var range = document.selection.createRange();
+            range.moveStart ('character', -txtarea.value.length);
+            strPos = range.text.length;
+        }
+        else if (br == "ff") strPos = txtarea.selectionStart;
+
+        var front = (txtarea.value).substring(0,strPos);
+        var back = (txtarea.value).substring(strPos,txtarea.value.length);
+        txtarea.value=front+text+back;
+        strPos = strPos + text.length;
+        if (br == "ie") {
+            txtarea.focus();
+            var range = document.selection.createRange();
+            range.moveStart ('character', -txtarea.value.length);
+            range.moveStart ('character', strPos);
+            range.moveEnd ('character', 0);
+            range.select();
+        }
+        else if (br == "ff") {
+            txtarea.selectionStart = strPos;
+            txtarea.selectionEnd = strPos;
+            txtarea.focus();
+        }
+        txtarea.scrollTop = scrollPos;
+        if ($.codeMirror != null) {
+            $.codeMirror.replaceSelection(text, "end");
+        }
+    }
+
+    function beautify() {
+        if (the.beautify_in_progress) return;
+
+        //store_settings_to_cookie();
+
+        the.beautify_in_progress = true;
+
+        var source = the.editor ? the.editor.getValue() : $('#wysiwyg').val(),
+            output,
+            opts = {};
+
+        opts.indent_size = 4;
+        opts.indent_char = opts.indent_size == 1 ? '\t' : ' ';
+        opts.preserve_newlines = true;
+        opts.keep_array_indentation = false;
+        opts.break_chained_methods = false;
+        opts.indent_scripts = 'normal';
+        opts.brace_style = 'collapse';
+        opts.space_before_conditional = true;
+        opts.unescape_strings = false;
+        opts.space_after_anon_function = true;
+
+        if (looks_like_html(source)) {
+            output = style_html(source, opts);
+        } else {
+            if ($('#detect-packers').attr('checked')) {
+                source = unpacker_filter(source);
+            }
+            output = js_beautify(source, opts);
+        }
+        if (the.editor) {
+            the.editor.setValue(output);
+        } else {
+            $('#wysiwyg').val(output);
+        }
+
+        the.beautify_in_progress = false;
+    }
+
+    function looks_like_html(source) {
+        // <foo> - looks like html
+        // <!--\nalert('foo!');\n--> - doesn't look like html
+
+        var trimmed = source.replace(/^[ \t\n\r]+/, '');
+        var comment_mark = '<' + '!-' + '-';
+        return (trimmed && (trimmed.substring(0, 1) === '<' && trimmed.substring(0, 4) !== comment_mark));
+    }
+
+</script>

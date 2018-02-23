@@ -1,0 +1,58 @@
+[% INCLUDE modules/cms/header.tt title="Assets" %]
+<script type="text/javascript">
+    $(function() {
+        $('#asset-table').dataTable({
+            "aaSorting": [[ 0, "desc" ]],
+        });
+    });
+</script>
+<style type="text/css">
+    .content_block input[type="text"] {
+        width: 100px !important;
+    }
+</style>
+<div class="content_block">
+    <a style="margin-bottom: 15px;" class="btn" href="[% c.uri_for(c.controller.action_for('attributes'), [ site.id ]) %]"><i class="icon icon-plus"></i> Manage Attributes</a>
+    [% IF assets.size > 0 %]
+        [% META appkitfeature_tablesorter = 1 %]
+        <table class="tablesorter" id="asset-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                    <th>Global</th>
+                    <!-- <th>Preview</th> -->
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                [% FOREACH asset IN assets %]
+                    <tr>
+                        <td>[% asset.id %]</td>
+                        <td>[% asset.filename %]</td>
+                        <td>[% asset.description %]</td>
+                        <td>[% asset.mime_type %]</td>
+                        <td>[% IF asset.global %] <font color="green">Yes</font> [% ELSE %] <font color="red">No</font> [% END %]</td>
+                        <!-- <td>
+                            [% IF asset.mime_type.match('image') %]
+                                <a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('_asset'), asset.id, asset.filename) %]" target="__blank">thumbnail</a>
+                            [% END %]
+                        </td> -->
+                        <td>
+                            <a href="[% c.uri_for(c.controller.action_for('edit_asset'), [ site.id, asset.id ]) %]">Edit</a>
+                            <a href="[% c.uri_for(c.controller.action_for('delete_asset'), [ site.id, asset.id ]) %]">Delete</a>
+                            <a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('_asset'), asset.id, asset.filename) %]" target="__blank">View</a>
+                        </td>
+                    </tr>
+                [% END %]
+            </tbody>
+        </table>
+    [% ELSE %]
+        <p>No assets have been uploaded</p>
+    [% END %]
+</div>
+
+<a name="bottom" class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('new_asset'), [ site.id ]) %]">New asset</a>
+<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('upload_asset'), [ site.id ]) %]">Upload asset</a>

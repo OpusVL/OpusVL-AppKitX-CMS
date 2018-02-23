@@ -1,0 +1,206 @@
+[% IF page.blog OR page.parent.blog %]
+    [% SET type = 'Blog' %]
+[% ELSE %]
+    [% SET type = 'Page' %]
+[% END %]
+[% PROCESS modules/cms/preprocess.tt %]
+[% INCLUDE modules/cms/header.tt title="Edit $type" %]
+
+[% IF page.blog OR page.parent.blog %]
+<a href="[% c.uri_for(c.controller.action_for('blogs'), [ site.id ]) %]" class="link_button link_button_back">Back to blogs</a>
+[% ELSE %]
+<a href="[% c.uri_for(c.controller.action_for('index'), [ site.id ]) %]" class="link_button link_button_back">Back to page list</a>
+<a class="link_button link_button_add" href="[% c.uri_for(c.controller.action_for('clone_page'), [ site.id, page.id ]) %]">Clone this page</a>
+[% END %]
+<br>&nbsp;
+
+[% META appkitfeature_tablesorter = 1 %]
+
+[% form.start | none %]
+
+<div class="content_block tab_header">
+    <div class="column">
+        <table class="vertical_list">
+            <tr>
+                <th>Title</th>
+                <td>[% form.get_all_element('title').render | none %]</td>
+            </tr>
+            <tr>
+                <th>URL</th>
+                <td>[% form.get_all_element('url').render | none %]</td>
+            </tr>
+            <tr>
+                <th>Breadcrumb</th>
+                <td>[% form.get_all_element('breadcrumb').render | none %]</td>
+            </tr>
+        </table>
+    </div>
+    <div class="column">
+        <table class="vertical_list">
+            
+            [% IF (parent = page.parent) %]
+                <tr><td><a href="[% c.uri_for(c.controller.action_for('edit_page'), [ site.id, parent.id ]) %]">Go to [% IF parent.blog %]blog ([% parent.title %])[% ELSE %]parent ([% parent.breadcrumb %]) [% END %]</a></td></tr>
+            [% END %]
+            <tr>
+                <td colspan="2"><a href="[% c.uri_for(c.controller.action_for('new_page'), [ site.id ]) %]?parent_id=[% page.id %]">Create [% IF page.blog %]post[% ELSE %]child[% END %]</a></td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="tabbed_content_block">
+    <ul>
+        <li><a href="#tab_content">Content</a>
+        <li><a href="#tab_details">Metadata</a>
+        <li><a href="#tab_attachments">Attachments</a>
+        <li><a href="#tab_aliases">Redirects</a>
+        [% IF c.can_access(c.controller('Modules::CMS::UserAccess').action_for('page_allow_list')) %]
+            <li><a href="#tab_users">Users</a></li>
+        [% END %]
+    </ul>
+    
+    <div id="tab_content">
+        [% form.get_all_element( 'name' => 'page_content' ).render | none %]
+        <p><a href="javascript:void(0);" id="slide-change-note">Leave a reason for update?</a></p>
+        [% form.get_all_element( 'name' => 'note_changes_' ).render | none %]
+    </div>
+
+    <div id="tab_details">
+        [% form.get_all_element( 'name' => 'page_details' ).render | none %]
+        [% form.get_all_element('global_fields').render | none %]
+    </div>
+
+    <div id="tab_attachments">
+        <fieldset>
+            <legend>Existing attachments</legend>
+            [% IF page.get_attachments.size %]
+                <table class="tablesorter">
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Description</th>
+                            <th>Priority</th>
+                            <th>Type</th>
+                            <th>Tags</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        [% FOREACH attachment IN page.get_attachments %]
+                            <tr>
+                                <td>[% attachment.filename %]</td>
+                                <td>[% attachment.description %]</td>
+                                <td>[% attachment.priority %]</td>
+                                <td>[% attachment.mime_type %]</td>
+                                <td></td>
+                                <td>
+                                    <a target="__blank" href="[% IF c.config.cms_base_url %][% c.config.cms_base_url %]/_attachment/[% attachment.id %]/[% attachment.filename %][% ELSE %][% c.uri_for(c.controller('Modules::CMS::Pages').action_for('_attachment'), attachment.id, attachment.filename) %][% END %]">View</a>
+                                    <a href="[% c.uri_for(c.controller.action_for('edit_attachment'), attachment.id) %]">Edit</a>
+                                    <a href="[% c.uri_for(c.controller.action_for('delete_attachment'), attachment.id) %]">Delete</a>
+                                </td>
+                            </tr>
+                        [% END %]
+                    </tbody>
+                </table>
+            [% ELSE %]
+                <p>This page has no attachments</p>
+            [% END %]
+        </fieldset>
+        
+        [% form.get_all_element( 'name' => 'page_attachments' ).render | none %]
+    </div>
+
+    <div id="tab_aliases">
+        [% form.get_all_element( 'name' => 'page_aliases' ).render | none %]
+        [% form.get_all_element( 'name' => 'new_page_alias' ).render | none %]
+    </div>
+
+[% IF c.can_access(c.controller('Modules::CMS::UserAccess').action_for('page_allow_list')) %]
+    <div id="tab_users">
+        <fieldset>
+            <legend>Users allowed to modify [% page.title %]</legend>
+            [% IF page_users.size > 0 %]
+                <table class="tablesorter">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        [% FOREACH puser IN page_users %]
+                            <tr>
+                                <td>[% puser.user.username %]</td>
+                                <td>[% puser.user.name %]</td>
+                                <td><a href="[% c.uri_for(c.controller('Modules::CMS::UserAccess').action_for('page_revoke_permission'), site.id, page.id, puser.user.id) %]">Revoke Permission</a></td>
+                            </tr>
+                        [% END %]
+                    </tbody>
+                </table>
+            [% ELSE %]
+                <p>No users are allowed to modify this page</p>
+            [% END %]
+        </fieldset>
+
+        <fieldset>
+            <legend>Add users</legend>
+            <div class="select label">
+                <label>Select users</label>
+                <select multiple="multiple" name="allow_users">
+                    [% FOREACH site_user IN site_users %]
+                        <option value="[% site_user.user.id %]">[% site_user.user.username %] ([% site_user.user.name %])</option>
+                    [% END %]
+                </select>
+            </div>
+        </fieldset>
+    </div>
+[% END %]
+
+</div>
+
+<script type="text/javascript">
+    $('#slide-change-note').click(function() {
+        $('#note_changes').slideToggle(200);
+    });
+
+    $(function() {
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        $('#preview').click(function() {
+            $('#preview_content').load('/modules/cms/ajax/preview_page', {
+                page_id : '[% page.id %]',
+                content : $('textarea[name="content"]').text(),
+            });
+            $('#preview_content').show('fast');
+        });
+        
+        var wysiwyg = $('.redactor_box'),
+            ace     = $('#editor'),
+            toolbar = $('.editor-toolbar'),
+            selectM = capitalizeFirstLetter('[% page.markup_type %]');
+        
+        if (selectM == 'Markdown') {
+            wysiwyg.hide();
+            toolbar.show();
+            ace.show();
+            window.markupType = 'Markdown';
+            editor.getSession().setMode("ace/mode/markdown");
+            editor.getSession().setValue($('#wysiwyg').val());
+        }
+        else {
+            ace.hide();
+            toolbar.hide();
+            wysiwyg.show();
+            window.markupType = 'Standard';
+            editor.getSession().setMode("ace/mode/html");
+        }
+    });
+</script>
+
+[% form.get_all_element( 'name' => 'submit' ).render | none %]
+[% form.get_all_element( 'name' => 'preview' ).render | none %]
+[% form.get_all_element( 'name' => 'cancel' ).render | none %]
+[% form.end | none %]

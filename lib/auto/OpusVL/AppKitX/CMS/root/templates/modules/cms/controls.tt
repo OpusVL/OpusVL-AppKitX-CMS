@@ -1,0 +1,16 @@
+<div class="tipbox">
+    <label class="box-title">Controls</label>
+    <table>
+        <tbody>
+            <tr>
+                <td><strong>Editor</strong></td>
+                <td><a href="javascript:void(0);" id="toggle-nic">Toggle</a></td>
+            </tr>
+            <tr>
+                <td><strong>Element</strong></td>
+                <td><a href="javascript:void(0);" id="add-element">Toggle</a></td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="hidden" id="ajax-slide"><hr>Wee</div>
+</div>

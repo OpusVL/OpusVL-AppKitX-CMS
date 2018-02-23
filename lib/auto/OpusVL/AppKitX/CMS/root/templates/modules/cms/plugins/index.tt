@@ -1,0 +1,41 @@
+[% META appkitfeature_tablesorter = 1 %]
+[% INCLUDE modules/cms/preprocess.tt %]
+
+<h1>Plugins</h1>
+<div class="content_block">
+	<fieldset>
+		<legend>Available plugins</legend>
+		[% IF plugins %]
+			<table class="tablesorter">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Action</th>
+						<th>Author</th>
+						<th>Description</th>
+						<th>Loaded</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					[% FOREACH plugin IN plugins %]
+						<tr>
+							<td>[% plugin.name %]</td>
+							<td>[% plugin.action %]</td>
+							<td>[% plugin.author %]</td>
+							<td>[% plugin.description %]</td>
+							<td>[% IF plugin.status == 'active' %]<font color="green">Yes</font> (<a href="[% c.uri_for(c.controller.action_for('disable_plugin'), [ plugin.id ]) %]">Disable</a>)[% ELSE %]<font color="red">No</font> (<a href="[% c.uri_for(c.controller.action_for('enable_plugin'), [ plugin.id ]) %]">Enable</a>)[% END %]</td>
+							<td>
+								<a href="[% c.uri_for(c.controller.action_for('edit_plugin'), [ plugin.id ]) %]">Edit</a>
+							</td>
+						</tr>
+					[% END %]
+				</tbody>
+			</table>
+		[% ELSE %]
+			<p>There are no available plugins</p>
+		[% END %]
+	</fieldset>
+</div>
+
+<a href="[% c.uri_for(c.controller.action_for('new_plugin')) %]" class="link_button link_button_add">New Plugin</a>

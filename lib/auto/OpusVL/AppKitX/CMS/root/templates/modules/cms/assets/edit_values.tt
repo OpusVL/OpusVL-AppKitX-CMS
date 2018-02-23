@@ -1,0 +1,2 @@
+[% INCLUDE modules/cms/header.tt title="Edit values ($value.name / $value.code)" %]
+[% form.render | none %]

@@ -1,0 +1,46 @@
+[% META appkitfeature_tablesorter = 1 %]
+[% INCLUDE modules/cms/header.tt title="Manage attributes" %]
+
+<a class="link_button link_button_back" href="[% c.uri_for(c.controller.action_for('edit'), [ site.id ]) %]">Back to site</a>
+
+<div class="clear" style="height:10px"></div>
+<div class="content_block">
+	<fieldset>
+		<legend>Site attributes</legend>
+		[% IF site_attributes %]
+			<form action="" method="post">
+				<table class="tablesorter">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Code</th>
+							<th>Value</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						[% FOREACH attr IN site_attributes %]
+							<tr>
+								<td>[% attr.name %]</td>
+								<td>[% attr.code %]</td>
+								<td><input type="text" name="attribute_id_[% attr.id %]" value="[% attr.value %]"></td>
+								<td>
+								[% IF attr.super %]
+								[% ELSE %]
+								<a href="[% c.uri_for(c.controller.action_for('delete_attribute'), [ site.id ]) %]/[% attr.id %]">Delete</a>
+								[% END %]
+								</td>
+							</tr>
+						[% END %]
+					</tbody>
+				</table>
+		[% ELSE %]
+			<p>You have no attributes created for this site</p>
+		[% END %]
+	</fieldset>
+</div>
+<div class="clear" style="height:10px"></div>
+[% IF site_attributes %]<input type="submit" class="submit submit_ok" name="save_attributes" value="Save"></form>[% END %]
+<div class="clear" style="height:10px"></div>
+
+[% form.render | none %]

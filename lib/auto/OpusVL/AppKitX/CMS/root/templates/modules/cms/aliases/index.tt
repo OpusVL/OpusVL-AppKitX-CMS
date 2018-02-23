@@ -1,0 +1,33 @@
+<h1>Page redirects</h1>
+
+[% META appkitfeature_tablesorter = 1 %]
+<div class="content_block">
+    [% IF aliases.size %]
+        <table class="tablesorter">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>URL</th>
+                    <th>Page ID</th>
+                    <th>Page name</th>
+                    <th>Page URL</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                [% FOREACH alias IN aliases %]
+                    <tr>
+                        <td>[% alias.id %]</td>
+                        <td>[% alias.url %]</td>
+                        <td>[% alias.page.id %]</td>
+                        <td>[% alias.page.breadcrumb %]</td>
+                        <td>[% alias.page.url %]</td>
+                        <td><a href="[% c.uri_for(c.controller('Pages').action_for('edit_page'), alias.page.id) %]#tab_aliases">Edit</a></td>
+                    </tr>
+                [% END %]
+            </tbody>
+        </table>
+    [% ELSE %]
+        <p>No redirects have been defined</p>
+    [% END %]
+</div>

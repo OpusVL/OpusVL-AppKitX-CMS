@@ -1,0 +1,48 @@
+[% INCLUDE modules/cms/header.tt title="New asset" %]
+<fieldset>
+    <legend>Globalise Uploaded Assets</legend>
+    <p>Make assets global? <input type="checkbox" id="make-global" name="make_global"></p>
+</fieldset>
+[%# form.render | none %]
+
+<div id="asset-uploader"></div>
+<div id="files_uploaded"></div>
+<script type="text/javascript">
+    $(function() {
+        var config = {
+            runtimes: 'html5,flash',
+            url: "[% c.uri_for(c.controller.action_for('upload_assets'), [ site.id ]) %]",
+            multiple_queues: true,
+            filters: [
+                {title: "Upload Assets", extensions: "*"}
+            ],
+            init: {
+                StateChanged: function(up) {
+                    if(up.state == plupload.STOPPED) {
+                        window.location = "[% c.uri_for(c.controller.action_for('index'), [ site.id ]) %]"
+                    }
+                }
+            },
+            drop_element: 'asset-uploader'
+        };
+
+        $('#make-global').click(function() {
+            if ($(this).is(':checked')) {
+                config['url'] = "[% c.uri_for(c.controller.action_for('upload_assets_global'), [ site.id ]) %]";
+                $("#asset-uploader").pluploadQueue(config);
+            }
+            else {
+                config['url'] = "[% c.uri_for(c.controller.action_for('upload_assets'), [ site.id ]) %]";
+                $("#asset-uploader").pluploadQueue(config);
+            }
+        });
+        
+        $("#asset-uploader").pluploadQueue(config);
+    });
+</script>
+
+<link rel="stylesheet" type="text/css" href="/static/plupload/js/jquery.plupload.queue/css/jquery.plupload.queue.css" />
+<script type="text/javascript" src="/static/plupload/js/plupload.js"></script>
+<script type="text/javascript" src="/static/plupload/js/plupload.html5.js"></script>
+<script type="text/javascript" src="/static/plupload/js/plupload.flash.js"></script>
+<script type="text/javascript" src="/static/plupload/js/jquery.plupload.queue/jquery.plupload.queue.js"></script>

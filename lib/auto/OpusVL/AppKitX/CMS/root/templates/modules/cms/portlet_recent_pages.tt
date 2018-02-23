@@ -1,0 +1,9 @@
+[% IF cms_recent_pages.size > 0 %]
+	<ol>
+	[% FOREACH page IN cms_recent_pages %]
+		<li><a href="[% c.uri_for(c.controller('Modules::CMS::Pages').action_for('edit_page'), [ page.site.id, page.id ]) %]">[% page.title %]</a> created [% date_short(page.created) %] @ [% time_short(page.created) %]</li>
+	[% END %]
+	</ol>
+[% ELSE %]
+	<p>There have been no pages created within the last 5 days</p>
+[% END %]

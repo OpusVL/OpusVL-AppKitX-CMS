@@ -1,0 +1,49 @@
+[% META appkitfeature_tablesorter = 1 %]
+[% INCLUDE modules/cms/header.tt title="$page.title History" %]
+
+<a href="[% c.uri_for(c.controller.action_for('index'), [ site.id ]) %]" class="link_button link_button_back">Back to Pages</a>
+<div class="clear" style="height:10px"></div>
+
+<div class="content_block">
+	[% IF pages %]
+	<table class="tablesorter">
+		<thead>
+			<tr>
+				<th>Updated</th>
+				<th>Author</th>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody>
+			[% WHILE (currpage = pages.next) %]
+				[% page_content = currpage %]
+				[% currpage = currpage.page %]
+                [% IF (owner = page_content.created_by) %]
+                    [% SET page_author = owner %]
+                [% ELSE %]
+                    [% SET page_author = currpage.created_by %]
+                [% END %]
+
+				[%# SET date_created = draft.page_drafts_contents.created %]
+				<tr>
+					<td>[% date_long(page_content.created) %] @ [% page_content.created.time %][% IF currpage.get_page_content.id == page_content.id %] <strong>(Current Version)</strong>[% END %]</td>
+					<td>[% page_author.name %] ([% page_author.username %])</td>
+					<td>
+						<a target="_blank" href="[% c.uri_for(c.controller.action_for('preview'), [ site.id, page_content.page.id ]) %]?content=[% page_content.id %]">Preview</a>
+						[% IF currpage.get_page_content.id == page_content.id %]
+						[% ELSE %]
+						 | <a href="[% c.uri_for(c.controller.action_for('restore'), [ site.id, page_content.page.id ]) %]?content=[% page_content.id %]">Restore</a>
+						[% END %]
+					</td>
+				</tr>
+			[% END %]
+		</tbody>
+	</table>
+	[% ELSE %]
+		<p>There are no drafts available for this page</p>
+	[% END %]
+</div>
+
+[% IF pages %]
+[% INCLUDE pager.tt pager = pages.pager %]
+[% END %]
