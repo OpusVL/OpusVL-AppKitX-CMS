@@ -1,4 +1,4 @@
-[% INCLUDE modules/cms/header.tt title="New asset" %]
+[% INCLUDE modules/cms/header.tt title="Upload asset" %]
 
 <script>
   $(function() {
@@ -12,29 +12,26 @@
   });
 </script>
 
-<div class="content-block">
-  <h1>Upload Asset</h1>
-  <form action="[%
-    c.uri_for(c.controller.action_for('upload_assets'), [site.id]) 
-    %]" class="dropzone" id="new-asset-upload"
-    >
-    <div class="fallback">
-      <input type="file" name="file" multiple>
+<form action="[%
+  c.uri_for(c.controller.action_for('upload_assets'), [site.id]) 
+  %]" class="dropzone" id="new-asset-upload"
+  >
+  <div class="fallback">
+    <input type="file" name="file" multiple>
+  </div>
+  <div class="dz-preview dz-file-preview" id="dz-preview-template">
+    <div class="dz-image"><img data-dz-thumbnail /></div>
+    <div class="dz-details">
+      <div class="dz-size"><span data-dz-size></span></div>
+      <div class="dz-filename"><span data-dz-name></span></div>
     </div>
-    <div class="dz-preview dz-file-preview" id="dz-preview-template">
-      <div class="dz-image"><img data-dz-thumbnail /></div>
-      <div class="dz-details">
-        <div class="dz-size"><span data-dz-size></span></div>
-        <div class="dz-filename"><span data-dz-name></span></div>
-      </div>
-      <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div>
-      <div class="dz-error-message"><span data-dz-errormessage></span></div>
-      <div class="dz-success-mark" title="Success">
-        <i class="fa fa-check"></i>
-      </div>
-      <div class="dz-error-mark" title="Error">
-        <i class="fa fa-cross"></i>
-      </div>
+    <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div>
+    <div class="dz-error-message"><span data-dz-errormessage></span></div>
+    <div class="dz-success-mark" title="Success">
+      <i class="fa fa-check"></i>
     </div>
-  </form>
-</div>
+    <div class="dz-error-mark" title="Error">
+      <i class="fa fa-cross"></i>
+    </div>
+  </div>
+</form>

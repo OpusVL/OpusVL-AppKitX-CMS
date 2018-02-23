@@ -4,6 +4,8 @@ use CatalystX::InjectComponent;
 use File::ShareDir qw/module_dir/;
 use namespace::autoclean;
 
+# ABSTRACT: CMS plugin for AppKit apps
+
 with 'OpusVL::AppKit::RolesFor::Plugin';
 
 our $VERSION = '0.102';
@@ -113,9 +115,6 @@ after 'setup_components' => sub {
 
 1;
 
-=head1 NAME
-
-OpusVL::AppKitX::CMS - 
 
 =head1 DESCRIPTION
 
